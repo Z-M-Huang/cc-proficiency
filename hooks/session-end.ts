@@ -9,7 +9,7 @@
 import { spawn } from "node:child_process";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import { appendFileSync, existsSync, mkdirSync, writeFileSync, readFileSync, statSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, writeFileSync, statSync } from "node:fs";
 
 const STORE_DIR = join(homedir(), ".cc-proficiency");
 const QUEUE_FILE = join(STORE_DIR, "queue.jsonl");
@@ -31,6 +31,7 @@ function log(msg: string): void {
 }
 
 // CI/CD detection — skip if non-interactive
+// Duplicated from src/utils/ci-detect.ts — keep in sync
 const CI_VARS = ["CI", "GITHUB_ACTIONS", "GITLAB_CI", "CODESPACES", "BUILDKITE", "CIRCLECI", "TRAVIS"];
 if (CI_VARS.some((v) => process.env[v] === "true") || process.env.JENKINS_URL) {
   log("SKIP: CI environment detected");
@@ -67,8 +68,8 @@ process.stdin.on("end", () => {
 
     // Spawn processor as detached child (fire-and-forget)
     try {
-      // When compiled: dist/hooks/session-end.js → dist/cli.js is at ../cli.js
-      const processorPath = join(__dirname, "..", "cli.js");
+      // When compiled: dist/hooks/session-end.js -> dist/cli/index.js
+      const processorPath = join(__dirname, "..", "cli", "index.js");
       if (existsSync(processorPath)) {
         const child = spawn("node", [processorPath, "process"], {
           detached: true,

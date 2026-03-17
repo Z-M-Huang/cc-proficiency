@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync, statSync, appendFileSync, renameSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import type { LocalStore, SessionSnapshot, ProficiencyResult, CCProficiencyConfig } from "../types.js";
+import type { LocalStore, SessionSnapshot, CCProficiencyConfig } from "../types.js";
 import { ensureStoreDir } from "./queue.js";
 
 const STORE_DIR = join(homedir(), ".cc-proficiency");

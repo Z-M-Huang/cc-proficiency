@@ -318,6 +318,8 @@ npm install
 npm test              # 146 tests
 npm run build         # compile to dist/
 npm run typecheck     # tsc --noEmit
+npm run lint          # eslint
+npm run check         # typecheck + lint + test
 ```
 
 ## License

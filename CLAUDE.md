@@ -9,7 +9,7 @@ Claude Code proficiency badge generator. Analyzes session transcripts to produce
 - **Parsers**: `src/parsers/` — streaming JSONL with per-line error handling
 - **Scoring**: `src/scoring/` — 5 domains + outcome multiplier, saturating curves
 - **Renderer**: `src/renderer/svg.ts` — dark theme SVG, colorblind accessible
-- **CLI**: `src/cli.ts` — init, analyze, process, badge, push, explain, config, uninstall
+- **CLI**: `src/cli/` — entry point + commands (init, analyze, process, badge, push, explain, config, uninstall)
 
 ## Key conventions
 
@@ -26,4 +26,6 @@ Claude Code proficiency badge generator. Analyzes session transcripts to produce
 npm run build      # compile TS → dist/
 npm test           # run vitest
 npm run typecheck  # tsc --noEmit
+npm run lint       # eslint src/ hooks/
+npm run check      # typecheck + lint + test
 ```

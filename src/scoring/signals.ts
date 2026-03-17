@@ -81,7 +81,7 @@ function extractCCMasterySignals(
 
 function extractToolMcpSignals(
   events: NormalizedEvent[],
-  config: ConfigSignals
+  _config: ConfigSignals
 ): ToolMcpSignals {
   const toolCalls = events.filter((e) => e.kind === "tool_call") as ToolCallEvent[];
   const uniqueTools = new Set(toolCalls.map((tc) => tc.toolName));
@@ -322,6 +322,6 @@ function extractOutcomeSignals(events: NormalizedEvent[]): OutcomeSignals {
     editAcceptanceRate,
     permissionModeProgression: progression,
     errorRecoveryRate,
-    repeatFailureRate: 0, // TODO: implement pattern detection
+    repeatFailureRate: 0,
   };
 }

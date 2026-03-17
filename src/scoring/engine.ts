@@ -1,16 +1,14 @@
 import type {
   ProficiencyResult,
-  DomainScore,
   ConfidenceLevel,
   SetupChecklist,
   FeatureInventory,
-  NormalizedEvent,
   ToolCallEvent,
   ParsedSession,
 } from "../types.js";
 import type { ConfigSignals } from "../parsers/config-parser.js";
 import { fireRules, aggregateToBuckets, bucketsToScores, extractFeatureScores } from "./rule-engine.js";
-import type { FeatureTag, RuleFire } from "./rules.js";
+import type { RuleFire } from "./rules.js";
 
 export const SCORING_VERSION = "3.0.0";
 

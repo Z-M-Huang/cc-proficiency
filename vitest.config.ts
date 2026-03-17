@@ -5,7 +5,7 @@ export default defineConfig({
     include: ["tests/**/*.test.ts"],
     coverage: {
       include: ["src/**/*.ts"],
-      exclude: ["src/cli.ts", "src/index.ts", "src/types.ts", "src/gist/uploader.ts"],
+      exclude: ["src/cli/**/*.ts", "src/index.ts", "src/types.ts", "src/gist/uploader.ts"],
       thresholds: {
         statements: 95,
         branches: 85,

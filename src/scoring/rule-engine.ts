@@ -1,6 +1,6 @@
-import type { DomainId, DomainScore, ConfidenceLevel, ParsedSession, NormalizedEvent, FeatureInventory } from "../types.js";
+import type { DomainId, DomainScore, ConfidenceLevel, NormalizedEvent } from "../types.js";
 import type { ConfigSignals } from "../parsers/config-parser.js";
-import { RULES, type ScoringRule, type RuleFire, type RuleContext, type FeatureTag } from "./rules.js";
+import { RULES, type RuleFire, type RuleContext, type FeatureTag } from "./rules.js";
 
 // ── Bucket Caps ──
 // Per GPT-5.4: config max 25, behavior max 75, penalty max -15

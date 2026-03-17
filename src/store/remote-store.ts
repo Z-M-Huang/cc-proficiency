@@ -1,5 +1,5 @@
 import { hostname } from "node:os";
-import type { RemoteStore, ProficiencyResult, StreakData, WeeklyTrend, DomainId } from "../types.js";
+import type { RemoteStore, ProficiencyResult, StreakData, WeeklyTrend } from "../types.js";
 
 const RETENTION_DAYS = 90;
 
