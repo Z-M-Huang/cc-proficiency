@@ -55,14 +55,14 @@ function domainLabel(id: string, t: LocaleStrings): string {
 function renderDomainRow(d: DomainScore, y: number, t: LocaleStrings): string {
   const label = escapeXml(domainLabel(d.id, t));
   const color = DOMAIN_COLORS[d.id] ?? C.textDim;
-  const barWidth = 160;
+  const barWidth = 220;
   const filledWidth = Math.round((d.score / 100) * barWidth);
 
-  return `<g transform="translate(20, ${y})">
-      <text x="0" y="11" fill="${C.textDim}" font-size="11" font-family="${SANS}" font-weight="500">${label}</text>
-      <g transform="translate(100, 2)"><rect width="${barWidth}" height="10" rx="5" fill="${C.barBg}" opacity="0.5"/><rect width="${filledWidth}" height="10" rx="5" fill="${color}" filter="url(#glow)"/></g>
-      <text x="${100 + barWidth + 8}" y="11" fill="${C.text}" font-size="12" font-family="${MONO}" font-weight="700">${d.score}</text>
-      <text x="${100 + barWidth + 34}" y="11" fill="${color}" font-size="10" font-family="${MONO}">${confidenceSymbol(d.confidence)}</text>
+  return `<g transform="translate(25, ${y})">
+      <text x="0" y="14" fill="${C.textDim}" font-size="13" font-family="${SANS}" font-weight="500">${label}</text>
+      <g transform="translate(120, 3)"><rect width="${barWidth}" height="12" rx="6" fill="${C.barBg}" opacity="0.5"/><rect width="${filledWidth}" height="12" rx="6" fill="${color}" filter="url(#glow)"/></g>
+      <text x="${120 + barWidth + 10}" y="14" fill="${C.text}" font-size="14" font-family="${MONO}" font-weight="700">${d.score}</text>
+      <text x="${120 + barWidth + 42}" y="14" fill="${color}" font-size="12" font-family="${MONO}">${confidenceSymbol(d.confidence)}</text>
     </g>`;
 }
 
@@ -94,11 +94,11 @@ function miniBarOpacity(score: number): string {
 function renderMiniBarGrid(featureScores: Record<string, number> | undefined, y: number, t: LocaleStrings): string {
   const scores = featureScores ?? {};
   const totalFeatures = MINI_BAR_KEYS.length;
-  const gap = 3;
-  const startX = 20;
-  const availableWidth = 340;
+  const gap = 4;
+  const startX = 25;
+  const availableWidth = 445;
   const colWidth = Math.floor((availableWidth - gap * (totalFeatures - 1)) / totalFeatures);
-  const barHeight = 20;
+  const barHeight = 24;
   const lines: string[] = [];
 
   for (let i = 0; i < totalFeatures; i++) {
@@ -111,21 +111,21 @@ function renderMiniBarGrid(featureScores: Record<string, number> | undefined, y:
 
     lines.push(`<g transform="translate(${x}, ${y})">`);
     lines.push(`  <rect width="${colWidth}" height="${barHeight}" rx="4" fill="${fillColor}" opacity="${opacity}"/>`);
-    lines.push(`  <text x="${colWidth / 2}" y="${barHeight / 2 + 1}" fill="${score > 0 ? '#fff' : C.textMuted}" font-size="8" font-family="${MONO}" font-weight="600" text-anchor="middle" dominant-baseline="middle">${score}</text>`);
-    lines.push(`  <text x="${colWidth / 2}" y="${barHeight + 11}" fill="${C.textMuted}" font-size="7" font-family="${SANS}" text-anchor="middle">${label}</text>`);
+    lines.push(`  <text x="${colWidth / 2}" y="${barHeight / 2 + 1}" fill="${score > 0 ? '#fff' : C.textMuted}" font-size="10" font-family="${MONO}" font-weight="600" text-anchor="middle" dominant-baseline="middle">${score}</text>`);
+    lines.push(`  <text x="${colWidth / 2}" y="${barHeight + 13}" fill="${C.textMuted}" font-size="9" font-family="${SANS}" text-anchor="middle">${label}</text>`);
     lines.push(`</g>`);
   }
 
   return lines.join("\n");
 }
 
-const MINI_BAR_SECTION_HEIGHT = 36; // single row of mini-bars + labels
+const MINI_BAR_SECTION_HEIGHT = 42; // single row of mini-bars + labels
 
 // ── Calibrating Badge ──
 export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale = "en"): string {
   const t = getLocale(locale);
-  const width = 380;
-  const height = 180;
+  const width = 495;
+  const height = 230;
   const cl = result.setupChecklist;
   const needed = Math.max(0, 3 - result.sessionCount);
   const u = escapeXml(result.username);
@@ -134,60 +134,60 @@ export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale
   <title id="cc-title">${escapeXml(t.title)} \u2014 @${u}</title>
   <desc id="cc-desc">${escapeXml(t.calibrating)}: ${result.sessionCount} ${escapeXml(t.sessions)}</desc>
   ${defs()}
-  <rect width="${width}" height="${height}" rx="10" fill="${C.bg}"/>
-  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="9.5" fill="${C.card}" stroke="${C.border}"/>
-  <text x="20" y="28" fill="${C.text}" font-size="15" font-family="${SANS}" font-weight="600">${escapeXml(t.title)}</text>
-  <a href="https://github.com/${u}" target="_blank"><text x="${width - 20}" y="28" fill="${C.textDim}" font-size="11" font-family="${MONO}" text-anchor="end">@${u}</text></a>
-  <line x1="20" y1="40" x2="${width - 20}" y2="40" stroke="${C.border}"/>
-  <text x="20" y="64" fill="#d29922" font-size="12" font-family="${SANS}">\u23F3 ${escapeXml(t.calibrating)}</text>
-  <text x="20" y="82" fill="${C.textDim}" font-size="11" font-family="${MONO}">${result.sessionCount} ${escapeXml(t.sessions)} \u00B7 ${escapeXml(t.needMore(needed))}</text>
-  <line x1="20" y1="96" x2="${width - 20}" y2="96" stroke="${C.border}"/>
-  <text x="20" y="114" fill="${C.textDim}" font-size="10" font-family="${SANS}" font-weight="500">${escapeXml(t.setup)}</text>
-  <text x="20" y="132" fill="${cl.hasClaudeMd ? C.green : C.textMuted}" font-size="10" font-family="${SANS}">${cl.hasClaudeMd ? "\u2713" : "\u2717"} ${escapeXml(t.claudeMd)}</text>
-  <text x="110" y="132" fill="${cl.hasHooks ? C.green : C.textMuted}" font-size="10" font-family="${SANS}">${cl.hasHooks ? "\u2713" : "\u2717"} ${escapeXml(t.hooks)}</text>
-  <text x="180" y="132" fill="${cl.hasPlugins ? C.green : C.textMuted}" font-size="10" font-family="${SANS}">${cl.hasPlugins ? "\u2713" : "\u2717"} ${escapeXml(t.plugins)}</text>
-  <text x="20" y="148" fill="${cl.hasMcpServers ? C.green : C.textMuted}" font-size="10" font-family="${SANS}">${cl.hasMcpServers ? "\u2713" : "\u2717"} ${escapeXml(t.mcp)}</text>
-  <text x="110" y="148" fill="${cl.hasMemory ? C.green : C.textMuted}" font-size="10" font-family="${SANS}">${cl.hasMemory ? "\u2713" : "\u2717"} ${escapeXml(t.memory)}</text>
-  <text x="180" y="148" fill="${cl.hasRules ? C.green : C.textMuted}" font-size="10" font-family="${SANS}">${cl.hasRules ? "\u2713" : "\u2717"} ${escapeXml(t.rules)}</text>
-  <text x="20" y="${height - 12}" fill="${C.textMuted}" font-size="9" font-family="${MONO}">${result.timestamp.slice(0, 10)}</text>
-  <a href="https://github.com/Z-M-Huang/cc-proficiency" target="_blank"><text x="${width - 20}" y="${height - 12}" fill="${C.textDim}" font-size="9" font-family="${MONO}" text-anchor="end">cc-proficiency</text></a>
+  <rect width="${width}" height="${height}" rx="12" fill="${C.bg}"/>
+  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="11.5" fill="${C.card}" stroke="${C.border}"/>
+  <text x="25" y="34" fill="${C.text}" font-size="18" font-family="${SANS}" font-weight="600">${escapeXml(t.title)}</text>
+  <a href="https://github.com/${u}" target="_blank"><text x="${width - 25}" y="34" fill="${C.textDim}" font-size="13" font-family="${MONO}" text-anchor="end">@${u}</text></a>
+  <line x1="25" y1="48" x2="${width - 25}" y2="48" stroke="${C.border}"/>
+  <text x="25" y="76" fill="#d29922" font-size="14" font-family="${SANS}">\u23F3 ${escapeXml(t.calibrating)}</text>
+  <text x="25" y="98" fill="${C.textDim}" font-size="13" font-family="${MONO}">${result.sessionCount} ${escapeXml(t.sessions)} \u00B7 ${escapeXml(t.needMore(needed))}</text>
+  <line x1="25" y1="114" x2="${width - 25}" y2="114" stroke="${C.border}"/>
+  <text x="25" y="136" fill="${C.textDim}" font-size="12" font-family="${SANS}" font-weight="500">${escapeXml(t.setup)}</text>
+  <text x="25" y="158" fill="${cl.hasClaudeMd ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasClaudeMd ? "\u2713" : "\u2717"} ${escapeXml(t.claudeMd)}</text>
+  <text x="145" y="158" fill="${cl.hasHooks ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasHooks ? "\u2713" : "\u2717"} ${escapeXml(t.hooks)}</text>
+  <text x="240" y="158" fill="${cl.hasPlugins ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasPlugins ? "\u2713" : "\u2717"} ${escapeXml(t.plugins)}</text>
+  <text x="25" y="178" fill="${cl.hasMcpServers ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasMcpServers ? "\u2713" : "\u2717"} ${escapeXml(t.mcp)}</text>
+  <text x="145" y="178" fill="${cl.hasMemory ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasMemory ? "\u2713" : "\u2717"} ${escapeXml(t.memory)}</text>
+  <text x="240" y="178" fill="${cl.hasRules ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasRules ? "\u2713" : "\u2717"} ${escapeXml(t.rules)}</text>
+  <text x="25" y="${height - 14}" fill="${C.textMuted}" font-size="10" font-family="${MONO}">${result.timestamp.slice(0, 10)}</text>
+  <a href="https://github.com/Z-M-Huang/cc-proficiency" target="_blank"><text x="${width - 25}" y="${height - 14}" fill="${C.textDim}" font-size="10" font-family="${MONO}" text-anchor="end">cc-proficiency</text></a>
 </svg>`;
 }
 
 // ── Full Badge (also used for early) ──
 export function renderFullBadge(result: ProficiencyResult, locale: Locale = "en"): string {
   const t = getLocale(locale);
-  const width = 380;
+  const width = 495;
   const rows = result.domains.length;
-  const separatorY = 50 + rows * 22 + 4;
-  const miniBarY = separatorY + 12;
-  const footerY = miniBarY + MINI_BAR_SECTION_HEIGHT + 4;
-  const height = footerY + 22;
+  const separatorY = 62 + rows * 28 + 6;
+  const miniBarY = separatorY + 14;
+  const footerY = miniBarY + MINI_BAR_SECTION_HEIGHT + 6;
+  const height = footerY + 26;
   const u = escapeXml(result.username);
 
-  const domainSvg = result.domains.map((d, i) => renderDomainRow(d, 50 + i * 22, t)).join("\n");
+  const domainSvg = result.domains.map((d, i) => renderDomainRow(d, 62 + i * 28, t)).join("\n");
 
-  const phaseLabel = result.phase === "early" ? `<text x="${width - 20}" y="${footerY + 14}" fill="#d29922" font-size="9" font-family="${MONO}" text-anchor="end">${escapeXml(t.earlyResults)}</text>` : "";
+  const phaseLabel = result.phase === "early" ? `<text x="${width - 25}" y="${footerY + 16}" fill="#d29922" font-size="10" font-family="${MONO}" text-anchor="end">${escapeXml(t.earlyResults)}</text>` : "";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="cc-title cc-desc">
   <title id="cc-title">${escapeXml(t.title)} \u2014 @${u}</title>
   <desc id="cc-desc">${result.sessionCount} ${escapeXml(t.sessions)}, ${result.projectCount} ${escapeXml(t.projects)}</desc>
   ${defs()}
-  <rect width="${width}" height="${height}" rx="10" fill="${C.bg}"/>
-  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="9.5" fill="${C.card}" stroke="${C.border}"/>
-  <text x="20" y="28" fill="${C.text}" font-size="15" font-family="${SANS}" font-weight="600">${escapeXml(t.title)}</text>
-  <a href="https://github.com/${u}" target="_blank"><text x="${width - 20}" y="28" fill="${C.textDim}" font-size="11" font-family="${MONO}" text-anchor="end">@${u}</text></a>
-  <line x1="20" y1="40" x2="${width - 20}" y2="40" stroke="${C.border}"/>
+  <rect width="${width}" height="${height}" rx="12" fill="${C.bg}"/>
+  <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="11.5" fill="${C.card}" stroke="${C.border}"/>
+  <text x="25" y="34" fill="${C.text}" font-size="18" font-family="${SANS}" font-weight="600">${escapeXml(t.title)}</text>
+  <a href="https://github.com/${u}" target="_blank"><text x="${width - 25}" y="34" fill="${C.textDim}" font-size="13" font-family="${MONO}" text-anchor="end">@${u}</text></a>
+  <line x1="25" y1="48" x2="${width - 25}" y2="48" stroke="${C.border}"/>
 
   ${domainSvg}
 
-  <line x1="20" y1="${separatorY}" x2="${width - 20}" y2="${separatorY}" stroke="${C.border}"/>
+  <line x1="25" y1="${separatorY}" x2="${width - 25}" y2="${separatorY}" stroke="${C.border}"/>
 
   ${renderMiniBarGrid(result.features.featureScores, miniBarY, t)}
 
-  <line x1="20" y1="${footerY}" x2="${width - 20}" y2="${footerY}" stroke="${C.border}"/>
-  <text x="20" y="${footerY + 14}" fill="${C.textMuted}" font-size="10" font-family="${MONO}">${result.sessionCount} ${escapeXml(t.sessions)} \u00B7 ${result.projectCount} ${escapeXml(t.projects)} \u00B7 ${result.timestamp.slice(0, 10)}</text>
-  <a href="https://github.com/Z-M-Huang/cc-proficiency" target="_blank"><text x="${width - 20}" y="${footerY + 14}" fill="${C.textDim}" font-size="9" font-family="${MONO}" text-anchor="end">cc-proficiency</text></a>
+  <line x1="25" y1="${footerY}" x2="${width - 25}" y2="${footerY}" stroke="${C.border}"/>
+  <text x="25" y="${footerY + 16}" fill="${C.textMuted}" font-size="11" font-family="${MONO}">${result.sessionCount} ${escapeXml(t.sessions)} \u00B7 ${result.projectCount} ${escapeXml(t.projects)} \u00B7 ${result.timestamp.slice(0, 10)}</text>
+  <a href="https://github.com/Z-M-Huang/cc-proficiency" target="_blank"><text x="${width - 25}" y="${footerY + 16}" fill="${C.textDim}" font-size="10" font-family="${MONO}" text-anchor="end">cc-proficiency</text></a>
   ${phaseLabel}
 </svg>`;
 }
