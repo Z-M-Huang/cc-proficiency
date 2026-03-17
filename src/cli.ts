@@ -10,8 +10,10 @@ import { renderBadge, getInsights } from "./renderer/svg.js";
 import { detectLocale, type Locale } from "./i18n/locales.js";
 import { loadStore, saveStore, addSnapshot, isSessionProcessed, loadConfig, saveConfig, saveBadge, getBadgePath, logError, getStoreDir } from "./store/local-store.js";
 import { readQueue, writeQueue, acquireLock, releaseLock, ensureStoreDir } from "./store/queue.js";
-import { isGhAuthenticated, getGhUsername, createGist, updateGist, getGistRawUrl } from "./gist/uploader.js";
-import type { ParsedSession, SessionSnapshot } from "./types.js";
+import { isGhAuthenticated, getGhUsername, createGist, updateGist, getGistRawUrl, readGistFile, findExistingGist, pushGistFiles } from "./gist/uploader.js";
+import { emptyRemoteStore, parseRemoteStore, mergeIntoRemote, getTotalStats, getUTCDate, getWeekMonday, mergeWeeklyTrends } from "./store/remote-store.js";
+import { checkAchievements, ACHIEVEMENTS, getAchievementDef } from "./store/achievements.js";
+import type { ParsedSession, SessionSnapshot, RemoteStore, WeeklyTrend } from "./types.js";
 
 const CLAUDE_DIR = join(homedir(), ".claude");
 
@@ -39,6 +41,8 @@ async function main(): Promise<void> {
       return cmdPush();
     case "explain":
       return cmdExplain();
+    case "achievements":
+      return cmdAchievements();
     case "status":
       return cmdStatus();
     case "config":
@@ -486,28 +490,141 @@ function cmdPush(): void {
     return;
   }
 
-  if (!isGhAuthenticated()) {
-    console.log("⚠ GitHub CLI not authenticated.");
-    console.log("Badge saved locally to: " + getBadgePath());
-    console.log("To enable: gh auth login && cc-proficiency init");
-    return;
-  }
-
   const svg = renderBadge(store.lastResult, getConfigLocale());
+  saveBadge(svg);
 
-  if (!config.gistId) {
-    console.log("No Gist configured. Run 'cc-proficiency init' first.");
+  if (!isGhAuthenticated() || !config.gistId) {
+    if (!isGhAuthenticated()) {
+      console.log("⚠ GitHub CLI not authenticated.");
+      console.log("To enable: gh auth login && cc-proficiency init");
+    }
+    if (!config.gistId) {
+      console.log("No Gist configured. Run 'cc-proficiency init' first.");
+    }
+    console.log("Badge saved locally to: " + getBadgePath());
     return;
   }
 
-  const result = updateGist(config.gistId, svg);
-  if (result.success) {
-    const rawUrl = getGistRawUrl(config.username ?? "", config.gistId);
-    console.log("✓ Badge pushed to Gist");
-    console.log(`  ${rawUrl}`);
-  } else {
-    console.log(`✗ Push failed: ${result.error}`);
+  // Pull remote, merge, push
+  const remoteJson = readGistFile(config.gistId, "cc-proficiency.json");
+  let remote = remoteJson ? parseRemoteStore(remoteJson) : null;
+  if (!remote) remote = emptyRemoteStore(config.username ?? "unknown");
+
+  // Build local session list for merge
+  const avgHours = store.lastResult.features.totalHours / Math.max(store.processedSessionIds.length, 1);
+  const localSessions = store.processedSessionIds.map((id) => {
+    const snap = store.snapshots.find((s) => s.sessionId === id);
+    return {
+      id,
+      date: snap ? getUTCDate(snap.timestamp) : new Date().toISOString().slice(0, 10),
+      hours: avgHours,
+    };
+  });
+
+  const merged = mergeIntoRemote(remote, localSessions, store.lastResult);
+
+  // Get totals from merged store
+  const totals = getTotalStats(merged);
+  const ctx = {
+    totalSessions: totals.sessions,
+    totalHours: totals.hours,
+    totalProjects: totals.projects,
+    domains: merged.domains,
+    streak: merged.streak,
+    features: store.lastResult.features,
+    activeDates: merged.streak.activeDates,
+  };
+  const newAchievements = checkAchievements(ctx, merged.achievements.map((a) => a.id));
+  for (const id of newAchievements) {
+    merged.achievements.push({ id, unlockedAt: new Date().toISOString() });
+    const def = getAchievementDef(id);
+    if (def) console.log(`  🏆 Achievement unlocked: ${def.icon} ${def.name}`);
   }
+
+  // Build weekly trend for current week
+  const thisWeek = getWeekMonday(new Date().toISOString());
+  const localTrend: WeeklyTrend = {
+    week: thisWeek,
+    domains: Object.fromEntries(store.lastResult.domains.map((d) => [d.id, d.score])),
+    hours: store.lastResult.features.totalHours,
+    sessions: store.lastResult.sessionCount,
+  };
+  merged.weeklyTrends = mergeWeeklyTrends(merged.weeklyTrends, [localTrend]);
+
+  // Update result with gamification data and re-render badge
+  store.lastResult.streak = merged.streak.current;
+  store.lastResult.achievementCount = merged.achievements.length;
+  const finalSvg = renderBadge(store.lastResult, getConfigLocale());
+  saveBadge(finalSvg);
+
+  // Push SVG + JSON atomically
+  const pushResult = pushGistFiles(config.gistId, {
+    "cc-proficiency.svg": finalSvg,
+    "cc-proficiency.json": JSON.stringify(merged, null, 2),
+  });
+
+  if (pushResult.success) {
+    const rawUrl = getGistRawUrl(config.username ?? "", config.gistId);
+    console.log("✓ Badge + data pushed to Gist");
+    console.log(`  ${rawUrl}`);
+    console.log(`  ${totals.sessions} sessions · ${totals.hours.toFixed(1)}h · ${merged.achievements.length} achievements · 🔥 ${merged.streak.current}d streak`);
+  } else {
+    console.log(`✗ Push failed: ${pushResult.error}`);
+  }
+}
+
+// ── Achievements ──
+
+function cmdAchievements(): void {
+  const store = loadStore();
+  const config = loadConfig();
+
+  if (!store.lastResult) {
+    console.log("No analysis data. Run 'cc-proficiency analyze' first.");
+    return;
+  }
+
+  // Try to load remote achievements
+  let unlockedIds: string[] = [];
+  if (config.gistId && isGhAuthenticated()) {
+    const remoteJson = readGistFile(config.gistId, "cc-proficiency.json");
+    const remote = remoteJson ? parseRemoteStore(remoteJson) : null;
+    if (remote) {
+      unlockedIds = remote.achievements.map((a) => a.id);
+    }
+  }
+
+  // Build context from local data
+  const result = store.lastResult;
+  const ctx = {
+    totalSessions: result.sessionCount,
+    totalHours: result.features.totalHours,
+    totalProjects: result.projectCount,
+    domains: result.domains,
+    streak: { current: 0, longest: 0 },
+    features: result.features,
+    activeDates: [],
+  };
+
+  // Also check locally
+  const newLocal = checkAchievements(ctx, unlockedIds);
+  const allUnlocked = new Set([...unlockedIds, ...newLocal]);
+
+  console.log(`\n  Achievements (${allUnlocked.size}/${ACHIEVEMENTS.length})\n`);
+
+  for (const achievement of ACHIEVEMENTS) {
+    const unlocked = allUnlocked.has(achievement.id);
+    const { current, target } = achievement.progress(ctx);
+    const pct = Math.min(100, Math.round((current / target) * 100));
+    const bar = progressBar(pct, 12);
+
+    if (unlocked) {
+      console.log(`  ${achievement.icon} ${achievement.name.padEnd(18)} ${bar} Done!`);
+    } else {
+      console.log(`  \u2591  ${achievement.name.padEnd(18)} ${bar} ${current}/${target}`);
+    }
+  }
+  console.log("");
 }
 
 // ── Status ──

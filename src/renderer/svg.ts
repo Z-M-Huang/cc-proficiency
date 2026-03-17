@@ -155,7 +155,7 @@ export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale
   <text x="145" y="178" fill="${cl.hasMemory ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasMemory ? "\u2713" : "\u2717"} ${escapeXml(t.memory)}</text>
   <text x="240" y="178" fill="${cl.hasRules ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasRules ? "\u2713" : "\u2717"} ${escapeXml(t.rules)}</text>
   <text x="25" y="${height - 14}" fill="${C.textMuted}" font-size="10" font-family="${MONO}">${result.timestamp.slice(0, 10)}</text>
-  <a href="https://github.com/Z-M-Huang/cc-proficiency" target="_blank"><text x="${width - 25}" y="${height - 14}" fill="${C.textDim}" font-size="10" font-family="${MONO}" text-anchor="end">cc-proficiency</text></a>
+  <text x="${width - 25}" y="${height - 14}" fill="${C.textMuted}" font-size="9" font-family="${MONO}" text-anchor="end">github.com/Z-M-Huang/cc-proficiency</text>
 </svg>`;
 }
 
@@ -167,7 +167,7 @@ export function renderFullBadge(result: ProficiencyResult, locale: Locale = "en"
   const separatorY = 62 + rows * 28 + 6;
   const miniBarY = separatorY + 14;
   const footerY = miniBarY + MINI_BAR_SECTION_HEIGHT + 6;
-  const height = footerY + 26;
+  const height = footerY + 40;
   const u = escapeXml(result.username);
 
   const domainSvg = result.domains.map((d, i) => renderDomainRow(d, 62 + i * 28, t)).join("\n");
@@ -191,8 +191,9 @@ export function renderFullBadge(result: ProficiencyResult, locale: Locale = "en"
   ${renderMiniBarGrid(result.features.featureScores, miniBarY, t)}
 
   <line x1="25" y1="${footerY}" x2="${width - 25}" y2="${footerY}" stroke="${C.border}"/>
-  <text x="25" y="${footerY + 16}" fill="${C.textMuted}" font-size="11" font-family="${MONO}">${formatHours(result.features.totalHours)} \u00B7 ${result.sessionCount} ${escapeXml(t.sessions)} \u00B7 ${result.projectCount} ${escapeXml(t.projects)} \u00B7 ${result.timestamp.slice(0, 10)}</text>
-  <a href="https://github.com/Z-M-Huang/cc-proficiency" target="_blank"><text x="${width - 25}" y="${footerY + 16}" fill="${C.textDim}" font-size="10" font-family="${MONO}" text-anchor="end">cc-proficiency</text></a>
+  <text x="25" y="${footerY + 16}" fill="${C.textMuted}" font-size="11" font-family="${MONO}">${formatHours(result.features.totalHours)} \u00B7 ${result.sessionCount} ${escapeXml(t.sessions)} \u00B7 ${result.projectCount} ${escapeXml(t.projects)}${result.streak ? ` \u00B7 \uD83D\uDD25 ${result.streak}d` : ""}${result.achievementCount ? ` \u00B7 \uD83C\uDFC6 ${result.achievementCount}` : ""}</text>
+  <text x="25" y="${footerY + 32}" fill="${C.textMuted}" font-size="9" font-family="${MONO}">${result.timestamp.slice(0, 10)}</text>
+  <text x="${width - 25}" y="${footerY + 32}" fill="${C.textMuted}" font-size="9" font-family="${MONO}" text-anchor="end">github.com/Z-M-Huang/cc-proficiency</text>
   ${phaseLabel}
 </svg>`;
 }

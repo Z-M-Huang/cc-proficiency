@@ -82,6 +82,71 @@ export function updateGist(gistId: string, svgContent: string, filename: string 
 }
 
 /**
+ * Read a file from an existing Gist.
+ */
+export function readGistFile(gistId: string, filename: string): string | null {
+  try {
+    const result = execFileSync("gh", [
+      "api", `gists/${gistId}`,
+      "--jq", `.files["${filename}"].content`,
+    ], {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+      timeout: 15_000,
+    });
+    return result.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Find an existing cc-proficiency Gist for the current user.
+ */
+export function findExistingGist(): string | null {
+  try {
+    const result = execFileSync("gh", [
+      "api", "gists", "--paginate",
+      "--jq", '.[] | select(.files["cc-proficiency.json"]) | .id',
+    ], {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+      timeout: 30_000,
+    });
+    const ids = result.trim().split("\n").filter(Boolean);
+    return ids[0] ?? null; // most recent
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Push multiple files to a Gist atomically via gh api PATCH.
+ */
+export function pushGistFiles(gistId: string, files: Record<string, string>): GistResult {
+  try {
+    const payload: Record<string, unknown> = { files: {} };
+    for (const [name, content] of Object.entries(files)) {
+      (payload.files as Record<string, unknown>)[name] = { content };
+    }
+    const tmpFile = join(tmpdir(), "cc-proficiency-patch.json");
+    writeFileSync(tmpFile, JSON.stringify(payload), "utf-8");
+    try {
+      execFileSync("gh", ["api", "-X", "PATCH", `gists/${gistId}`, "--input", tmpFile], {
+        encoding: "utf-8",
+        stdio: ["pipe", "pipe", "pipe"],
+        timeout: 30_000,
+      });
+      return { success: true };
+    } finally {
+      try { unlinkSync(tmpFile); } catch { /* ignore */ }
+    }
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+}
+
+/**
  * Get the raw URL for a gist file.
  */
 export function getGistRawUrl(username: string, gistId: string, filename: string = "cc-proficiency.svg"): string {
