@@ -28,7 +28,7 @@ async function main(): Promise<void> {
 
   switch (command) {
     case "init":
-      return cmdInit();
+      return await cmdInit();
     case "analyze":
       return cmdAnalyze(args);
     case "process":
@@ -86,7 +86,7 @@ Examples:
 
 // ── Init ──
 
-function cmdInit(): void {
+async function cmdInit(): Promise<void> {
   console.log("Initializing cc-proficiency...\n");
   ensureStoreDir();
 
@@ -130,7 +130,24 @@ function cmdInit(): void {
   saveConfig(config);
   console.log("\n  ✓ Configuration saved to " + getStoreDir());
   console.log("  ✓ Hook injected into ~/.claude/settings.json");
-  console.log("\n  Run 'cc-proficiency analyze' to compute your first scores.");
+
+  // Auto-analyze and push badge
+  console.log("\n  Running initial analysis...");
+  await cmdAnalyze(["--full"]);
+
+  if (config.gistId && isGhAuthenticated()) {
+    console.log("  Pushing badge to Gist...");
+    const store = loadStore();
+    if (store.lastResult) {
+      const svg = renderBadge(store.lastResult, getConfigLocale());
+      saveBadge(svg);
+      const gistResult = updateGist(config.gistId, svg);
+      if (gistResult.success) {
+        const rawUrl = getGistRawUrl(config.username ?? "", config.gistId);
+        console.log(`  ✓ Badge is live at: ${rawUrl}`);
+      }
+    }
+  }
 }
 
 function injectHook(): void {
