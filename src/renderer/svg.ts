@@ -66,6 +66,11 @@ function renderDomainRow(d: DomainScore, y: number, t: LocaleStrings): string {
     </g>`;
 }
 
+function formatHours(h: number): string {
+  if (h >= 1000) return (h / 1000).toFixed(1) + "kh";
+  return h + "h";
+}
+
 // ── 8 Feature Mini-Bars (heatmap row) ──
 
 const MINI_BAR_KEYS: Array<{ key: string; localeKey: keyof LocaleStrings; color: string }> = [
@@ -186,7 +191,7 @@ export function renderFullBadge(result: ProficiencyResult, locale: Locale = "en"
   ${renderMiniBarGrid(result.features.featureScores, miniBarY, t)}
 
   <line x1="25" y1="${footerY}" x2="${width - 25}" y2="${footerY}" stroke="${C.border}"/>
-  <text x="25" y="${footerY + 16}" fill="${C.textMuted}" font-size="11" font-family="${MONO}">${result.sessionCount} ${escapeXml(t.sessions)} \u00B7 ${result.projectCount} ${escapeXml(t.projects)} \u00B7 ${result.timestamp.slice(0, 10)}</text>
+  <text x="25" y="${footerY + 16}" fill="${C.textMuted}" font-size="11" font-family="${MONO}">${formatHours(result.features.totalHours)} \u00B7 ${result.sessionCount} ${escapeXml(t.sessions)} \u00B7 ${result.projectCount} ${escapeXml(t.projects)} \u00B7 ${result.timestamp.slice(0, 10)}</text>
   <a href="https://github.com/Z-M-Huang/cc-proficiency" target="_blank"><text x="${width - 25}" y="${footerY + 16}" fill="${C.textDim}" font-size="10" font-family="${MONO}" text-anchor="end">cc-proficiency</text></a>
   ${phaseLabel}
 </svg>`;

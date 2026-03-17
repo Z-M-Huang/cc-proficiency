@@ -314,7 +314,8 @@ function printResult(result: ReturnType<typeof computeProficiency>): void {
   console.log(`  Tools   ${toolSummary} (+${f.uniqueToolCount - Math.min(4, f.topTools.length)} more)`);
 
   console.log("  " + "─".repeat(40));
-  console.log(`  ${result.sessionCount} sessions · ${result.projectCount} projects`);
+  const hrs = result.features.totalHours >= 1000 ? (result.features.totalHours / 1000).toFixed(1) + "kh" : result.features.totalHours + "h";
+  console.log(`  ${hrs} · ${result.sessionCount} sessions · ${result.projectCount} projects`);
 
   if (result.phase === "early") {
     console.log(`  (early results — stabilizes at 10 sessions)`);

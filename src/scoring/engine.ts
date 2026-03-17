@@ -108,6 +108,17 @@ export function extractFeatureInventory(
 
   const prompts = allEvents.filter((e) => e.kind === "user_prompt");
 
+  // Total hours from session durations
+  let totalMinutes = 0;
+  for (const session of sessions) {
+    const start = new Date(session.startTime).getTime();
+    const end = new Date(session.endTime).getTime();
+    if (!isNaN(start) && !isNaN(end)) {
+      const mins = (end - start) / 60000;
+      if (mins > 0 && mins < 1440) totalMinutes += mins; // cap at 24h per session
+    }
+  }
+
   return {
     hooks: [...hookCounts.entries()].sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count })),
     skills: [...skillCounts.entries()].sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count })),
@@ -118,6 +129,7 @@ export function extractFeatureInventory(
     usedPlanMode: prompts.some((p) => p.kind === "user_prompt" && (p as { permissionMode?: string }).permissionMode === "plan"),
     hasMemory: fires.some((f) => f.featureTags.includes("memory") && f.points > 0),
     hasRules: fires.some((f) => f.featureTags.includes("rules") && f.points > 0),
+    totalHours: Math.round(totalMinutes / 60 * 10) / 10,
     featureScores,
   };
 }

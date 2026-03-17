@@ -248,6 +248,7 @@ export interface FeatureInventory {
   usedPlanMode: boolean;
   hasMemory: boolean;
   hasRules: boolean;
+  totalHours: number;
   featureScores?: Record<string, number>; // mini-bar heatmap scores per feature tag
 }
 
