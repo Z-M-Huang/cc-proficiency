@@ -552,9 +552,15 @@ function cmdPush(): void {
   };
   merged.weeklyTrends = mergeWeeklyTrends(merged.weeklyTrends, [localTrend]);
 
+  // Update result with gamification data and re-render badge
+  store.lastResult.streak = merged.streak.current;
+  store.lastResult.achievementCount = merged.achievements.length;
+  const finalSvg = renderBadge(store.lastResult, getConfigLocale());
+  saveBadge(finalSvg);
+
   // Push SVG + JSON atomically
   const pushResult = pushGistFiles(config.gistId, {
-    "cc-proficiency.svg": svg,
+    "cc-proficiency.svg": finalSvg,
     "cc-proficiency.json": JSON.stringify(merged, null, 2),
   });
 
