@@ -518,7 +518,6 @@ function cmdPush(): void {
       id,
       date: snap ? getUTCDate(snap.timestamp) : new Date().toISOString().slice(0, 10),
       hours: avgHours,
-      project: snap?.project ?? "unknown",
     };
   });
 

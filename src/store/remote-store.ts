@@ -50,7 +50,7 @@ export function parseRemoteStore(json: string): RemoteStore | null {
  */
 export function mergeIntoRemote(
   remote: RemoteStore,
-  localSessions: Array<{ id: string; date: string; hours: number; project: string }>,
+  localSessions: Array<{ id: string; date: string; hours: number }>,
   result: ProficiencyResult
 ): RemoteStore {
   // Merge recent sessions (dedupe by ID)
@@ -67,14 +67,10 @@ export function mergeIntoRemote(
   const rolledOff = allRecent.filter((s) => s.date < cutoffStr);
 
   // Update archived stats with rolled-off sessions
-  const archivedProjects = new Set([
-    ...remote.archivedStats.projects,
-    ...rolledOff.map((s) => s.project),
-  ]);
   const archivedStats = {
     sessions: remote.archivedStats.sessions + rolledOff.length,
     hours: remote.archivedStats.hours + rolledOff.reduce((s, r) => s + r.hours, 0),
-    projects: [...archivedProjects],
+    projects: remote.archivedStats.projects,
   };
 
   // Active dates for streak (from recent sessions)
@@ -93,18 +89,12 @@ export function mergeIntoRemote(
     ? remote.memberSince
     : result.timestamp;
 
-  // All-time unique projects
-  const allProjects = new Set([
-    ...archivedStats.projects,
-    ...stillRecent.map((s) => s.project),
-  ]);
-
   return {
     version: "1.0.0",
     username: remote.username || result.username,
     memberSince,
     recentSessions: stillRecent,
-    archivedStats: { ...archivedStats, projects: [...allProjects] },
+    archivedStats,
     lastPushMachine: hostname(),
     lastPushTimestamp: new Date().toISOString(),
     domains,
@@ -120,13 +110,11 @@ export function mergeIntoRemote(
  */
 export function getTotalStats(remote: RemoteStore): { sessions: number; hours: number; projects: number } {
   const recentHours = remote.recentSessions.reduce((s, r) => s + r.hours, 0);
-  const recentProjects = new Set(remote.recentSessions.map((s) => s.project));
-  const allProjects = new Set([...remote.archivedStats.projects, ...recentProjects]);
 
   return {
     sessions: remote.archivedStats.sessions + remote.recentSessions.length,
     hours: remote.archivedStats.hours + recentHours,
-    projects: allProjects.size,
+    projects: remote.archivedStats.projects.length,
   };
 }
 
