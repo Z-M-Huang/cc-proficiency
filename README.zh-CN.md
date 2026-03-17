@@ -19,7 +19,7 @@
   <img src="https://img.shields.io/badge/TypeScript-5.7+-3178c6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/zero-runtime_deps-22c55e?style=flat-square" alt="零运行时依赖" />
   <img src="https://img.shields.io/badge/coverage-96%25-brightgreen?style=flat-square" alt="测试覆盖率" />
-  <a href="https://visitcount.itsvg.in"><img src="https://visitcount.itsvg.in/api?id=cc-proficiency&label=访客&color=6&icon=5&pretty=true" alt="访客" /></a>
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=Z-M-Huang.cc-proficiency&style=flat-square" alt="访客" />
 </p>
 
 <p align="center">
