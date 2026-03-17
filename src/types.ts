@@ -261,6 +261,8 @@ export interface ProficiencyResult {
   projectCount: number;
   phase: "calibrating" | "early" | "full";
   setupChecklist: SetupChecklist;
+  streak?: number;          // current streak days (from remote store)
+  achievementCount?: number; // unlocked achievements count
 }
 
 export interface SetupChecklist {
@@ -297,6 +299,61 @@ export interface LocalStore {
   snapshots: SessionSnapshot[];
   lastResult?: ProficiencyResult;
   lastUpdated?: string;
+}
+
+// ── Remote Store (Gist-as-Database) ──
+
+export interface RemoteStore {
+  version: "1.0.0";
+  username: string;
+  memberSince: string;
+
+  processedSessionIds: string[];
+  sessionHours: Record<string, number>;
+  sessionProjects: Record<string, string>;
+
+  lastPushMachine: string;
+  lastPushTimestamp: string;
+  domains: Array<{ id: DomainId; score: number; confidence: string }>;
+  featureScores: Record<string, number>;
+
+  streak: StreakData;
+  achievements: Array<{ id: string; unlockedAt: string }>;
+  weeklyTrends: WeeklyTrend[];
+}
+
+export interface StreakData {
+  current: number;
+  longest: number;
+  lastActiveDate: string;
+  activeDates: string[];
+}
+
+export interface WeeklyTrend {
+  week: string;
+  domains: Record<string, number>;
+  hours: number;
+  sessions: number;
+}
+
+// ── Achievement ──
+
+export interface AchievementDef {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  progress: (ctx: AchievementContext) => { current: number; target: number };
+}
+
+export interface AchievementContext {
+  totalSessions: number;
+  totalHours: number;
+  totalProjects: number;
+  domains: Array<{ id: string; score: number }>;
+  streak: { current: number; longest: number };
+  features: FeatureInventory;
+  activeDates: string[];
 }
 
 // ── Queue ──
