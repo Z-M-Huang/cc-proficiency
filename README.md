@@ -47,25 +47,11 @@ Uses a **rule-based engine** to analyze your Claude Code session transcripts **l
 
 Plus **8 feature mini-bars** (Hooks, Plugins, Skills, MCP, Agents, Plan, Memory, Rules) showing per-feature adoption as a heatmap.
 
-<details>
-<summary><strong>Example output</strong></summary>
-
-```
-  Claude Code Proficiency — @username
-  ────────────────────────────────────────
-  CC Mastery     ███████████████░░░░░   77  ●
-  Tool & MCP     ███████████████████░   96  ◐
-  Agentic        ██████████████░░░░░░   69  ◐
-  Prompt Craft   ████████████████░░░░   81  ◐
-  Context Mgmt   ████████████████████  100  ●
-  ────────────────────────────────────────
-  [Hooks 100][Plugins 50][Skills 67][MCP 100]
-  [Agents 71][Plan 100][Memory 100][Rules  0]
-  ────────────────────────────────────────
-  139 sessions · 4 projects
-```
-
-</details>
+<p align="center">
+  <a href="https://github.com/Z-M-Huang/cc-proficiency">
+    <img src="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency.svg" alt="CC Proficiency Badge Example" />
+  </a>
+</p>
 
 > **Disclaimer:** This is an unofficial usage estimate, not an actual Anthropic certification score. Not affiliated with or endorsed by Anthropic.
 

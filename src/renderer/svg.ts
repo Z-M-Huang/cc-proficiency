@@ -1,4 +1,4 @@
-import type { ProficiencyResult, DomainScore, ConfidenceLevel, SetupChecklist, FeatureInventory } from "../types.js";
+import type { ProficiencyResult, DomainScore, ConfidenceLevel } from "../types.js";
 import { getLocale, type Locale, type LocaleStrings } from "../i18n/locales.js";
 
 const C = {
@@ -64,11 +64,6 @@ function renderDomainRow(d: DomainScore, y: number, t: LocaleStrings): string {
       <text x="${100 + barWidth + 8}" y="11" fill="${C.text}" font-size="12" font-family="${MONO}" font-weight="700">${d.score}</text>
       <text x="${100 + barWidth + 34}" y="11" fill="${color}" font-size="10" font-family="${MONO}">${confidenceSymbol(d.confidence)}</text>
     </g>`;
-}
-
-function formatCount(n: number): string {
-  if (n >= 1000) return (n / 1000).toFixed(1) + "k";
-  return String(n);
 }
 
 // ── 8 Feature Mini-Bars (heatmap row) ──
@@ -142,7 +137,7 @@ export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale
   <rect width="${width}" height="${height}" rx="10" fill="${C.bg}"/>
   <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="9.5" fill="${C.card}" stroke="${C.border}"/>
   <text x="20" y="28" fill="${C.text}" font-size="15" font-family="${SANS}" font-weight="600">${escapeXml(t.title)}</text>
-  <text x="${width - 20}" y="28" fill="${C.textDim}" font-size="11" font-family="${MONO}" text-anchor="end">@${u}</text>
+  <a href="https://github.com/${u}" target="_blank"><text x="${width - 20}" y="28" fill="${C.textDim}" font-size="11" font-family="${MONO}" text-anchor="end">@${u}</text></a>
   <line x1="20" y1="40" x2="${width - 20}" y2="40" stroke="${C.border}"/>
   <text x="20" y="64" fill="#d29922" font-size="12" font-family="${SANS}">\u23F3 ${escapeXml(t.calibrating)}</text>
   <text x="20" y="82" fill="${C.textDim}" font-size="11" font-family="${MONO}">${result.sessionCount} ${escapeXml(t.sessions)} \u00B7 ${escapeXml(t.needMore(needed))}</text>
@@ -154,7 +149,8 @@ export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale
   <text x="20" y="148" fill="${cl.hasMcpServers ? C.green : C.textMuted}" font-size="10" font-family="${SANS}">${cl.hasMcpServers ? "\u2713" : "\u2717"} ${escapeXml(t.mcp)}</text>
   <text x="110" y="148" fill="${cl.hasMemory ? C.green : C.textMuted}" font-size="10" font-family="${SANS}">${cl.hasMemory ? "\u2713" : "\u2717"} ${escapeXml(t.memory)}</text>
   <text x="180" y="148" fill="${cl.hasRules ? C.green : C.textMuted}" font-size="10" font-family="${SANS}">${cl.hasRules ? "\u2713" : "\u2717"} ${escapeXml(t.rules)}</text>
-  <text x="${width - 20}" y="${height - 12}" fill="${C.textMuted}" font-size="9" font-family="${MONO}" text-anchor="end">${result.timestamp.slice(0, 10)}</text>
+  <text x="20" y="${height - 12}" fill="${C.textMuted}" font-size="9" font-family="${MONO}">${result.timestamp.slice(0, 10)}</text>
+  <a href="https://github.com/Z-M-Huang/cc-proficiency" target="_blank"><text x="${width - 20}" y="${height - 12}" fill="${C.textDim}" font-size="9" font-family="${MONO}" text-anchor="end">cc-proficiency</text></a>
 </svg>`;
 }
 
@@ -180,7 +176,7 @@ export function renderFullBadge(result: ProficiencyResult, locale: Locale = "en"
   <rect width="${width}" height="${height}" rx="10" fill="${C.bg}"/>
   <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="9.5" fill="${C.card}" stroke="${C.border}"/>
   <text x="20" y="28" fill="${C.text}" font-size="15" font-family="${SANS}" font-weight="600">${escapeXml(t.title)}</text>
-  <text x="${width - 20}" y="28" fill="${C.textDim}" font-size="11" font-family="${MONO}" text-anchor="end">@${u}</text>
+  <a href="https://github.com/${u}" target="_blank"><text x="${width - 20}" y="28" fill="${C.textDim}" font-size="11" font-family="${MONO}" text-anchor="end">@${u}</text></a>
   <line x1="20" y1="40" x2="${width - 20}" y2="40" stroke="${C.border}"/>
 
   ${domainSvg}
@@ -191,6 +187,7 @@ export function renderFullBadge(result: ProficiencyResult, locale: Locale = "en"
 
   <line x1="20" y1="${footerY}" x2="${width - 20}" y2="${footerY}" stroke="${C.border}"/>
   <text x="20" y="${footerY + 14}" fill="${C.textMuted}" font-size="10" font-family="${MONO}">${result.sessionCount} ${escapeXml(t.sessions)} \u00B7 ${result.projectCount} ${escapeXml(t.projects)} \u00B7 ${result.timestamp.slice(0, 10)}</text>
+  <a href="https://github.com/Z-M-Huang/cc-proficiency" target="_blank"><text x="${width - 20}" y="${footerY + 14}" fill="${C.textDim}" font-size="9" font-family="${MONO}" text-anchor="end">cc-proficiency</text></a>
   ${phaseLabel}
 </svg>`;
 }

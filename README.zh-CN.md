@@ -47,25 +47,11 @@
 
 另外还有 **8 个特性迷你条**（钩子、插件、技能、MCP、代理、计划、记忆、规则），以热力图形式展示各特性的使用程度。
 
-<details>
-<summary><strong>输出示例</strong></summary>
-
-```
-  Claude Code Proficiency — @username
-  ────────────────────────────────────────
-  CC Mastery     ███████████████░░░░░   77  ●
-  Tool & MCP     ███████████████████░   96  ◐
-  Agentic        ██████████████░░░░░░   69  ◐
-  Prompt Craft   ████████████████░░░░   81  ◐
-  Context Mgmt   ████████████████████  100  ●
-  ────────────────────────────────────────
-  [Hooks 100][Plugins 50][Skills 67][MCP 100]
-  [Agents 71][Plan 100][Memory 100][Rules  0]
-  ────────────────────────────────────────
-  139 sessions · 4 projects
-```
-
-</details>
+<p align="center">
+  <a href="https://github.com/Z-M-Huang/cc-proficiency">
+    <img src="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency.svg" alt="CC Proficiency 徽章示例" />
+  </a>
+</p>
 
 > **声明：** 这是一个非官方的使用评估工具，不代表 Anthropic 官方认证分数。与 Anthropic 无关联。
 
