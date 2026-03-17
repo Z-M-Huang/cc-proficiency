@@ -107,47 +107,46 @@ async function cmdInit(): Promise<void> {
 
   // Inject hook into settings.json
   injectHook();
+  console.log("  ✓ Hook injected into ~/.claude/settings.json");
 
-  // Create Gist if authenticated and no existing gist
+  // Run analysis first (so we have a real badge before creating Gist)
+  console.log("\n  Running initial analysis...");
+  saveConfig(config);
+  await cmdAnalyze(["--full"]);
+
+  // Generate the real badge SVG
+  const store = loadStore();
+  let badgeSvg = '<svg xmlns="http://www.w3.org/2000/svg"><text>No data</text></svg>';
+  if (store.lastResult) {
+    badgeSvg = renderBadge(store.lastResult, getConfigLocale());
+    saveBadge(badgeSvg);
+  }
+
+  // Create Gist with the REAL badge (not a placeholder)
   if (config.username && isGhAuthenticated() && !config.gistId) {
-    console.log("  Creating private Gist...");
-    const result = createGist(
-      '<svg xmlns="http://www.w3.org/2000/svg"><text>Initializing...</text></svg>',
-      config.public
-    );
+    console.log("  Creating private Gist with badge...");
+    const result = createGist(badgeSvg, config.public);
     if (result.success && result.url) {
       config.gistId = result.url;
-      console.log(`  Gist created: ${result.url}`);
-      if (config.username) {
-        const rawUrl = getGistRawUrl(config.username, result.url);
-        console.log(`\n  Add to your README:\n  ![CC Proficiency](${rawUrl})\n`);
-      }
+      const rawUrl = getGistRawUrl(config.username, result.url);
+      console.log(`  ✓ Gist created`);
+      console.log(`\n  Add to your README:`);
+      console.log(`  ![CC Proficiency](${rawUrl})`);
     } else {
       console.log(`  ⚠ Could not create Gist: ${result.error}`);
+    }
+  } else if (config.gistId && isGhAuthenticated()) {
+    // Existing Gist — push the updated badge
+    const gistResult = updateGist(config.gistId, badgeSvg);
+    if (gistResult.success) {
+      const rawUrl = getGistRawUrl(config.username ?? "", config.gistId);
+      console.log(`  ✓ Badge pushed to Gist: ${rawUrl}`);
     }
   }
 
   saveConfig(config);
   console.log("\n  ✓ Configuration saved to " + getStoreDir());
-  console.log("  ✓ Hook injected into ~/.claude/settings.json");
-
-  // Auto-analyze and push badge
-  console.log("\n  Running initial analysis...");
-  await cmdAnalyze(["--full"]);
-
-  if (config.gistId && isGhAuthenticated()) {
-    console.log("  Pushing badge to Gist...");
-    const store = loadStore();
-    if (store.lastResult) {
-      const svg = renderBadge(store.lastResult, getConfigLocale());
-      saveBadge(svg);
-      const gistResult = updateGist(config.gistId, svg);
-      if (gistResult.success) {
-        const rawUrl = getGistRawUrl(config.username ?? "", config.gistId);
-        console.log(`  ✓ Badge is live at: ${rawUrl}`);
-      }
-    }
-  }
+  console.log("  Badge saved locally to: " + getBadgePath());
 }
 
 function injectHook(): void {
