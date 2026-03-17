@@ -1,0 +1,43 @@
+{
+  "name": "cc-proficiency",
+  "version": "0.1.0",
+  "description": "Claude Code proficiency badge generator — analyze usage patterns across 5 domains aligned with Claude Certified Architect",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "cc-proficiency": "dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc && tsc -p hooks/tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist/",
+    "hooks/",
+    ".claude-plugin/",
+    "skills/",
+    "README.md"
+  ],
+  "keywords": [
+    "claude-code",
+    "proficiency",
+    "badge",
+    "analytics",
+    "certification",
+    "architect",
+    "svg"
+  ],
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
+  }
+}

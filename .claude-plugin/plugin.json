@@ -1,0 +1,11 @@
+{
+  "name": "cc-proficiency",
+  "version": "0.1.0",
+  "description": "Claude Code proficiency badge generator — analyze usage patterns across 5 domains aligned with Claude Certified Architect",
+  "author": {
+    "name": "Z-M-Huang"
+  },
+  "license": "MIT",
+  "keywords": ["proficiency", "badge", "analytics", "certification"],
+  "skills": "./skills/"
+}
