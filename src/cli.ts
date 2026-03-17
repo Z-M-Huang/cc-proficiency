@@ -11,7 +11,7 @@ import { detectLocale, type Locale } from "./i18n/locales.js";
 import { loadStore, saveStore, addSnapshot, isSessionProcessed, loadConfig, saveConfig, saveBadge, getBadgePath, logError, getStoreDir } from "./store/local-store.js";
 import { readQueue, writeQueue, acquireLock, releaseLock, ensureStoreDir } from "./store/queue.js";
 import { isGhAuthenticated, getGhUsername, createGist, updateGist, getGistRawUrl, readGistFile, findExistingGist, pushGistFiles } from "./gist/uploader.js";
-import { emptyRemoteStore, parseRemoteStore, mergeIntoRemote, getUTCDate, getWeekMonday, mergeWeeklyTrends } from "./store/remote-store.js";
+import { emptyRemoteStore, parseRemoteStore, mergeIntoRemote, getTotalStats, getUTCDate, getWeekMonday, mergeWeeklyTrends } from "./store/remote-store.js";
 import { checkAchievements, ACHIEVEMENTS, getAchievementDef } from "./store/achievements.js";
 import type { ParsedSession, SessionSnapshot, RemoteStore, WeeklyTrend } from "./types.js";
 
@@ -510,41 +510,26 @@ function cmdPush(): void {
   let remote = remoteJson ? parseRemoteStore(remoteJson) : null;
   if (!remote) remote = emptyRemoteStore(config.username ?? "unknown");
 
-  // Build local session data for merge
-  const localHours: Record<string, number> = {};
-  const localProjects: Record<string, string> = {};
-  const localDates: string[] = [];
-  for (const id of store.processedSessionIds) {
-    // Use stored snapshot data if available
+  // Build local session list for merge
+  const avgHours = store.lastResult.features.totalHours / Math.max(store.processedSessionIds.length, 1);
+  const localSessions = store.processedSessionIds.map((id) => {
     const snap = store.snapshots.find((s) => s.sessionId === id);
-    if (snap) {
-      localHours[id] = 0; // duration from snapshot not stored — will be filled from features
-      localProjects[id] = snap.project;
-      localDates.push(getUTCDate(snap.timestamp));
-    }
-  }
-  // Use totalHours from latest result as best estimate
-  if (store.lastResult) {
-    const avgHours = store.lastResult.features.totalHours / Math.max(store.processedSessionIds.length, 1);
-    for (const id of store.processedSessionIds) {
-      if (!(id in localHours) || localHours[id] === 0) localHours[id] = avgHours;
-    }
-  }
+    return {
+      id,
+      date: snap ? getUTCDate(snap.timestamp) : new Date().toISOString().slice(0, 10),
+      hours: avgHours,
+      project: snap?.project ?? "unknown",
+    };
+  });
 
-  const localProjectMap: Record<string, string> = {};
-  for (const [id, proj] of Object.entries(localProjects)) {
-    localProjectMap[id] = String(proj);
-  }
+  const merged = mergeIntoRemote(remote, localSessions, store.lastResult);
 
-  const merged = mergeIntoRemote(remote, store.processedSessionIds, localHours, localProjectMap, localDates, store.lastResult);
-
-  // Check achievements
-  const totalHours = Object.values(merged.sessionHours).reduce((s, h) => s + h, 0);
-  const totalProjects = new Set(Object.values(merged.sessionProjects)).size;
+  // Get totals from merged store
+  const totals = getTotalStats(merged);
   const ctx = {
-    totalSessions: merged.processedSessionIds.length,
-    totalHours,
-    totalProjects,
+    totalSessions: totals.sessions,
+    totalHours: totals.hours,
+    totalProjects: totals.projects,
     domains: merged.domains,
     streak: merged.streak,
     features: store.lastResult.features,
@@ -577,7 +562,7 @@ function cmdPush(): void {
     const rawUrl = getGistRawUrl(config.username ?? "", config.gistId);
     console.log("✓ Badge + data pushed to Gist");
     console.log(`  ${rawUrl}`);
-    console.log(`  ${merged.processedSessionIds.length} sessions · ${totalHours.toFixed(1)}h · ${merged.achievements.length} achievements · 🔥 ${merged.streak.current}d streak`);
+    console.log(`  ${totals.sessions} sessions · ${totals.hours.toFixed(1)}h · ${merged.achievements.length} achievements · 🔥 ${merged.streak.current}d streak`);
   } else {
     console.log(`✗ Push failed: ${pushResult.error}`);
   }

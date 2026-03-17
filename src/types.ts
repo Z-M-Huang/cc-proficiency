@@ -308,9 +308,20 @@ export interface RemoteStore {
   username: string;
   memberSince: string;
 
-  processedSessionIds: string[];
-  sessionHours: Record<string, number>;
-  sessionProjects: Record<string, string>;
+  // Recent sessions (last 90 days — full detail for dedupe/streak/trends)
+  recentSessions: Array<{
+    id: string;
+    date: string;      // UTC YYYY-MM-DD
+    hours: number;
+    project: string;
+  }>;
+
+  // Archived stats (older sessions collapsed into counters)
+  archivedStats: {
+    sessions: number;
+    hours: number;
+    projects: string[]; // unique project slugs ever seen
+  };
 
   lastPushMachine: string;
   lastPushTimestamp: string;

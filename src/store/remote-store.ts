@@ -1,6 +1,8 @@
 import { hostname } from "node:os";
 import type { RemoteStore, ProficiencyResult, StreakData, WeeklyTrend, DomainId } from "../types.js";
 
+const RETENTION_DAYS = 90;
+
 /**
  * Create an empty RemoteStore.
  */
@@ -9,9 +11,8 @@ export function emptyRemoteStore(username: string): RemoteStore {
     version: "1.0.0",
     username,
     memberSince: new Date().toISOString(),
-    processedSessionIds: [],
-    sessionHours: {},
-    sessionProjects: {},
+    recentSessions: [],
+    archivedStats: { sessions: 0, hours: 0, projects: [] },
     lastPushMachine: hostname(),
     lastPushTimestamp: new Date().toISOString(),
     domains: [],
@@ -29,6 +30,15 @@ export function parseRemoteStore(json: string): RemoteStore | null {
   try {
     const data = JSON.parse(json);
     if (data?.version !== "1.0.0") return null;
+    // Handle migration from old format (processedSessionIds)
+    if (data.processedSessionIds && !data.recentSessions) {
+      data.recentSessions = [];
+      data.archivedStats = {
+        sessions: data.processedSessionIds.length,
+        hours: Object.values(data.sessionHours ?? {}).reduce((s: number, h: unknown) => s + Number(h), 0),
+        projects: [...new Set(Object.values(data.sessionProjects ?? {}) as string[])],
+      };
+    }
     return data as RemoteStore;
   } catch {
     return null;
@@ -36,34 +46,39 @@ export function parseRemoteStore(json: string): RemoteStore | null {
 }
 
 /**
- * Merge local data into a remote store (all operations are idempotent).
+ * Merge local sessions into remote store with rolling window.
  */
 export function mergeIntoRemote(
   remote: RemoteStore,
-  localSessionIds: string[],
-  localSessionHours: Record<string, number>,
-  localSessionProjects: Record<string, string>,
-  localActiveDates: string[],
+  localSessions: Array<{ id: string; date: string; hours: number; project: string }>,
   result: ProficiencyResult
 ): RemoteStore {
-  // Session IDs: set union
-  const allIds = new Set([...remote.processedSessionIds, ...localSessionIds]);
+  // Merge recent sessions (dedupe by ID)
+  const existingIds = new Set(remote.recentSessions.map((s) => s.id));
+  const newSessions = localSessions.filter((s) => !existingIds.has(s.id));
+  const allRecent = [...remote.recentSessions, ...newSessions];
 
-  // Session hours: map merge
-  const allHours = { ...remote.sessionHours, ...localSessionHours };
-
-  // Session projects: map merge
-  const allProjects = { ...remote.sessionProjects, ...localSessionProjects };
-
-  // Active dates: set union, keep last 90 days
+  // Roll old sessions into archive (keep only last 90 days in recent)
   const cutoff = new Date();
-  cutoff.setUTCDate(cutoff.getUTCDate() - 90);
+  cutoff.setUTCDate(cutoff.getUTCDate() - RETENTION_DAYS);
   const cutoffStr = cutoff.toISOString().slice(0, 10);
-  const allDates = [...new Set([...remote.streak.activeDates, ...localActiveDates])]
-    .filter((d) => d >= cutoffStr)
-    .sort();
 
-  // Recalculate streak from merged dates
+  const stillRecent = allRecent.filter((s) => s.date >= cutoffStr);
+  const rolledOff = allRecent.filter((s) => s.date < cutoffStr);
+
+  // Update archived stats with rolled-off sessions
+  const archivedProjects = new Set([
+    ...remote.archivedStats.projects,
+    ...rolledOff.map((s) => s.project),
+  ]);
+  const archivedStats = {
+    sessions: remote.archivedStats.sessions + rolledOff.length,
+    hours: remote.archivedStats.hours + rolledOff.reduce((s, r) => s + r.hours, 0),
+    projects: [...archivedProjects],
+  };
+
+  // Active dates for streak (from recent sessions)
+  const allDates = [...new Set(stillRecent.map((s) => s.date))].sort();
   const streak = calculateStreak(allDates, remote.streak.longest);
 
   // Scores: latest push wins
@@ -73,28 +88,45 @@ export function mergeIntoRemote(
     confidence: d.confidence,
   }));
 
-  // Feature scores: latest push wins
-  const featureScores = result.features.featureScores ?? {};
-
   // Member since: keep earliest
   const memberSince = remote.memberSince && remote.memberSince < result.timestamp
     ? remote.memberSince
     : result.timestamp;
 
+  // All-time unique projects
+  const allProjects = new Set([
+    ...archivedStats.projects,
+    ...stillRecent.map((s) => s.project),
+  ]);
+
   return {
     version: "1.0.0",
     username: remote.username || result.username,
     memberSince,
-    processedSessionIds: [...allIds],
-    sessionHours: allHours,
-    sessionProjects: allProjects,
+    recentSessions: stillRecent,
+    archivedStats: { ...archivedStats, projects: [...allProjects] },
     lastPushMachine: hostname(),
     lastPushTimestamp: new Date().toISOString(),
     domains,
-    featureScores,
+    featureScores: result.features.featureScores ?? {},
     streak,
-    achievements: remote.achievements, // achievements merged separately
-    weeklyTrends: remote.weeklyTrends, // trends merged separately
+    achievements: remote.achievements, // merged separately
+    weeklyTrends: remote.weeklyTrends, // merged separately
+  };
+}
+
+/**
+ * Get total stats from remote store (recent + archived).
+ */
+export function getTotalStats(remote: RemoteStore): { sessions: number; hours: number; projects: number } {
+  const recentHours = remote.recentSessions.reduce((s, r) => s + r.hours, 0);
+  const recentProjects = new Set(remote.recentSessions.map((s) => s.project));
+  const allProjects = new Set([...remote.archivedStats.projects, ...recentProjects]);
+
+  return {
+    sessions: remote.archivedStats.sessions + remote.recentSessions.length,
+    hours: remote.archivedStats.hours + recentHours,
+    projects: allProjects.size,
   };
 }
 
@@ -109,12 +141,11 @@ export function calculateStreak(
     return { current: 0, longest: previousLongest, lastActiveDate: "", activeDates: sortedDates };
   }
 
-  // Count consecutive days backward from most recent
   let current = 1;
   for (let i = sortedDates.length - 1; i > 0; i--) {
     const d1 = new Date(sortedDates[i]!);
     const d2 = new Date(sortedDates[i - 1]!);
-    const diffDays = (d1.getTime() - d2.getTime()) / (24 * 60 * 60 * 1000);
+    const diffDays = Math.round((d1.getTime() - d2.getTime()) / (24 * 60 * 60 * 1000));
     if (diffDays === 1) {
       current++;
     } else {
@@ -122,14 +153,16 @@ export function calculateStreak(
     }
   }
 
-  const longest = Math.max(previousLongest, current);
-  const lastActiveDate = sortedDates[sortedDates.length - 1]!;
-
-  return { current, longest, lastActiveDate, activeDates: sortedDates };
+  return {
+    current,
+    longest: Math.max(previousLongest, current),
+    lastActiveDate: sortedDates[sortedDates.length - 1]!,
+    activeDates: sortedDates,
+  };
 }
 
 /**
- * Merge weekly trends (take max score per domain per week, not sum).
+ * Merge weekly trends (take max score per domain per week).
  */
 export function mergeWeeklyTrends(
   remote: WeeklyTrend[],
@@ -144,7 +177,6 @@ export function mergeWeeklyTrends(
     if (!existing) {
       byWeek.set(t.week, t);
     } else {
-      // Merge: max score per domain, sum hours/sessions
       const mergedDomains: Record<string, number> = { ...existing.domains };
       for (const [id, score] of Object.entries(t.domains)) {
         mergedDomains[id] = Math.max(mergedDomains[id] ?? 0, score);
@@ -158,7 +190,6 @@ export function mergeWeeklyTrends(
     }
   }
 
-  // Keep last 12 weeks
   return [...byWeek.values()]
     .sort((a, b) => a.week.localeCompare(b.week))
     .slice(-12);
@@ -170,7 +201,7 @@ export function mergeWeeklyTrends(
 export function getWeekMonday(timestamp: string): string {
   const d = new Date(timestamp);
   const day = d.getUTCDay();
-  const diff = day === 0 ? 6 : day - 1; // Monday = 0 offset
+  const diff = day === 0 ? 6 : day - 1;
   d.setUTCDate(d.getUTCDate() - diff);
   return d.toISOString().slice(0, 10);
 }
