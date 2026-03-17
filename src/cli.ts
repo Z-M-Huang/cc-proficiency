@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { existsSync, readFileSync, writeFileSync, readdirSync, unlinkSync, rmdirSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync, readdirSync, unlinkSync, rmdirSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { parseTranscript } from "./parsers/transcript-parser.js";
@@ -39,6 +39,8 @@ async function main(): Promise<void> {
       return cmdPush();
     case "explain":
       return cmdExplain();
+    case "status":
+      return cmdStatus();
     case "config":
       return cmdConfig(args.slice(1));
     case "uninstall":
@@ -72,6 +74,7 @@ Commands:
   badge [--output <f>]  Generate SVG badge
   push                  Upload badge to GitHub Gist
   explain               Show score drivers and improvement tips
+  status                Show hook activity, queue, and config
   config [key] [value]  View or set configuration
   uninstall             Remove hooks and clean up
   version               Show version info
@@ -176,7 +179,6 @@ function injectHook(): void {
 
   // Ensure ~/.claude/ exists before writing settings.json
   if (!existsSync(CLAUDE_DIR)) {
-    const { mkdirSync } = require("node:fs");
     mkdirSync(CLAUDE_DIR, { recursive: true });
   }
 
@@ -505,6 +507,66 @@ function cmdPush(): void {
   } else {
     console.log(`✗ Push failed: ${result.error}`);
   }
+}
+
+// ── Status ──
+
+function cmdStatus(): void {
+  const hookLogPath = join(getStoreDir(), "hook.log");
+  const queuePath = join(getStoreDir(), "queue.jsonl");
+  const store = loadStore();
+  const config = loadConfig();
+
+  console.log("\n  cc-proficiency status\n");
+
+  // Config
+  console.log(`  Username:    ${config.username ?? "(not set)"}`);
+  console.log(`  Gist ID:     ${config.gistId ?? "(not set)"}`);
+  console.log(`  Auto-upload: ${config.autoUpload}`);
+  console.log(`  Locale:      ${config.locale ?? "en"}`);
+
+  // Store
+  console.log(`\n  Sessions processed: ${store.processedSessionIds.length}`);
+  console.log(`  Last updated:       ${store.lastUpdated ?? "never"}`);
+
+  // Queue
+  const queue = readQueue();
+  console.log(`  Queue pending:      ${queue.length}`);
+
+  // Hook log
+  if (existsSync(hookLogPath)) {
+    const log = readFileSync(hookLogPath, "utf-8").trim().split("\n");
+    const recent = log.slice(-10);
+    console.log(`\n  Hook log (last ${recent.length} entries):`);
+    for (const line of recent) {
+      console.log(`    ${line}`);
+    }
+
+    // Last hook fire
+    const lastQueued = log.filter((l) => l.includes("QUEUED")).pop();
+    if (lastQueued) {
+      const match = lastQueued.match(/\[(.*?)\]/);
+      console.log(`\n  Last hook fired: ${match ? match[1] : "unknown"}`);
+    }
+  } else {
+    console.log("\n  Hook log: no entries yet (hook hasn't fired)");
+  }
+
+  // Lock status
+  const lockPath = join(getStoreDir(), "queue.lock");
+  if (existsSync(lockPath)) {
+    try {
+      const lockTime = parseInt(readFileSync(lockPath, "utf-8"), 10);
+      const age = Math.round((Date.now() - lockTime) / 1000);
+      console.log(`  Queue lock:  held (${age}s ago)${age > 60 ? " ← STALE" : ""}`);
+    } catch {
+      console.log("  Queue lock:  present (unknown age)");
+    }
+  } else {
+    console.log("  Queue lock:  none");
+  }
+
+  console.log("");
 }
 
 // ── Explain ──
