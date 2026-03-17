@@ -6,7 +6,7 @@ import type { QueueEntry } from "../types.js";
 const STORE_DIR = join(homedir(), ".cc-proficiency");
 const QUEUE_FILE = join(STORE_DIR, "queue.jsonl");
 const QUEUE_LOCK = join(STORE_DIR, "queue.lock");
-const LOCK_STALE_MS = 60_000; // 60 seconds
+const LOCK_STALE_MS = 120_000; // 120 seconds (accounts for network calls in mergeAndPush)
 
 export function ensureStoreDir(): void {
   if (!existsSync(STORE_DIR)) {
