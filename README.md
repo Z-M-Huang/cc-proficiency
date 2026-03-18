@@ -35,7 +35,7 @@
 
 ## What it does
 
-Uses a **rule-based engine** to analyze your Claude Code session transcripts **locally**, scoring usage patterns across 5 domains:
+Analyzes your Claude Code session transcripts **locally** with a rule-based engine, scoring usage patterns across 5 domains:
 
 | Domain | Weight | What it measures |
 |--------|--------|-----------------|
@@ -45,7 +45,7 @@ Uses a **rule-based engine** to analyze your Claude Code session transcripts **l
 | **Prompt Craft** | 20% | Structured prompts, code blocks, error traces, refinement |
 | **Context Mgmt** | 20% | Cross-session memory, CLAUDE.md updates, sustained projects |
 
-Plus **8 feature mini-bars** (Hooks, Plugins, Skills, MCP, Agents, Plan, Memory, Rules) showing per-feature adoption as a heatmap.
+Also shows **8 feature mini-bars** (Hooks, Plugins, Skills, MCP, Agents, Plan, Memory, Rules) as a heatmap row.
 
 <p align="center">
   <a href="https://github.com/Z-M-Huang/cc-proficiency">
@@ -205,11 +205,23 @@ The badge adapts based on how much data is available:
 | **Early Results** | 3–9 | 5 domain bars + 8 feature mini-bars (low-confidence indicators ○) |
 | **Full Badge** | 10+ | Full domain bars, feature heatmap, confidence dots (● ◐ ○) |
 
+## Improve your scores
+
+The **[Gamification Guide](https://github.com/Z-M-Huang/cc-proficiency/wiki/Gamification-Guide)** covers:
+
+- First day through expert-level progression path
+- Tips for each of the 5 domains
+- How to unlock all 15 achievements
+- What drives each feature mini-bar from 0 to 100
+- Streak system and leaderboard
+
+> **[Gamification Guide](https://github.com/Z-M-Huang/cc-proficiency/wiki/Gamification-Guide)** | **[游戏化攻略（中文）](https://github.com/Z-M-Huang/cc-proficiency/wiki/Gamification-Guide-zh)**
+
 ## How scoring works
 
-### Rule-based engine, not counting
+### Rule-based engine
 
-Instead of counting tool usage, cc-proficiency uses a **pattern-matching rule engine** with ~53 rules across 5 domains. Each rule detects a specific behavior pattern and awards points by tier:
+cc-proficiency uses a **pattern-matching rule engine** with ~55 rules across 5 domains instead of counting tool calls. Each rule detects a specific behavior pattern and awards points by tier:
 
 | Tier | Points | Example Rule |
 |------|--------|-------------|
@@ -230,11 +242,11 @@ Instead of counting tool usage, cc-proficiency uses a **pattern-matching rule en
 
 ### 8 Feature Mini-Bars
 
-Below the domain bars, a heatmap row shows adoption per feature:
+Below the domain bars, a heatmap row shows depth per feature:
 
 `Hooks · Plugins · Skills · MCP · Agents · Plan · Memory · Rules`
 
-Each mini-bar derives its score from the same rules — a rule tagged with `"hooks"` contributes to both its domain bar and the Hooks mini-bar.
+Each mini-bar uses **depth-based scoring** with logarithmic curves that reflect actual usage, not just whether you've tried a feature once. Having hooks configured gets you ~30; firing them across hundreds of sessions gets you closer to 100. See the [Gamification Guide](https://github.com/Z-M-Huang/cc-proficiency/wiki/Gamification-Guide) for details.
 
 ### Bucket aggregation with caps
 
@@ -242,14 +254,14 @@ Scores are not raw sums. Each domain has capped buckets:
 
 | Bucket | Max Points | Source |
 |--------|-----------|--------|
-| **Config** | 25 pts | Config-based rules (CLAUDE.md, hooks, plugins — available immediately) |
-| **Behavior** | 75 pts | Behavior-based rules (transcript patterns — grow over time) |
+| **Config** | 25 pts | Config-based rules (CLAUDE.md, hooks, plugins; available immediately) |
+| **Behavior** | 75 pts | Behavior-based rules (transcript patterns; grow over time) |
 | **Penalty** | -15 pts max | Anti-pattern deductions |
 
 This means:
-- **Fresh installs** can score up to ~25 per domain from config alone (no transcripts needed)
-- **No domain exceeds 35 without transcript evidence** — config alone can't fake proficiency
-- **Anti-patterns are capped** — a few bad sessions don't destroy your score
+- **Fresh installs** can score up to ~25 raw config points per domain (boosted to ~50 during calibration via 2.0x scaling)
+- **After calibration** (10+ sessions) config alone caps at ~25 per domain; transcript evidence drives the rest
+- **Anti-patterns are capped**, so a few bad sessions don't destroy your score
 
 ### Phase-aware weighting
 
@@ -263,17 +275,17 @@ Config evidence is weighted more heavily during calibration, less as transcripts
 
 ### Anti-gaming
 
-- Rules fire **per-session with caps** — repeating the same tool 100x doesn't help
+- Rules fire **per-session with caps**; repeating the same tool 100x doesn't help
 - **Anti-pattern rules** deduct points for bad habits (shotgun parallel calls, unstructured walls of text)
-- Each rule has `maxPerSession` — investigation chains cap at 3 per session
-- Config scores are **capped at 25** — you can't max a domain by just installing plugins
+- Each rule has `maxPerSession`; investigation chains cap at 3 per session
+- Config scores are **capped at 25**, so you can't max a domain by just installing plugins
 
 ## Privacy
 
 | Concern | How it's handled |
 |---------|-----------------|
 | **Data location** | All analysis happens **locally** on your machine |
-| **What's stored** | Only aggregate counts, ratios, and boolean flags — no file paths, code, or prompts |
+| **What's stored** | Only aggregate counts, ratios, and boolean flags (no file paths, code, or prompts) |
 | **Gist visibility** | **Private by default** (secret URL, not listed on your profile) |
 | **Offline mode** | Works fully offline without `gh` CLI (local-only mode) |
 | **CI/CD** | Non-interactive sessions are automatically detected and excluded |
@@ -336,7 +348,7 @@ Contributions welcome! Please open an issue first to discuss what you'd like to 
 git clone https://github.com/Z-M-Huang/cc-proficiency.git
 cd cc-proficiency
 npm install
-npm test              # 146 tests
+npm test              # 200 tests
 npm run build         # compile to dist/
 npm run typecheck     # tsc --noEmit
 npm run lint          # eslint

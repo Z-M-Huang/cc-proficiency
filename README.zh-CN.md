@@ -154,11 +154,23 @@ cc-proficiency badge
 | **初步结果** | 3–9 | 5 个领域条 + 8 个特性迷你条（低置信度 ○） |
 | **完整徽章** | 10+ | 完整领域条、特性热力图、置信度圆点（● ◐ ○） |
 
+## 提升分数
+
+**[游戏化攻略](https://github.com/Z-M-Huang/cc-proficiency/wiki/Gamification-Guide-zh)** 涵盖：
+
+- 从第一天到专家级的进阶路径
+- 5 个领域的提升技巧
+- 解锁全部 15 个成就的方法
+- 每个特性迷你条从 0 到 100 的具体指南
+- 连续打卡和排行榜
+
+> **[游戏化攻略（中文）](https://github.com/Z-M-Huang/cc-proficiency/wiki/Gamification-Guide-zh)** | **[Gamification Guide (English)](https://github.com/Z-M-Huang/cc-proficiency/wiki/Gamification-Guide)**
+
 ## 评分系统
 
 ### 基于规则的引擎
 
-cc-proficiency 使用 **~53 条模式匹配规则**，而不是简单计数：
+cc-proficiency 使用 **~55 条模式匹配规则**，而不是简单计数：
 
 | 级别 | 分值 | 示例规则 |
 |------|------|---------|
@@ -179,16 +191,18 @@ cc-proficiency 使用 **~53 条模式匹配规则**，而不是简单计数：
 
 ### 8 个特性迷你条
 
-领域条下方，热力图行展示各特性的采用程度：
+领域条下方，热力图行展示各特性的使用深度：
 
 `钩子 · 插件 · 技能 · MCP · 代理 · 计划 · 记忆 · 规则`
+
+每个迷你条使用**深度评分**，对数曲线反映实际使用情况，不只看你是否试过某个功能。配置钩子能拿到 ~30 分；在数百个会话中触发钩子才能接近 100 分。详见[游戏化攻略](https://github.com/Z-M-Huang/cc-proficiency/wiki/Gamification-Guide-zh)。
 
 ### 桶聚合与上限
 
 | 桶 | 最大分值 | 来源 |
 |----|---------|------|
-| **配置** | 25 分 | 配置规则（CLAUDE.md、钩子、插件 —— 立即可用） |
-| **行为** | 75 分 | 行为规则（会话模式 —— 随时间增长） |
+| **配置** | 25 分 | 配置规则（CLAUDE.md、钩子、插件，立即可用） |
+| **行为** | 75 分 | 行为规则（会话模式，随时间增长） |
 | **惩罚** | -15 分上限 | 反模式扣分 |
 
 ### 阶段感知权重
@@ -201,17 +215,17 @@ cc-proficiency 使用 **~53 条模式匹配规则**，而不是简单计数：
 
 ### 防作弊
 
-- 规则**按会话上限触发** —— 重复相同工具 100 次无效
+- 规则**按会话上限触发**，重复相同工具 100 次无效
 - **反模式规则**对不良习惯扣分
-- 每条规则有 `maxPerSession` —— 调查链每会话上限 3 次
-- 配置分数**上限 25** —— 仅安装插件无法达到满分
+- 每条规则有 `maxPerSession`，调查链每会话上限 3 次
+- 配置分数**上限 25**，仅安装插件无法达到满分
 
 ## 隐私
 
 | 关注点 | 处理方式 |
 |--------|---------|
 | **数据位置** | 所有分析**在本地机器**上进行 |
-| **存储内容** | 仅存储聚合计数、比率和布尔标志 —— 无文件路径、代码或提示词 |
+| **存储内容** | 仅存储聚合计数、比率和布尔标志（无文件路径、代码或提示词） |
 | **Gist 可见性** | **默认私有**（秘密 URL，不在个人资料中列出） |
 | **离线模式** | 无需 `gh` CLI 即可完全离线工作（仅本地模式） |
 | **CI/CD** | 非交互式会话自动检测并排除 |
@@ -226,8 +240,12 @@ cc-proficiency 使用 **~53 条模式匹配规则**，而不是简单计数：
 | `cc-proficiency badge [--output <文件>]` | 生成 SVG 徽章 |
 | `cc-proficiency push` | 上传徽章到 Gist |
 | `cc-proficiency explain` | 显示分数驱动因素和建议 |
+| `cc-proficiency achievements` | 查看成就进度 |
+| `cc-proficiency status` | 显示钩子活动、队列和配置 |
 | `cc-proficiency config [键] [值]` | 查看/设置配置 |
 | `cc-proficiency config locale zh-CN` | 切换到中文徽章 |
+| `cc-proficiency share [--remove]` | 加入或退出社区排行榜 |
+| `cc-proficiency leaderboard` | 查看社区排名 |
 | `cc-proficiency uninstall` | 移除钩子和清理数据 |
 
 ## 架构
@@ -254,7 +272,7 @@ cc-proficiency process
 git clone https://github.com/Z-M-Huang/cc-proficiency.git
 cd cc-proficiency
 npm install
-npm test              # 146 tests
+npm test              # 200 tests
 npm run build         # 编译到 dist/
 npm run typecheck     # tsc --noEmit
 ```
