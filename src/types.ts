@@ -307,6 +307,7 @@ export interface LocalStore {
   snapshots: SessionSnapshot[];
   lastResult?: ProficiencyResult;
   lastUpdated?: string;
+  knownProjectCwds?: string[];
 }
 
 // ── Remote Store (Gist-as-Database) ──

@@ -116,15 +116,20 @@ Verify all critical runtime paths resolve correctly after build. Run via Bash:
     - Calling with a nonexistent path must not crash (returns 0 for project-level signals)
     - Calling without args (defaults to `process.cwd()`) must return >= 0
 
+30. **Known project cwds persistence**: Load store.json. Verify:
+    - `knownProjectCwds` field exists and is an array (may be empty on first run, or contain paths from prior sessions)
+    - If the array has entries, each must be a non-empty string
+    - Run `node dist/cli/index.js analyze --full` — after running, reload store.json and verify `knownProjectCwds` contains `process.cwd()` (the current project directory should always be persisted)
+
 ### Step 6 — Locale detection
 
-30. **Locale precedence**: Run via Bash:
+31. **Locale precedence**: Run via Bash:
     ```
     node -e "process.env.LC_ALL='zh_CN.UTF-8'; process.env.LANG='en_US.UTF-8'; const {detectLocale}=require('./dist/i18n/locales.js'); console.log(detectLocale())"
     ```
     Must print `zh-CN` (LC_ALL overrides LANG).
 
-31. **Locale fallback**: Run via Bash:
+32. **Locale fallback**: Run via Bash:
     ```
     node -e "delete process.env.LC_ALL; delete process.env.LC_MESSAGES; process.env.LANG='en_US.UTF-8'; const {detectLocale}=require('./dist/i18n/locales.js'); console.log(detectLocale())"
     ```
@@ -132,7 +137,7 @@ Verify all critical runtime paths resolve correctly after build. Run via Bash:
 
 ### Step 7 — File size check
 
-32. **Source file sizes**: Run `wc -l src/**/*.ts src/*.ts | sort -rn | head -8` via Bash. Flag any file over 300 lines that is NOT `types.ts` or `scoring/rules.ts`.
+33. **Source file sizes**: Run `wc -l src/**/*.ts src/*.ts | sort -rn | head -8` via Bash. Flag any file over 300 lines that is NOT `types.ts` or `scoring/rules.ts`.
 
 ### Report
 
@@ -167,6 +172,7 @@ Report a summary table at the end:
 | SetupChecklist          | ...    |
 | Project-level config    | ...    |
 | Multi-project merge     | ...    |
+| Known cwds persistence  | ...    |
 | Locale precedence       | ...    |
 | Locale fallback         | ...    |
 | File sizes              | ...    |

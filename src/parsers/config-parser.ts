@@ -1,13 +1,19 @@
 import type { SetupChecklist } from "../types.js";
 import {
   parseGlobalClaudeMd,
+  parseGlobalSettings,
   parseSettings,
   parsePluginHooks,
   parseProjectsAndMemory,
-  parseProjectCwd,
+  parseProjectClaudeMd,
+  parseProjectAgentMemory,
+  parseGlobalRulesFiles,
   parseRulesFiles,
+  parseGlobalMcpServers,
   parseMcpServers,
+  parseGlobalAgents,
   parseCustomAgents,
+  parseGlobalSkills,
   parseCustomSkills,
 } from "./config-detectors.js";
 
@@ -57,18 +63,24 @@ function emptySignals(): ConfigSignals {
  *   Defaults to [process.cwd()] for backward compatibility.
  */
 export function parseClaudeConfig(projectCwds?: string[]): ConfigSignals {
-  const cwds = projectCwds ?? [process.cwd()];
+  const cwds = [...new Set((projectCwds ?? [process.cwd()]).map((p) => p.replace(/\/+$/, "")))];
   const result = emptySignals();
 
   // Global signals (scanned once)
   parseGlobalClaudeMd(result);
+  parseGlobalSettings(result);
   parsePluginHooks(result);
   parseProjectsAndMemory(result);
+  parseGlobalRulesFiles(result);
+  parseGlobalMcpServers(result);
+  parseGlobalAgents(result);
+  parseGlobalSkills(result);
 
   // Project-level signals (scanned for each project cwd)
   for (const cwd of cwds) {
     parseSettings(result, cwd);
-    parseProjectCwd(result, cwd);
+    parseProjectClaudeMd(result, cwd);
+    parseProjectAgentMemory(result, cwd);
     parseRulesFiles(result, cwd);
     parseMcpServers(result, cwd);
     parseCustomAgents(result, cwd);

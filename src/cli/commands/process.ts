@@ -53,9 +53,14 @@ export async function cmdProcess(): Promise<void> {
       }
     }
 
+    // Always persist queue cwds, even if no new sessions scored
+    const queueCwds = queue.map((e) => e.cwd).filter(Boolean);
+    const knownCwds = store.knownProjectCwds ?? [];
+    const allCwds = [...new Set([...knownCwds, ...queueCwds])];
+    store.knownProjectCwds = allCwds;
+
     if (newSessions.length > 0) {
-      const projectCwds = [...new Set(queue.map((e) => e.cwd).filter(Boolean))];
-      const config = parseClaudeConfig(projectCwds.length > 0 ? projectCwds : undefined);
+      const config = parseClaudeConfig(allCwds.length > 0 ? allCwds : undefined);
       const allSessions = await gatherAllProcessedSessions(store);
       const sessionsToScore = allSessions.length > 0 ? allSessions : newSessions;
       const setupChecklist = buildSetupChecklist(config);
