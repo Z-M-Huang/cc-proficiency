@@ -127,6 +127,8 @@ export function extractFeatureInventory(
     usedPlanMode: prompts.some((p) => p.kind === "user_prompt" && (p as { permissionMode?: string }).permissionMode === "plan"),
     hasMemory: fires.some((f) => f.featureTags.includes("memory") && f.points > 0),
     hasRules: fires.some((f) => f.featureTags.includes("rules") && f.points > 0),
+    hasAgents: fires.some((f) => f.featureTags.includes("agents") && f.points > 0),
+    hasSkills: fires.some((f) => f.featureTags.includes("skills") && f.points > 0),
     totalHours: Math.round(totalMinutes / 60 * 10) / 10,
     featureScores,
   };

@@ -22,7 +22,7 @@ import type { ExtractedSignals, SessionSnapshot } from "../../src/types.js";
 const STORE_DIR = join(TEST_HOME, ".cc-proficiency");
 
 const emptySignals: ExtractedSignals = {
-  ccMastery: { hasGlobalClaudeMd: false, globalClaudeMdHasImports: false, projectClaudeMdCount: 0, hasCustomHooks: false, hookWithMatcherCount: 0, pluginCount: 0, pluginsUsedInTranscripts: 0, uniqueSkillsUsed: 0, usedPlanMode: false, hasRulesFiles: false },
+  ccMastery: { hasGlobalClaudeMd: false, globalClaudeMdHasImports: false, projectClaudeMdCount: 0, hasCustomHooks: false, hookWithMatcherCount: 0, pluginCount: 0, pluginsUsedInTranscripts: 0, uniqueSkillsUsed: 0, usedPlanMode: false, hasRulesFiles: false, hasCustomAgents: false, hasCustomSkills: false },
   toolMcp: { uniqueToolsUsed: 0, uniqueMcpServersUsed: 0, lspToolCallCount: 0, deliberateWorkflowCount: 0, editSuccessRate: 0.5, totalToolCalls: 0 },
   agentic: { uniqueSubagentTypes: 0, totalSubagentCalls: 0, parallelToolCallCount: 0, usedWorktree: false, multiSessionProjectCount: 0, usedTaskManagement: false },
   promptCraft: { structuredPromptRatio: 0, iterativeRefinementCount: 0, uniqueCommandsUsed: 0, contextProvisionCount: 0, totalPrompts: 0 },

@@ -24,6 +24,8 @@ describe("buildSetupChecklist", () => {
       memoryFileCount: 0,
       activeMemoryFileCount: 0,
       effortLevel: "",
+      hasCustomAgents: false,
+      hasCustomSkills: false,
     };
 
     const cl = buildSetupChecklist(config);
@@ -50,6 +52,8 @@ describe("buildSetupChecklist", () => {
       memoryFileCount: 5,
       activeMemoryFileCount: 3,
       effortLevel: "high",
+      hasCustomAgents: false,
+      hasCustomSkills: false,
     };
 
     const cl = buildSetupChecklist(config);
@@ -76,6 +80,8 @@ describe("buildSetupChecklist", () => {
       memoryFileCount: 0,
       activeMemoryFileCount: 0,
       effortLevel: "normal",
+      hasCustomAgents: false,
+      hasCustomSkills: false,
     };
 
     const cl = buildSetupChecklist(config);

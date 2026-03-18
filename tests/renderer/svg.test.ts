@@ -12,6 +12,8 @@ const defaultFeatures: FeatureInventory = {
   usedPlanMode: true,
   hasMemory: true,
   hasRules: false,
+  hasAgents: false,
+  hasSkills: false,
 };
 
 function makeResult(overrides: Partial<ProficiencyResult> = {}): ProficiencyResult {
@@ -32,6 +34,7 @@ function makeResult(overrides: Partial<ProficiencyResult> = {}): ProficiencyResu
     setupChecklist: {
       hasClaudeMd: true, hasHooks: true, hasPlugins: true,
       hasMcpServers: true, hasMemory: true, hasRules: false,
+      hasAgents: false, hasSkills: false,
     },
     ...overrides,
   };

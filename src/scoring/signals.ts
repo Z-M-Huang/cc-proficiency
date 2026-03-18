@@ -76,6 +76,8 @@ function extractCCMasterySignals(
     uniqueSkillsUsed: uniqueSkills.size,
     usedPlanMode,
     hasRulesFiles: config.hasRulesFiles,
+    hasCustomAgents: config.hasCustomAgents,
+    hasCustomSkills: config.hasCustomSkills,
   };
 }
 

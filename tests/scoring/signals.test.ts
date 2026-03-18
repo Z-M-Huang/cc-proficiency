@@ -8,6 +8,7 @@ const emptyConfig: ConfigSignals = {
   hasCustomHooks: false, hookWithMatcherCount: 0, pluginCount: 0, pluginNames: [],
   hasRulesFiles: false, hasMcpServers: false, hasMemoryFiles: false,
   memoryFileCount: 0, activeMemoryFileCount: 0, effortLevel: "",
+  hasCustomAgents: false, hasCustomSkills: false,
 };
 
 function makeSession(events: NormalizedEvent[], id: string = "s1", project: string = "test"): ParsedSession {

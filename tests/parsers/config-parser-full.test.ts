@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 
 const TEST_HOME = join(tmpdir(), "cc-prof-test-config-" + process.pid);
 const CLAUDE_DIR = join(TEST_HOME, ".claude");
+const TEST_CWD = join(tmpdir(), "cc-prof-test-cwd-" + process.pid);
 
 vi.mock("node:os", async () => {
   const actual = await vi.importActual<typeof import("node:os")>("node:os");
@@ -18,10 +19,14 @@ import { parseClaudeConfig, buildSetupChecklist } from "../../src/parsers/config
 
 beforeEach(() => {
   mkdirSync(CLAUDE_DIR, { recursive: true });
+  mkdirSync(TEST_CWD, { recursive: true });
+  vi.spyOn(process, "cwd").mockReturnValue(TEST_CWD);
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   rmSync(TEST_HOME, { recursive: true, force: true });
+  rmSync(TEST_CWD, { recursive: true, force: true });
 });
 
 describe("parseClaudeConfig", () => {
@@ -86,11 +91,79 @@ describe("parseClaudeConfig", () => {
     expect(config.activeMemoryFileCount).toBe(1);
   });
 
-  it("detects rules files", () => {
+  it("detects global rules files", () => {
     mkdirSync(join(CLAUDE_DIR, "rules"), { recursive: true });
     writeFileSync(join(CLAUDE_DIR, "rules", "security.md"), "# Security rules\n");
     const config = parseClaudeConfig();
     expect(config.hasRulesFiles).toBe(true);
+  });
+
+  it("detects project-level rules files", () => {
+    const projectRulesDir = join(TEST_CWD, ".claude", "rules");
+    mkdirSync(projectRulesDir, { recursive: true });
+    writeFileSync(join(projectRulesDir, "architecture.md"), "# Arch rules\n");
+    const config = parseClaudeConfig();
+    expect(config.hasRulesFiles).toBe(true);
+  });
+
+  it("detects cwd/CLAUDE.md in projectClaudeMdCount", () => {
+    writeFileSync(join(TEST_CWD, "CLAUDE.md"), "# Project config\n");
+    const config = parseClaudeConfig();
+    expect(config.projectClaudeMdCount).toBe(1);
+  });
+
+  it("detects cwd/.claude/CLAUDE.md in projectClaudeMdCount", () => {
+    mkdirSync(join(TEST_CWD, ".claude"), { recursive: true });
+    writeFileSync(join(TEST_CWD, ".claude", "CLAUDE.md"), "# Project config\n");
+    const config = parseClaudeConfig();
+    expect(config.projectClaudeMdCount).toBe(1);
+  });
+
+  it("scans agent-memory dirs for memory files", () => {
+    const agentMemDir = join(TEST_CWD, ".claude", "agent-memory", "reviewer");
+    mkdirSync(agentMemDir, { recursive: true });
+    writeFileSync(join(agentMemDir, "patterns.md"), "# Patterns\n");
+    const config = parseClaudeConfig();
+    expect(config.hasMemoryFiles).toBe(true);
+    expect(config.memoryFileCount).toBe(1);
+  });
+
+  it("detects custom agents from global dir", () => {
+    mkdirSync(join(CLAUDE_DIR, "agents"), { recursive: true });
+    writeFileSync(join(CLAUDE_DIR, "agents", "reviewer.md"), "---\nname: reviewer\n---\n");
+    const config = parseClaudeConfig();
+    expect(config.hasCustomAgents).toBe(true);
+  });
+
+  it("detects custom agents from project dir", () => {
+    const agentsDir = join(TEST_CWD, ".claude", "agents");
+    mkdirSync(agentsDir, { recursive: true });
+    writeFileSync(join(agentsDir, "planner.md"), "---\nname: planner\n---\n");
+    const config = parseClaudeConfig();
+    expect(config.hasCustomAgents).toBe(true);
+  });
+
+  it("detects custom skills with SKILL.md", () => {
+    const skillDir = join(TEST_CWD, ".claude", "skills", "deploy");
+    mkdirSync(skillDir, { recursive: true });
+    writeFileSync(join(skillDir, "SKILL.md"), "# Deploy skill\n");
+    const config = parseClaudeConfig();
+    expect(config.hasCustomSkills).toBe(true);
+  });
+
+  it("ignores skill dirs without SKILL.md", () => {
+    const skillDir = join(TEST_CWD, ".claude", "skills", "empty");
+    mkdirSync(skillDir, { recursive: true });
+    writeFileSync(join(skillDir, "notes.txt"), "not a skill\n");
+    const config = parseClaudeConfig();
+    expect(config.hasCustomSkills).toBe(false);
+  });
+
+  it("returns false for new signals when dirs are empty", () => {
+    const config = parseClaudeConfig();
+    expect(config.hasCustomAgents).toBe(false);
+    expect(config.hasCustomSkills).toBe(false);
+    expect(config.projectClaudeMdCount).toBe(0);
   });
 
   it("handles missing settings.json gracefully", () => {

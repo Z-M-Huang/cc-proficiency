@@ -175,6 +175,8 @@ export interface CCMasterySignals {
   uniqueSkillsUsed: number;
   usedPlanMode: boolean;
   hasRulesFiles: boolean;
+  hasCustomAgents: boolean;
+  hasCustomSkills: boolean;
 }
 
 export interface ToolMcpSignals {
@@ -248,6 +250,8 @@ export interface FeatureInventory {
   usedPlanMode: boolean;
   hasMemory: boolean;
   hasRules: boolean;
+  hasAgents: boolean;
+  hasSkills: boolean;
   totalHours: number;
   featureScores?: Record<string, number>; // mini-bar heatmap scores per feature tag
 }
@@ -272,6 +276,8 @@ export interface SetupChecklist {
   hasMcpServers: boolean;
   hasMemory: boolean;
   hasRules: boolean;
+  hasAgents: boolean;
+  hasSkills: boolean;
 }
 
 // ── Config ──
