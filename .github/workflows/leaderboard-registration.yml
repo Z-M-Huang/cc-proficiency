@@ -2,7 +2,7 @@ name: Leaderboard Registration
 
 on:
   issues:
-    types: [opened, reopened]
+    types: [opened]
 
 jobs:
   process:
