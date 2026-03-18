@@ -9,6 +9,8 @@ jobs:
     if: startsWith(github.event.issue.title, '[leaderboard]')
     runs-on: self-hosted
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Parse issue
         id: parse
         env:
