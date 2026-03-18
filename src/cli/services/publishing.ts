@@ -1,14 +1,17 @@
 import { renderBadge } from "../../renderer/svg.js";
-import { loadStore, loadConfig, saveBadge, getBadgePath } from "../../store/local-store.js";
+import { loadStore, loadConfig, saveBadge, getBadgePath, logError } from "../../store/local-store.js";
 import { isGhAuthenticated, getGistRawUrl, readGistFile, pushGistFiles } from "../../gist/uploader.js";
 import { emptyRemoteStore, parseRemoteStore, mergeIntoRemote, getTotalStats, getUTCDate, getWeekMonday, mergeWeeklyTrends } from "../../store/remote-store.js";
 import { checkAchievements, getAchievementDef } from "../../store/achievements.js";
+import { buildPublicProfile } from "../../store/public-profile.js";
 import { getConfigLocale } from "../utils/locale.js";
-import type { ProficiencyResult, LocalStore, WeeklyTrend } from "../../types.js";
+import type { ProficiencyResult, LocalStore, RemoteStore, WeeklyTrend } from "../../types.js";
 
-interface MergeAndPushResult {
+export interface MergeAndPushResult {
   success: boolean;
   error?: string;
+  merged?: RemoteStore;
+  totals?: { sessions: number; hours: number; projects: number };
 }
 
 /**
@@ -39,6 +42,7 @@ export function mergeAndPush(
   const merged = mergeIntoRemote(remote, localSessions, result);
 
   const totals = getTotalStats(merged);
+  const cfg = loadConfig();
   const ctx = {
     totalSessions: totals.sessions,
     totalHours: totals.hours,
@@ -47,6 +51,7 @@ export function mergeAndPush(
     streak: merged.streak,
     features: result.features,
     activeDates: merged.streak.activeDates,
+    leaderboard: cfg.leaderboard ?? false,
   };
   const newAchievements = checkAchievements(ctx, merged.achievements.map((a) => a.id));
   for (const id of newAchievements) {
@@ -74,16 +79,29 @@ export function mergeAndPush(
     "cc-proficiency.json": JSON.stringify(merged, null, 2),
   });
 
-  if (pushResult.success && verbose) {
+  if (!pushResult.success) {
+    return { success: false, error: pushResult.error };
+  }
+
+  if (verbose) {
     const rawUrl = getGistRawUrl(username, gistId);
     console.log("\u2713 Badge + data pushed to Gist");
     console.log(`  ${rawUrl}`);
     console.log(`  ${totals.sessions} sessions \u00B7 ${totals.hours.toFixed(1)}h \u00B7 ${merged.achievements.length} achievements \u00B7 \uD83D\uDD25 ${merged.streak.current}d streak`);
   }
 
-  return pushResult.success
-    ? { success: true }
-    : { success: false, error: pushResult.error };
+  // Auto-update public profile if leaderboard is enabled
+  if (cfg.leaderboard && cfg.publicGistId) {
+    const publicProfile = buildPublicProfile(merged);
+    const publicResult = pushGistFiles(cfg.publicGistId, {
+      "cc-proficiency-public.json": JSON.stringify(publicProfile, null, 2),
+    });
+    if (!publicResult.success) {
+      logError(`Public profile update failed: ${publicResult.error}`);
+    }
+  }
+
+  return { success: true, merged, totals };
 }
 
 export function pushToGist(): void {

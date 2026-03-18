@@ -127,6 +127,14 @@ export const ACHIEVEMENTS: AchievementDef[] = [
       return { current: hasLateSession ? 1 : 0, target: 1 };
     },
   },
+  // Leaderboard
+  {
+    id: "community-member",
+    name: "Community",
+    description: "Join the proficiency leaderboard",
+    icon: "\uD83C\uDF10", // 🌐
+    progress: (ctx) => ({ current: ctx.leaderboard ? 1 : 0, target: 1 }),
+  },
 ];
 
 /**

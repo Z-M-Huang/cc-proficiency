@@ -14,6 +14,7 @@ export function cmdStatus(): void {
   console.log(`  Gist ID:     ${config.gistId ?? "(not set)"}`);
   console.log(`  Auto-upload: ${config.autoUpload}`);
   console.log(`  Locale:      ${config.locale ?? "en"}`);
+  console.log(`  Leaderboard: ${config.leaderboard ? `joined (${config.publicGistId ?? "pending"})` : "not joined"}`);
 
   console.log(`\n  Sessions processed: ${store.processedSessionIds.length}`);
   console.log(`  Last updated:       ${store.lastUpdated ?? "never"}`);

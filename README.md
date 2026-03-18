@@ -288,8 +288,29 @@ Config evidence is weighted more heavily during calibration, less as transcripts
 | `cc-proficiency badge [--output <file>]` | Generate SVG badge |
 | `cc-proficiency push` | Upload badge to Gist |
 | `cc-proficiency explain` | Show score drivers and tips |
+| `cc-proficiency achievements` | View achievement progress |
+| `cc-proficiency status` | Show hook activity, queue, and config |
 | `cc-proficiency config [key] [value]` | View/set configuration |
+| `cc-proficiency share [--remove]` | Join or leave the community leaderboard |
+| `cc-proficiency leaderboard` | View community rankings |
 | `cc-proficiency uninstall` | Remove hooks and clean up |
+
+### Community Leaderboard
+
+Opt into the community leaderboard to compare your proficiency with other Claude Code users:
+
+```bash
+# Join the leaderboard (creates a separate public profile)
+$ cc-proficiency share
+
+# View rankings
+$ cc-proficiency leaderboard
+
+# Leave the leaderboard
+$ cc-proficiency share --remove
+```
+
+Your private data (session details, project names, file paths) is never shared. Only scores, streak, and achievement count are public. See the [wiki](https://github.com/Z-M-Huang/cc-proficiency/wiki) for full documentation.
 
 ## Architecture
 

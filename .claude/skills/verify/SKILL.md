@@ -42,6 +42,10 @@ Run each command via Bash (`node dist/cli/index.js <cmd>`) and verify expected o
 
 13. **process**: Run `node dist/cli/index.js process` — must produce output containing `Queue empty` or `Processed`. Must not error. (This exercises the mergeAndPush path when sessions are queued.)
 
+14. **leaderboard**: Run `node dist/cli/index.js leaderboard` — must produce output containing `Leaderboard` (either rankings or "unavailable"). Must not error.
+
+15. **share (error path)**: Run `node dist/cli/index.js share` — if already on leaderboard, must print "Already on the leaderboard". If not, must either proceed or print a prerequisite error. Must not crash. (NOTE: do not test with `--remove` as it would delete real data.)
+
 ### Step 3 — Path contracts
 
 Verify all critical runtime paths resolve correctly after build. Run via Bash:
@@ -118,6 +122,8 @@ Report a summary table at the end:
 | CLI: config        | ...    |
 | CLI: badge         | ...    |
 | CLI: process       | ...    |
+| CLI: leaderboard   | ...    |
+| CLI: share         | ...    |
 | Path contracts     | ...    |
 | Store JSON         | ...    |
 | Config JSON        | ...    |

@@ -1,0 +1,133 @@
+name: Leaderboard Registration
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  process:
+    if: startsWith(github.event.issue.title, '[leaderboard]')
+    runs-on: self-hosted
+    steps:
+      - name: Parse issue
+        id: parse
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          if echo "$ISSUE_TITLE" | grep -qi "join"; then
+            echo "action=join" >> $GITHUB_OUTPUT
+          elif echo "$ISSUE_TITLE" | grep -qi "leave"; then
+            echo "action=leave" >> $GITHUB_OUTPUT
+          else
+            echo "action=unknown" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Extract publicGistId from body
+          # Form template renders as "### Public Gist ID\n\n<value>"
+          # CLI share renders as "**Public Gist ID:** <value>"
+          GIST_ID=$(echo "$ISSUE_BODY" | grep -oP '(?<=\*\*Public Gist ID:\*\* )[a-f0-9]+' || true)
+          if [[ -z "$GIST_ID" ]]; then
+            # Try form template format (value on line after heading)
+            GIST_ID=$(echo "$ISSUE_BODY" | grep -A1 "Public Gist ID" | tail -1 | grep -oP '[a-f0-9]{20,}' || true)
+          fi
+
+          # Validate gistId is hex-only (prevent injection)
+          if [[ "$GIST_ID" =~ ^[a-f0-9]+$ ]]; then
+            echo "gist_id=$GIST_ID" >> $GITHUB_OUTPUT
+          else
+            echo "gist_id=" >> $GITHUB_OUTPUT
+          fi
+
+          echo "username=$ISSUE_AUTHOR" >> $GITHUB_OUTPUT
+
+      - name: Authenticate gh
+        if: steps.parse.outputs.action != 'unknown'
+        env:
+          GH_TOKEN: ${{ secrets.REGISTRY_PAT }}
+        run: echo "$GH_TOKEN" | gh auth login --with-token
+
+      - name: Process join
+        if: steps.parse.outputs.action == 'join' && steps.parse.outputs.gist_id != ''
+        env:
+          USERNAME: ${{ steps.parse.outputs.username }}
+          GIST_ID: ${{ steps.parse.outputs.gist_id }}
+          # Must match REGISTRY_GIST_ID in src/gist/registry.ts
+          REGISTRY_GIST_ID: ${{ vars.REGISTRY_GIST_ID }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          # Validate gist exists and owner matches
+          GIST_OWNER=$(gh api "gists/$GIST_ID" --jq '.owner.login' 2>/dev/null || true)
+          if [[ -z "$GIST_OWNER" ]]; then
+            gh issue comment "$ISSUE_NUMBER" --body "Invalid gist ID."
+            gh issue close "$ISSUE_NUMBER"
+            exit 0
+          fi
+
+          # Case-insensitive username comparison
+          if [[ "${GIST_OWNER,,}" != "${USERNAME,,}" ]]; then
+            gh issue comment "$ISSUE_NUMBER" --body "Gist owner does not match issue author."
+            gh issue close "$ISSUE_NUMBER"
+            exit 0
+          fi
+
+          # Validate gist contains cc-proficiency-public.json
+          HAS_FILE=$(gh api "gists/$GIST_ID" --jq '.files["cc-proficiency-public.json"].content' 2>/dev/null || true)
+          if [[ -z "$HAS_FILE" ]]; then
+            gh issue comment "$ISSUE_NUMBER" --body "Gist does not contain cc-proficiency-public.json."
+            gh issue close "$ISSUE_NUMBER"
+            exit 0
+          fi
+
+          # Read current registry
+          REGISTRY=$(gh api "gists/$REGISTRY_GIST_ID" --jq '.files["cc-proficiency-registry.json"].content')
+
+          # Add/update entry
+          UPDATED=$(node -e "
+            const reg = JSON.parse(process.argv[1]);
+            const idx = reg.entries.findIndex(e => e.username.toLowerCase() === process.argv[2].toLowerCase());
+            const entry = { username: process.argv[2], publicGistId: process.argv[3], joinedAt: new Date().toISOString() };
+            if (idx >= 0) reg.entries[idx] = entry;
+            else reg.entries.push(entry);
+            console.log(JSON.stringify(reg, null, 2));
+          " "$REGISTRY" "$USERNAME" "$GIST_ID")
+
+          echo "$UPDATED" > /tmp/cc-proficiency-registry.json
+          gh gist edit "$REGISTRY_GIST_ID" -a /tmp/cc-proficiency-registry.json
+          rm -f /tmp/cc-proficiency-registry.json
+
+          gh issue comment "$ISSUE_NUMBER" --body "Welcome to the leaderboard! Your profile will appear in rankings."
+          gh issue close "$ISSUE_NUMBER"
+
+      - name: Process leave
+        if: steps.parse.outputs.action == 'leave'
+        env:
+          USERNAME: ${{ steps.parse.outputs.username }}
+          # Must match REGISTRY_GIST_ID in src/gist/registry.ts
+          REGISTRY_GIST_ID: ${{ vars.REGISTRY_GIST_ID }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          REGISTRY=$(gh api "gists/$REGISTRY_GIST_ID" --jq '.files["cc-proficiency-registry.json"].content')
+
+          UPDATED=$(node -e "
+            const reg = JSON.parse(process.argv[1]);
+            reg.entries = reg.entries.filter(e => e.username.toLowerCase() !== process.argv[2].toLowerCase());
+            console.log(JSON.stringify(reg, null, 2));
+          " "$REGISTRY" "$USERNAME")
+
+          echo "$UPDATED" > /tmp/cc-proficiency-registry.json
+          gh gist edit "$REGISTRY_GIST_ID" -a /tmp/cc-proficiency-registry.json
+          rm -f /tmp/cc-proficiency-registry.json
+
+          gh issue comment "$ISSUE_NUMBER" --body "Removed from leaderboard."
+          gh issue close "$ISSUE_NUMBER"
+
+      - name: Handle missing gist ID
+        if: steps.parse.outputs.action == 'join' && steps.parse.outputs.gist_id == ''
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          gh issue comment "$ISSUE_NUMBER" --body "Could not parse a valid gist ID from the issue body."
+          gh issue close "$ISSUE_NUMBER"

@@ -13,6 +13,8 @@ import { cmdAchievements } from "./commands/achievements.js";
 import { cmdStatus } from "./commands/status.js";
 import { cmdConfig } from "./commands/config.js";
 import { cmdUninstall } from "./commands/uninstall.js";
+import { cmdShare } from "./commands/share.js";
+import { cmdLeaderboard } from "./commands/leaderboard.js";
 
 function getVersion(): string {
   try {
@@ -37,6 +39,8 @@ Commands:
   explain               Show score drivers and improvement tips
   status                Show hook activity, queue, and config
   config [key] [value]  View or set configuration
+  share [--remove]      Join or leave the community leaderboard
+  leaderboard           View community rankings
   uninstall             Remove hooks and clean up
   version               Show version info
 
@@ -71,6 +75,10 @@ async function main(): Promise<void> {
       return cmdStatus();
     case "config":
       return cmdConfig(args.slice(1));
+    case "share":
+      return cmdShare(args);
+    case "leaderboard":
+      return cmdLeaderboard(args);
     case "uninstall":
       return cmdUninstall();
     case "version":

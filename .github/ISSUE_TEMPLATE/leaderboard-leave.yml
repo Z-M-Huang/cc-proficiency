@@ -1,0 +1,22 @@
+name: "Leave Leaderboard"
+description: "Remove yourself from the cc-proficiency community leaderboard"
+title: "[leaderboard] leave @{{ github.actor }}"
+labels: ["leaderboard"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Leave the cc-proficiency Leaderboard
+
+        This will remove your entry from the community leaderboard registry.
+
+        > **Tip:** Run `cc-proficiency share --remove` instead — it handles this automatically
+        > and also deletes your public profile gist.
+
+  - type: checkboxes
+    id: confirm
+    attributes:
+      label: Confirmation
+      options:
+        - label: "I want to remove myself from the leaderboard."
+          required: true

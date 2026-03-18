@@ -288,6 +288,8 @@ export interface CCProficiencyConfig {
   autoUpload: boolean;
   public: boolean;
   locale?: string; // "en" | "zh-CN"
+  leaderboard?: boolean;   // opt-in to public leaderboard
+  publicGistId?: string;   // separate gist for public profile
 }
 
 // ── Store ──
@@ -370,6 +372,48 @@ export interface AchievementContext {
   streak: { current: number; longest: number };
   features: FeatureInventory;
   activeDates: string[];
+  leaderboard?: boolean;
+}
+
+// ── Leaderboard ──
+
+export interface PublicProfile {
+  version: "1.0.0";
+  username: string;
+  memberSince: string;
+  domains: Array<{ id: DomainId; score: number; confidence: string }>;
+  streak: { current: number; longest: number };
+  achievementCount: number;
+  totalSessions: number;
+  totalHours: number;
+  lastUpdated: string;
+}
+
+export interface LeaderboardRegistry {
+  version: "1.0.0";
+  entries: RegistryEntry[];
+}
+
+export interface RegistryEntry {
+  username: string;
+  publicGistId: string;
+  joinedAt: string;
+}
+
+export interface LeaderboardCache {
+  fetchedAt: string;
+  entries: LeaderboardEntry[];
+}
+
+export interface LeaderboardEntry {
+  username: string;
+  domains: Array<{ id: string; score: number }>;
+  averageScore: number;
+  streak: number;
+  achievementCount: number;
+  totalSessions: number;
+  totalHours: number;
+  memberSince: string;
 }
 
 // ── Queue ──

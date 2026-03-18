@@ -123,11 +123,11 @@ export function findExistingGist(): string | null {
 /**
  * Push multiple files to a Gist atomically via gh api PATCH.
  */
-export function pushGistFiles(gistId: string, files: Record<string, string>): GistResult {
+export function pushGistFiles(gistId: string, files: Record<string, string | null>): GistResult {
   try {
     const payload: Record<string, unknown> = { files: {} };
     for (const [name, content] of Object.entries(files)) {
-      (payload.files as Record<string, unknown>)[name] = { content };
+      (payload.files as Record<string, unknown>)[name] = content === null ? null : { content };
     }
     const tmpFile = join(tmpdir(), "cc-proficiency-patch.json");
     writeFileSync(tmpFile, JSON.stringify(payload), "utf-8");
@@ -141,6 +141,46 @@ export function pushGistFiles(gistId: string, files: Record<string, string>): Gi
     } finally {
       try { unlinkSync(tmpFile); } catch { /* ignore */ }
     }
+  } catch (err) {
+    return { success: false, error: String(err) };
+  }
+}
+
+/**
+ * Create a new public Gist with a public profile JSON.
+ */
+export function createPublicGist(content: string): GistResult {
+  const tmpFile = join(tmpdir(), "cc-proficiency-public.json");
+  try {
+    writeFileSync(tmpFile, content, "utf-8");
+    const result = execFileSync("gh", [
+      "gist", "create", "--public", "-d", "cc-proficiency Public Profile", tmpFile,
+    ], {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+      timeout: 30_000,
+    });
+    const url = result.trim();
+    const gistId = url.split("/").pop();
+    return { success: true, url: gistId };
+  } catch (err) {
+    return { success: false, error: String(err) };
+  } finally {
+    try { unlinkSync(tmpFile); } catch { /* ignore */ }
+  }
+}
+
+/**
+ * Delete a Gist by ID.
+ */
+export function deleteGist(gistId: string): GistResult {
+  try {
+    execFileSync("gh", ["gist", "delete", gistId, "--yes"], {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "pipe"],
+      timeout: 15_000,
+    });
+    return { success: true };
   } catch (err) {
     return { success: false, error: String(err) };
   }
