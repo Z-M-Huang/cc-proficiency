@@ -5,8 +5,9 @@ import { computeProficiency } from "../../scoring/engine.js";
 import { renderBadge } from "../../renderer/svg.js";
 import { loadStore, saveStore, isSessionProcessed, loadConfig, saveBadge, logError } from "../../store/local-store.js";
 import { readQueue, writeQueue, acquireLock, releaseLock } from "../../store/queue.js";
-import { isGhAuthenticated, updateGist } from "../../gist/uploader.js";
+import { isGhAuthenticated } from "../../gist/uploader.js";
 import { gatherAllProcessedSessions } from "../services/sessions.js";
+import { mergeAndPush } from "../services/publishing.js";
 import { getConfigLocale } from "../utils/locale.js";
 import type { ParsedSession } from "../../types.js";
 
@@ -52,8 +53,14 @@ export async function cmdProcess(): Promise<void> {
       }
     }
 
+    // Always persist queue cwds, even if no new sessions scored
+    const queueCwds = queue.map((e) => e.cwd).filter(Boolean);
+    const knownCwds = store.knownProjectCwds ?? [];
+    const allCwds = [...new Set([...knownCwds, ...queueCwds])];
+    store.knownProjectCwds = allCwds;
+
     if (newSessions.length > 0) {
-      const config = parseClaudeConfig();
+      const config = parseClaudeConfig(allCwds.length > 0 ? allCwds : undefined);
       const allSessions = await gatherAllProcessedSessions(store);
       const sessionsToScore = allSessions.length > 0 ? allSessions : newSessions;
       const setupChecklist = buildSetupChecklist(config);
@@ -68,13 +75,21 @@ export async function cmdProcess(): Promise<void> {
 
       store.lastResult = result;
 
+      // Save local badge first (always works, even offline)
       const svg = renderBadge(result, getConfigLocale());
       const badgePath = saveBadge(svg);
 
+      // Push SVG + JSON atomically (preserves achievements/streak)
       if (userConfig.autoUpload && userConfig.gistId && isGhAuthenticated()) {
-        const gistResult = updateGist(userConfig.gistId, svg);
-        if (!gistResult.success) {
-          logError(`Gist push failed: ${gistResult.error}`);
+        const pushResult = mergeAndPush(
+          store,
+          result,
+          userConfig.gistId,
+          userConfig.username ?? "unknown",
+          false
+        );
+        if (!pushResult.success) {
+          logError(`Gist push failed: ${pushResult.error}`);
         }
       }
 

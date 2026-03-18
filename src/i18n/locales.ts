@@ -85,7 +85,8 @@ export function getLocale(locale: Locale = "en"): LocaleStrings {
  * Detect locale from environment or config.
  */
 export function detectLocale(): Locale {
-  const lang = process.env.LANG ?? process.env.LC_ALL ?? process.env.LANGUAGE ?? "";
+  // LC_ALL overrides everything, then LC_MESSAGES, then LANG, then LANGUAGE
+  const lang = process.env.LC_ALL ?? process.env.LC_MESSAGES ?? process.env.LANG ?? process.env.LANGUAGE ?? "";
   if (lang.startsWith("zh")) return "zh-CN";
   return "en";
 }

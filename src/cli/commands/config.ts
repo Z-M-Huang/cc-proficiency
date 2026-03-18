@@ -24,6 +24,8 @@ export function cmdConfig(args: string[]): void {
   else if (key === "autoUpload") config.autoUpload = value === "true";
   else if (key === "public") config.public = value === "true";
   else if (key === "locale") config.locale = value;
+  else if (key === "leaderboard") config.leaderboard = value === "true";
+  else if (key === "publicGistId") config.publicGistId = value;
   else {
     console.log(`Unknown key: ${key}`);
     return;

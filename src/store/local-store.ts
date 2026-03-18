@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync, statSync, appendFileSync, renameSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import type { LocalStore, SessionSnapshot, CCProficiencyConfig } from "../types.js";
+import type { LocalStore, SessionSnapshot, CCProficiencyConfig, LeaderboardCache } from "../types.js";
 import { ensureStoreDir } from "./queue.js";
 
 const STORE_DIR = join(homedir(), ".cc-proficiency");
@@ -9,6 +9,7 @@ const STORE_FILE = join(STORE_DIR, "store.json");
 const CONFIG_FILE = join(STORE_DIR, "config.json");
 const BADGE_FILE = join(STORE_DIR, "cc-proficiency.svg");
 const ERROR_LOG = join(STORE_DIR, "error.log");
+const LEADERBOARD_CACHE_FILE = join(STORE_DIR, "leaderboard-cache.json");
 const MAX_ERROR_LOG_SIZE = 1_000_000; // 1MB
 const RETENTION_DAYS = 90;
 
@@ -60,12 +61,13 @@ export function addSnapshot(store: LocalStore, snapshot: SessionSnapshot): void 
 export function loadConfig(): CCProficiencyConfig {
   ensureStoreDir();
   if (!existsSync(CONFIG_FILE)) {
-    return { autoUpload: true, public: false };
+    return { autoUpload: true, public: false, leaderboard: false };
   }
   try {
-    return JSON.parse(readFileSync(CONFIG_FILE, "utf-8"));
+    const cfg = JSON.parse(readFileSync(CONFIG_FILE, "utf-8"));
+    return { leaderboard: false, ...cfg };
   } catch {
-    return { autoUpload: true, public: false };
+    return { autoUpload: true, public: false, leaderboard: false };
   }
 }
 
@@ -103,4 +105,18 @@ export function logError(message: string): void {
 
 export function getStoreDir(): string {
   return STORE_DIR;
+}
+
+export function loadLeaderboardCache(): LeaderboardCache | null {
+  if (!existsSync(LEADERBOARD_CACHE_FILE)) return null;
+  try {
+    return JSON.parse(readFileSync(LEADERBOARD_CACHE_FILE, "utf-8"));
+  } catch {
+    return null;
+  }
+}
+
+export function saveLeaderboardCache(cache: LeaderboardCache): void {
+  ensureStoreDir();
+  writeFileSync(LEADERBOARD_CACHE_FILE, JSON.stringify(cache, null, 2), "utf-8");
 }

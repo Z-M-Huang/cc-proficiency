@@ -2,6 +2,7 @@ import { renderBadge } from "../../renderer/svg.js";
 import { loadStore, loadConfig, saveConfig, saveBadge, getBadgePath, getStoreDir } from "../../store/local-store.js";
 import { ensureStoreDir } from "../../store/queue.js";
 import { isGhAuthenticated, getGhUsername, createGist, updateGist, getGistRawUrl } from "../../gist/uploader.js";
+import { detectLocale } from "../../i18n/locales.js";
 import { injectHook } from "../services/hooks.js";
 import { getConfigLocale } from "../utils/locale.js";
 import { cmdAnalyze } from "./analyze.js";
@@ -22,6 +23,12 @@ export async function cmdInit(): Promise<void> {
     console.log("  \u26A0 GitHub CLI not authenticated.");
     console.log("  Badge will be saved locally to: " + getBadgePath());
     console.log("  To enable auto-upload: gh auth login && cc-proficiency init\n");
+  }
+
+  // Auto-detect locale from environment (LANG/LC_ALL)
+  if (!config.locale) {
+    config.locale = detectLocale();
+    console.log(`  Locale: ${config.locale}`);
   }
 
   injectHook();

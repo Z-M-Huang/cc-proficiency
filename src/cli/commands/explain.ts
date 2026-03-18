@@ -42,7 +42,7 @@ export function cmdExplain(): void {
   if (f.mcpServers.length > 0)
     console.log(`    MCP:    ${f.mcpServers.join(", ")}`);
   console.log(`    Tools:  ${f.topTools.map((t) => `${t.name} (${t.count})`).join(", ")} +${f.uniqueToolCount - f.topTools.length} more`);
-  console.log(`    Flags:  ${f.usedPlanMode ? "\u2713 Plan" : "\u2717 Plan"}  ${f.hasMemory ? "\u2713 Memory" : "\u2717 Memory"}  ${f.hasRules ? "\u2713 Rules" : "\u2717 Rules"}`);
+  console.log(`    Flags:  ${f.usedPlanMode ? "\u2713 Plan" : "\u2717 Plan"}  ${f.hasMemory ? "\u2713 Memory" : "\u2717 Memory"}  ${f.hasRules ? "\u2713 Rules" : "\u2717 Rules"}  ${f.hasAgents ? "\u2713 Agents" : "\u2717 Agents"}  ${f.hasSkills ? "\u2713 Skills" : "\u2717 Skills"}`);
 
   console.log(`\n  ${result.sessionCount} sessions \u00B7 ${result.projectCount} projects\n`);
 }

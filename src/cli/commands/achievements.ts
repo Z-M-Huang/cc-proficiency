@@ -31,6 +31,7 @@ export function cmdAchievements(): void {
     streak: { current: 0, longest: 0 },
     features: result.features,
     activeDates: [],
+    leaderboard: config.leaderboard ?? false,
   };
 
   const newLocal = checkAchievements(ctx, unlockedIds);

@@ -13,6 +13,9 @@ import { cmdAchievements } from "./commands/achievements.js";
 import { cmdStatus } from "./commands/status.js";
 import { cmdConfig } from "./commands/config.js";
 import { cmdUninstall } from "./commands/uninstall.js";
+import { cmdShare } from "./commands/share.js";
+import { cmdLeaderboard } from "./commands/leaderboard.js";
+import { checkForUpdates } from "./utils/update-check.js";
 
 function getVersion(): string {
   try {
@@ -37,6 +40,8 @@ Commands:
   explain               Show score drivers and improvement tips
   status                Show hook activity, queue, and config
   config [key] [value]  View or set configuration
+  share [--remove]      Join or leave the community leaderboard
+  leaderboard           View community rankings
   uninstall             Remove hooks and clean up
   version               Show version info
 
@@ -48,6 +53,11 @@ Examples:
 `);
 }
 
+// Commands that should check for updates (interactive, not hook-spawned)
+const UPDATE_CHECK_COMMANDS = new Set([
+  "analyze", "explain", "badge", "status", "version", "achievements", "leaderboard",
+]);
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const command = args[0];
@@ -56,29 +66,43 @@ async function main(): Promise<void> {
     case "init":
       return await cmdInit();
     case "analyze":
-      return cmdAnalyze(args);
+      await cmdAnalyze(args);
+      break;
     case "process":
       return cmdProcess();
     case "badge":
-      return cmdBadge(args);
+      await cmdBadge(args);
+      break;
     case "push":
       return cmdPush();
     case "explain":
-      return cmdExplain();
+      await cmdExplain();
+      break;
     case "achievements":
-      return cmdAchievements();
+      await cmdAchievements();
+      break;
     case "status":
-      return cmdStatus();
+      await cmdStatus();
+      break;
     case "config":
       return cmdConfig(args.slice(1));
+    case "share":
+      return cmdShare(args);
+    case "leaderboard":
+      await cmdLeaderboard(args);
+      break;
     case "uninstall":
       return cmdUninstall();
     case "version":
       console.log(`cc-proficiency v${getVersion()} (scoring ${SCORING_VERSION})`);
-      return;
+      break;
     default:
       printUsage();
       return;
+  }
+
+  if (command && UPDATE_CHECK_COMMANDS.has(command)) {
+    await checkForUpdates(getVersion()).catch(() => {});
   }
 }
 

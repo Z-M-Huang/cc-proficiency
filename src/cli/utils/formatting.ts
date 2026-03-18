@@ -60,6 +60,8 @@ export function printSetupChecklist(cl: SetupChecklist): void {
     ["MCP Servers", cl.hasMcpServers],
     ["Memory", cl.hasMemory],
     ["Rules", cl.hasRules],
+    ["Agents", cl.hasAgents],
+    ["Skills", cl.hasSkills],
   ] as const;
 
   console.log("  Setup:");

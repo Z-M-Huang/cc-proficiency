@@ -175,6 +175,8 @@ export interface CCMasterySignals {
   uniqueSkillsUsed: number;
   usedPlanMode: boolean;
   hasRulesFiles: boolean;
+  hasCustomAgents: boolean;
+  hasCustomSkills: boolean;
 }
 
 export interface ToolMcpSignals {
@@ -248,6 +250,8 @@ export interface FeatureInventory {
   usedPlanMode: boolean;
   hasMemory: boolean;
   hasRules: boolean;
+  hasAgents: boolean;
+  hasSkills: boolean;
   totalHours: number;
   featureScores?: Record<string, number>; // mini-bar heatmap scores per feature tag
 }
@@ -272,6 +276,8 @@ export interface SetupChecklist {
   hasMcpServers: boolean;
   hasMemory: boolean;
   hasRules: boolean;
+  hasAgents: boolean;
+  hasSkills: boolean;
 }
 
 // ── Config ──
@@ -282,6 +288,8 @@ export interface CCProficiencyConfig {
   autoUpload: boolean;
   public: boolean;
   locale?: string; // "en" | "zh-CN"
+  leaderboard?: boolean;   // opt-in to public leaderboard
+  publicGistId?: string;   // separate gist for public profile
 }
 
 // ── Store ──
@@ -299,6 +307,7 @@ export interface LocalStore {
   snapshots: SessionSnapshot[];
   lastResult?: ProficiencyResult;
   lastUpdated?: string;
+  knownProjectCwds?: string[];
 }
 
 // ── Remote Store (Gist-as-Database) ──
@@ -364,6 +373,48 @@ export interface AchievementContext {
   streak: { current: number; longest: number };
   features: FeatureInventory;
   activeDates: string[];
+  leaderboard?: boolean;
+}
+
+// ── Leaderboard ──
+
+export interface PublicProfile {
+  version: "1.0.0";
+  username: string;
+  memberSince: string;
+  domains: Array<{ id: DomainId; score: number; confidence: string }>;
+  streak: { current: number; longest: number };
+  achievementCount: number;
+  totalSessions: number;
+  totalHours: number;
+  lastUpdated: string;
+}
+
+export interface LeaderboardRegistry {
+  version: "1.0.0";
+  entries: RegistryEntry[];
+}
+
+export interface RegistryEntry {
+  username: string;
+  publicGistId: string;
+  joinedAt: string;
+}
+
+export interface LeaderboardCache {
+  fetchedAt: string;
+  entries: LeaderboardEntry[];
+}
+
+export interface LeaderboardEntry {
+  username: string;
+  domains: Array<{ id: string; score: number }>;
+  averageScore: number;
+  streak: number;
+  achievementCount: number;
+  totalSessions: number;
+  totalHours: number;
+  memberSince: string;
 }
 
 // ── Queue ──

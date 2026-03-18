@@ -1,0 +1,35 @@
+name: "Join Leaderboard"
+description: "Join the cc-proficiency community leaderboard"
+title: "[leaderboard] join @{{ github.actor }}"
+labels: ["leaderboard"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Join the cc-proficiency Leaderboard
+
+        This form registers you on the community leaderboard. Your public profile
+        (scores, streak, achievement count) will be visible to other users.
+
+        **Not shared:** session details, project names, file paths, tools, MCP servers.
+
+        > **Tip:** Run `cc-proficiency share` instead — it fills this out automatically.
+
+  - type: input
+    id: public_gist_id
+    attributes:
+      label: Public Gist ID
+      description: "The ID of your **public** profile gist (created by `cc-proficiency share`). This is NOT your private badge gist."
+      placeholder: "e.g., a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Consent
+      options:
+        - label: "I understand that my username, domain scores, streak, achievement count, total sessions, and hours will be publicly visible."
+          required: true
+        - label: "I confirm the Public Gist ID above belongs to me and contains only `cc-proficiency-public.json`."
+          required: true

@@ -11,9 +11,11 @@ import type { ConfigSignals } from "../../parsers/config-parser.js";
 const CLAUDE_DIR = join(homedir(), ".claude");
 
 export async function gatherData(full: boolean): Promise<{ sessions: ParsedSession[]; config: ConfigSignals }> {
-  const config = parseClaudeConfig();
+  const realStore = loadStore();
+  const knownCwds = [...new Set([process.cwd(), ...(realStore.knownProjectCwds ?? [])])];
+  const config = parseClaudeConfig(knownCwds);
   const sessions: ParsedSession[] = [];
-  const store = full ? { processedSessionIds: [] as string[] } : loadStore();
+  const store = full ? { processedSessionIds: [] as string[] } : realStore;
 
   const projectsDir = join(CLAUDE_DIR, "projects");
   if (!existsSync(projectsDir)) return { sessions, config };

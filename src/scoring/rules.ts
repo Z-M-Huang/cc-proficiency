@@ -102,6 +102,18 @@ export const RULES: ScoringRule[] = [
     detect: (ctx) => ctx.config.hasRulesFiles ? 1 : 0,
   },
   {
+    id: "ccm-custom-agents",
+    domain: "cc-mastery", tier: "advanced", points: 10, featureTags: ["agents"],
+    evidenceType: "config", maxPerSession: 1, reason: "Has custom agent definitions (.claude/agents/)",
+    detect: (ctx) => ctx.config.hasCustomAgents ? 1 : 0,
+  },
+  {
+    id: "ccm-custom-skills",
+    domain: "cc-mastery", tier: "advanced", points: 10, featureTags: ["skills"],
+    evidenceType: "config", maxPerSession: 1, reason: "Has custom skill definitions (.claude/skills/)",
+    detect: (ctx) => ctx.config.hasCustomSkills ? 1 : 0,
+  },
+  {
     id: "ccm-effort-high",
     domain: "cc-mastery", tier: "beginner", points: 5, featureTags: [],
     evidenceType: "config", maxPerSession: 1, reason: "Effort level set to high",

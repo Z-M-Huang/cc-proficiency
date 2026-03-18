@@ -130,7 +130,7 @@ const MINI_BAR_SECTION_HEIGHT = 42; // single row of mini-bars + labels
 export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale = "en"): string {
   const t = getLocale(locale);
   const width = 495;
-  const height = 230;
+  const height = 250;
   const cl = result.setupChecklist;
   const needed = Math.max(0, 3 - result.sessionCount);
   const u = escapeXml(result.username);
@@ -154,6 +154,8 @@ export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale
   <text x="25" y="178" fill="${cl.hasMcpServers ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasMcpServers ? "\u2713" : "\u2717"} ${escapeXml(t.mcp)}</text>
   <text x="145" y="178" fill="${cl.hasMemory ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasMemory ? "\u2713" : "\u2717"} ${escapeXml(t.memory)}</text>
   <text x="240" y="178" fill="${cl.hasRules ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasRules ? "\u2713" : "\u2717"} ${escapeXml(t.rules)}</text>
+  <text x="25" y="198" fill="${cl.hasAgents ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasAgents ? "\u2713" : "\u2717"} ${escapeXml(t.agents)}</text>
+  <text x="145" y="198" fill="${cl.hasSkills ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasSkills ? "\u2713" : "\u2717"} ${escapeXml(t.skills)}</text>
   <text x="25" y="${height - 14}" fill="${C.textMuted}" font-size="10" font-family="${MONO}">${result.timestamp.slice(0, 10)}</text>
   <text x="${width - 25}" y="${height - 14}" fill="${C.textMuted}" font-size="9" font-family="${MONO}" text-anchor="end">github.com/Z-M-Huang/cc-proficiency</text>
 </svg>`;

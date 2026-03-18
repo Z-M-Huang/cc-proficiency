@@ -8,6 +8,13 @@ export async function cmdAnalyze(args: string[]): Promise<void> {
 
   const { sessions, config } = await gatherData(full);
 
+  // Always persist current cwd, even if no sessions found
+  const store = loadStore();
+  const known = new Set(store.knownProjectCwds ?? []);
+  known.add(process.cwd());
+  store.knownProjectCwds = [...known];
+  saveStore(store);
+
   if (sessions.length === 0) {
     console.log("No sessions found. Use Claude Code first, then run analyze again.");
     return;
@@ -16,7 +23,6 @@ export async function cmdAnalyze(args: string[]): Promise<void> {
   const userConfig = loadConfig();
   const result = runAnalysis(sessions, config, userConfig.username ?? "unknown");
 
-  const store = loadStore();
   store.lastResult = result;
   for (const s of sessions) {
     if (!store.processedSessionIds.includes(s.sessionId)) {

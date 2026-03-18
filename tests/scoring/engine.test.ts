@@ -6,11 +6,13 @@ import type { ConfigSignals } from "../../src/parsers/config-parser.js";
 const emptyConfig: ConfigSignals = {
   hasGlobalClaudeMd: false, globalClaudeMdHasImports: false, projectClaudeMdCount: 0,
   hasCustomHooks: false, hookWithMatcherCount: 0, pluginCount: 0, pluginNames: [],
-  hasRulesFiles: false, hasMcpServers: false, hasMemoryFiles: false,
+  hasRulesFiles: false, rulesFileCount: 0, hasMcpServers: false, hasMemoryFiles: false,
   memoryFileCount: 0, activeMemoryFileCount: 0, effortLevel: "",
+  hasCustomAgents: false, hasCustomSkills: false,
 };
 const emptyChecklist: SetupChecklist = {
   hasClaudeMd: false, hasHooks: false, hasPlugins: false, hasMcpServers: false, hasMemory: false, hasRules: false,
+  hasAgents: false, hasSkills: false,
 };
 
 function makeSession(events: NormalizedEvent[] = [], id = "s1"): ParsedSession {

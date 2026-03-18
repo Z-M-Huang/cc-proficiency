@@ -19,11 +19,14 @@ describe("buildSetupChecklist", () => {
       pluginCount: 0,
       pluginNames: [],
       hasRulesFiles: false,
+      rulesFileCount: 0,
       hasMcpServers: false,
       hasMemoryFiles: false,
       memoryFileCount: 0,
       activeMemoryFileCount: 0,
       effortLevel: "",
+      hasCustomAgents: false,
+      hasCustomSkills: false,
     };
 
     const cl = buildSetupChecklist(config);
@@ -45,11 +48,14 @@ describe("buildSetupChecklist", () => {
       pluginCount: 8,
       pluginNames: ["a@x", "b@y"],
       hasRulesFiles: true,
+      rulesFileCount: 3,
       hasMcpServers: true,
       hasMemoryFiles: true,
       memoryFileCount: 5,
       activeMemoryFileCount: 3,
       effortLevel: "high",
+      hasCustomAgents: false,
+      hasCustomSkills: false,
     };
 
     const cl = buildSetupChecklist(config);
@@ -71,11 +77,14 @@ describe("buildSetupChecklist", () => {
       pluginCount: 2,
       pluginNames: ["a@x"],
       hasRulesFiles: false,
+      rulesFileCount: 0,
       hasMcpServers: false,
       hasMemoryFiles: false,
       memoryFileCount: 0,
       activeMemoryFileCount: 0,
       effortLevel: "normal",
+      hasCustomAgents: false,
+      hasCustomSkills: false,
     };
 
     const cl = buildSetupChecklist(config);
