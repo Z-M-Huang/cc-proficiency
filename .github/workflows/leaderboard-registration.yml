@@ -43,15 +43,10 @@ jobs:
 
           echo "username=$ISSUE_AUTHOR" >> $GITHUB_OUTPUT
 
-      - name: Authenticate gh
-        if: steps.parse.outputs.action != 'unknown'
-        env:
-          GH_TOKEN: ${{ secrets.REGISTRY_PAT }}
-        run: echo "$GH_TOKEN" | gh auth login --with-token
-
       - name: Process join
         if: steps.parse.outputs.action == 'join' && steps.parse.outputs.gist_id != ''
         env:
+          GH_TOKEN: ${{ secrets.REGISTRY_PAT }}
           USERNAME: ${{ steps.parse.outputs.username }}
           GIST_ID: ${{ steps.parse.outputs.gist_id }}
           # Must match REGISTRY_GIST_ID in src/gist/registry.ts
@@ -104,6 +99,7 @@ jobs:
       - name: Process leave
         if: steps.parse.outputs.action == 'leave'
         env:
+          GH_TOKEN: ${{ secrets.REGISTRY_PAT }}
           USERNAME: ${{ steps.parse.outputs.username }}
           # Must match REGISTRY_GIST_ID in src/gist/registry.ts
           REGISTRY_GIST_ID: ${{ vars.REGISTRY_GIST_ID }}
@@ -127,6 +123,7 @@ jobs:
       - name: Handle missing gist ID
         if: steps.parse.outputs.action == 'join' && steps.parse.outputs.gist_id == ''
         env:
+          GH_TOKEN: ${{ secrets.REGISTRY_PAT }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
           gh issue comment "$ISSUE_NUMBER" --body "Could not parse a valid gist ID from the issue body."
