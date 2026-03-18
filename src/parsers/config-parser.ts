@@ -4,6 +4,7 @@ import {
   parseSettings,
   parsePluginHooks,
   parseProjectsAndMemory,
+  parseProjectCwd,
   parseRulesFiles,
   parseMcpServers,
   parseCustomAgents,
@@ -19,6 +20,7 @@ export interface ConfigSignals {
   pluginCount: number;
   pluginNames: string[];
   hasRulesFiles: boolean;
+  rulesFileCount: number;
   hasMcpServers: boolean;
   hasMemoryFiles: boolean;
   memoryFileCount: number;
@@ -38,6 +40,7 @@ function emptySignals(): ConfigSignals {
     pluginCount: 0,
     pluginNames: [],
     hasRulesFiles: false,
+    rulesFileCount: 0,
     hasMcpServers: false,
     hasMemoryFiles: false,
     memoryFileCount: 0,
@@ -50,18 +53,27 @@ function emptySignals(): ConfigSignals {
 
 /**
  * Parse Claude Code configuration from ~/.claude/ and project .claude/ directories.
+ * @param projectCwds - project directories to scan for project-level config.
+ *   Defaults to [process.cwd()] for backward compatibility.
  */
-export function parseClaudeConfig(): ConfigSignals {
+export function parseClaudeConfig(projectCwds?: string[]): ConfigSignals {
+  const cwds = projectCwds ?? [process.cwd()];
   const result = emptySignals();
 
+  // Global signals (scanned once)
   parseGlobalClaudeMd(result);
-  parseSettings(result);
   parsePluginHooks(result);
   parseProjectsAndMemory(result);
-  parseRulesFiles(result);
-  parseMcpServers(result);
-  parseCustomAgents(result);
-  parseCustomSkills(result);
+
+  // Project-level signals (scanned for each project cwd)
+  for (const cwd of cwds) {
+    parseSettings(result, cwd);
+    parseProjectCwd(result, cwd);
+    parseRulesFiles(result, cwd);
+    parseMcpServers(result, cwd);
+    parseCustomAgents(result, cwd);
+    parseCustomSkills(result, cwd);
+  }
 
   return result;
 }

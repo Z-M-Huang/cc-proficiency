@@ -8,6 +8,7 @@ import type {
 } from "../types.js";
 import type { ConfigSignals } from "../parsers/config-parser.js";
 import { fireRules, aggregateToBuckets, bucketsToScores, extractFeatureScores } from "./rule-engine.js";
+import { computeFeatureDepthScores } from "./feature-scores.js";
 import type { RuleFire } from "./rules.js";
 
 export const SCORING_VERSION = "3.0.0";
@@ -49,7 +50,8 @@ export function getRecencyWeight(sessionTimestamp: string, now: number = Date.no
  */
 export function extractFeatureInventory(
   sessions: ParsedSession[],
-  fires: RuleFire[]
+  fires: RuleFire[],
+  config?: ConfigSignals
 ): FeatureInventory {
   const allEvents = sessions.flatMap((s) => s.events);
   const tcs = allEvents.filter((e) => e.kind === "tool_call") as ToolCallEvent[];
@@ -97,14 +99,34 @@ export function extractFeatureInventory(
     .slice(0, 5)
     .map(([name, count]) => ({ name, count }));
 
-  // Feature scores from rule fires
-  const featureScoreMap = extractFeatureScores(fires);
-  const featureScores: Record<string, number> = {};
-  for (const [tag, data] of featureScoreMap) {
-    featureScores[tag] = data.score;
-  }
-
   const prompts = allEvents.filter((e) => e.kind === "user_prompt");
+
+  // Feature scores — depth-based if config available, rule-based fallback
+  let featureScores: Record<string, number>;
+  if (config) {
+    const pluginsUsed = config.pluginNames.filter((name) =>
+      tcs.some((tc) => tc.toolName.includes(name.split("@")[0]!))
+    ).length;
+    const agentTcs = tcs.filter((tc) => tc.toolName === "Agent");
+    featureScores = computeFeatureDepthScores({
+      hooks: [...hookCounts.entries()].map(([name, count]) => ({ name, count })),
+      skills: [...skillCounts.entries()].map(([name, count]) => ({ name, count })),
+      mcpServers: [...mcpServers],
+      mcpCalls: tcs.filter((tc) => tc.toolName.startsWith("mcp__")).length,
+      agentCalls: agentTcs.length,
+      agentTypes: new Set(agentTcs.map((tc) => String(tc.input?.subagent_type ?? ""))).size,
+      pluginCount: config.pluginCount,
+      pluginsUsed,
+      planModePrompts: prompts.filter((p) => p.kind === "user_prompt" && (p as { permissionMode?: string }).permissionMode === "plan").length,
+      config,
+    });
+  } else {
+    const featureScoreMap = extractFeatureScores(fires);
+    featureScores = {};
+    for (const [tag, data] of featureScoreMap) {
+      featureScores[tag] = data.score;
+    }
+  }
 
   // Total hours from session durations
   let totalMinutes = 0;
@@ -158,7 +180,7 @@ export function computeProficiency(
   const domains = bucketsToScores(buckets, phase);
 
   // Extract feature inventory
-  const features = extractFeatureInventory(sessions, fires);
+  const features = extractFeatureInventory(sessions, fires, config);
 
   return {
     username,

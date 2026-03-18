@@ -18,5 +18,6 @@ export { extractSignals } from "./scoring/signals.js";
 export { computeProficiency, extractFeatureInventory, getPhase, getConfidence, getRecencyWeight, SCORING_VERSION } from "./scoring/engine.js";
 export { fireRules, aggregateToBuckets, bucketsToScores, extractFeatureScores } from "./scoring/rule-engine.js";
 export { RULES } from "./scoring/rules.js";
+export { computeFeatureDepthScores } from "./scoring/feature-scores.js";
 export { logCurve, cappedRatio, binary, ratioToScore, weightedSum } from "./scoring/curves.js";
 export { isCIEnvironment } from "./utils/ci-detect.js";

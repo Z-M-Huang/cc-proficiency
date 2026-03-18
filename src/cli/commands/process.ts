@@ -54,7 +54,8 @@ export async function cmdProcess(): Promise<void> {
     }
 
     if (newSessions.length > 0) {
-      const config = parseClaudeConfig();
+      const projectCwds = [...new Set(queue.map((e) => e.cwd).filter(Boolean))];
+      const config = parseClaudeConfig(projectCwds.length > 0 ? projectCwds : undefined);
       const allSessions = await gatherAllProcessedSessions(store);
       const sessionsToScore = allSessions.length > 0 ? allSessions : newSessions;
       const setupChecklist = buildSetupChecklist(config);

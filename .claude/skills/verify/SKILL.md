@@ -84,54 +84,92 @@ Verify all critical runtime paths resolve correctly after build. Run via Bash:
     - If the file exists, each non-empty line must match the pattern `[ISO_TIMESTAMP] MESSAGE`
     - If it does not exist, that is OK (hook hasn't fired yet) — note this as "not yet created"
 
-### Step 5 — Locale detection
+### Step 5 — Feature scoring validation
 
-21. **Locale precedence**: Run via Bash:
+24. **Feature scores are graduated**: Load store.json's `lastResult.features.featureScores`. Verify:
+    - Must be an object with all 8 keys: `hooks`, `plugins`, `skills`, `mcp`, `agents`, `plan`, `memory`, `rules`
+    - All values must be integers between 0 and 100
+    - At least one value must be between 1 and 99 (not all binary 0/100 — proves graduated scoring works)
+
+25. **Explain Flags line**: Run `node dist/cli/index.js explain` and verify the output contains all 5 feature flags: `Plan`, `Memory`, `Rules`, `Agents`, `Skills` (each preceded by ✓ or ✗).
+
+26. **SVG mini-bars complete**: Load the SVG badge file. Verify it contains all 8 mini-bar labels: `Hooks`, `Plugins`, `Skills`, `MCP`, `Agents`, `Plan`, `Memory`, `Rules`.
+
+27. **SetupChecklist complete**: Load store.json's `lastResult.setupChecklist`. Verify it has all 8 boolean fields: `hasClaudeMd`, `hasHooks`, `hasPlugins`, `hasMcpServers`, `hasMemory`, `hasRules`, `hasAgents`, `hasSkills`.
+
+28. **Project-level config detection**: Run via Bash:
+    ```
+    node -e "const {parseClaudeConfig}=require('./dist/parsers/config-parser.js'); const c=parseClaudeConfig(); console.log(JSON.stringify({rulesFileCount:c.rulesFileCount,hasRulesFiles:c.hasRulesFiles,hasCustomSkills:c.hasCustomSkills,hasCustomAgents:c.hasCustomAgents,pluginCount:c.pluginCount}))"
+    ```
+    Verify:
+    - `rulesFileCount` must be a number >= 0
+    - `hasRulesFiles` must be a boolean
+    - `hasCustomSkills` must be a boolean
+    - `hasCustomAgents` must be a boolean
+    - `pluginCount` must be a number >= 0
+
+29. **Multi-project config merging**: Run via Bash:
+    ```
+    node -e "const {parseClaudeConfig}=require('./dist/parsers/config-parser.js'); const c1=parseClaudeConfig(['/nonexistent']); const c2=parseClaudeConfig(); console.log('empty-cwd-rules:'+c1.rulesFileCount, 'cwd-rules:'+c2.rulesFileCount)"
+    ```
+    Verify:
+    - Calling with a nonexistent path must not crash (returns 0 for project-level signals)
+    - Calling without args (defaults to `process.cwd()`) must return >= 0
+
+### Step 6 — Locale detection
+
+30. **Locale precedence**: Run via Bash:
     ```
     node -e "process.env.LC_ALL='zh_CN.UTF-8'; process.env.LANG='en_US.UTF-8'; const {detectLocale}=require('./dist/i18n/locales.js'); console.log(detectLocale())"
     ```
     Must print `zh-CN` (LC_ALL overrides LANG).
 
-22. **Locale fallback**: Run via Bash:
+31. **Locale fallback**: Run via Bash:
     ```
     node -e "delete process.env.LC_ALL; delete process.env.LC_MESSAGES; process.env.LANG='en_US.UTF-8'; const {detectLocale}=require('./dist/i18n/locales.js'); console.log(detectLocale())"
     ```
     Must print `en`.
 
-### Step 6 — File size check
+### Step 7 — File size check
 
-23. **Source file sizes**: Run `wc -l src/**/*.ts src/*.ts | sort -rn | head -8` via Bash. Flag any file over 300 lines that is NOT `types.ts` or `scoring/rules.ts`.
+32. **Source file sizes**: Run `wc -l src/**/*.ts src/*.ts | sort -rn | head -8` via Bash. Flag any file over 300 lines that is NOT `types.ts` or `scoring/rules.ts`.
 
 ### Report
 
 Report a summary table at the end:
 
 ```
-| Check              | Status |
-|--------------------|--------|
-| Typecheck          | ...    |
-| Lint               | ...    |
-| Tests (N passed)   | ...    |
-| Build              | ...    |
-| CLI: version       | ...    |
-| CLI: help          | ...    |
-| CLI: analyze       | ...    |
-| CLI: explain       | ...    |
-| CLI: achievements  | ...    |
-| CLI: status        | ...    |
-| CLI: config        | ...    |
-| CLI: badge         | ...    |
-| CLI: process       | ...    |
-| CLI: leaderboard   | ...    |
-| CLI: share         | ...    |
-| Path contracts     | ...    |
-| Store JSON         | ...    |
-| Config JSON        | ...    |
-| SVG badge          | ...    |
-| Hook log           | ...    |
-| Locale precedence  | ...    |
-| Locale fallback    | ...    |
-| File sizes         | ...    |
+| Check                   | Status |
+|-------------------------|--------|
+| Typecheck               | ...    |
+| Lint                    | ...    |
+| Tests (N passed)        | ...    |
+| Build                   | ...    |
+| CLI: version            | ...    |
+| CLI: help               | ...    |
+| CLI: analyze            | ...    |
+| CLI: explain            | ...    |
+| CLI: achievements       | ...    |
+| CLI: status             | ...    |
+| CLI: config             | ...    |
+| CLI: badge              | ...    |
+| CLI: process            | ...    |
+| CLI: leaderboard        | ...    |
+| CLI: share              | ...    |
+| Path contracts          | ...    |
+| Store JSON              | ...    |
+| Config JSON             | ...    |
+| SVG badge               | ...    |
+| Hook log                | ...    |
+| Feature scores          | ...    |
+| Explain Flags           | ...    |
+| SVG mini-bars           | ...    |
+| SetupChecklist          | ...    |
+| Project-level config    | ...    |
+| Multi-project merge     | ...    |
+| Locale precedence       | ...    |
+| Locale fallback         | ...    |
+| File sizes              | ...    |
 ```
 
 If all checks pass, end with: **All checks passed.**

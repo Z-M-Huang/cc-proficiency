@@ -96,6 +96,7 @@ describe("parseClaudeConfig", () => {
     writeFileSync(join(CLAUDE_DIR, "rules", "security.md"), "# Security rules\n");
     const config = parseClaudeConfig();
     expect(config.hasRulesFiles).toBe(true);
+    expect(config.rulesFileCount).toBe(1);
   });
 
   it("detects project-level rules files", () => {
@@ -104,6 +105,29 @@ describe("parseClaudeConfig", () => {
     writeFileSync(join(projectRulesDir, "architecture.md"), "# Arch rules\n");
     const config = parseClaudeConfig();
     expect(config.hasRulesFiles).toBe(true);
+    expect(config.rulesFileCount).toBe(1);
+  });
+
+  it("counts rules files across both dirs", () => {
+    mkdirSync(join(CLAUDE_DIR, "rules"), { recursive: true });
+    writeFileSync(join(CLAUDE_DIR, "rules", "global.md"), "# Global\n");
+    const projectRulesDir = join(TEST_CWD, ".claude", "rules");
+    mkdirSync(projectRulesDir, { recursive: true });
+    writeFileSync(join(projectRulesDir, "a.md"), "# A\n");
+    writeFileSync(join(projectRulesDir, "b.md"), "# B\n");
+    const config = parseClaudeConfig();
+    expect(config.rulesFileCount).toBe(3);
+  });
+
+  it("detects project-level plugins from .claude/settings.json", () => {
+    const projectSettings = join(TEST_CWD, ".claude", "settings.json");
+    mkdirSync(join(TEST_CWD, ".claude"), { recursive: true });
+    writeFileSync(projectSettings, JSON.stringify({
+      enabledPlugins: { "project-plugin@test": true },
+    }));
+    const config = parseClaudeConfig();
+    expect(config.pluginCount).toBe(1);
+    expect(config.pluginNames).toContain("project-plugin@test");
   });
 
   it("detects cwd/CLAUDE.md in projectClaudeMdCount", () => {
@@ -176,5 +200,39 @@ describe("parseClaudeConfig", () => {
     writeFileSync(join(CLAUDE_DIR, "settings.json"), "not json");
     const config = parseClaudeConfig();
     expect(config.pluginCount).toBe(0);
+  });
+
+  it("merges config across multiple project cwds", () => {
+    // Project A has rules
+    const projA = join(TEST_CWD, "proj-a");
+    mkdirSync(join(projA, ".claude", "rules"), { recursive: true });
+    writeFileSync(join(projA, ".claude", "rules", "sec.md"), "# Security\n");
+
+    // Project B has skills but no rules
+    const projB = join(TEST_CWD, "proj-b");
+    mkdirSync(join(projB, ".claude", "skills", "deploy"), { recursive: true });
+    writeFileSync(join(projB, ".claude", "skills", "deploy", "SKILL.md"), "# Deploy\n");
+
+    const config = parseClaudeConfig([projA, projB]);
+    expect(config.hasRulesFiles).toBe(true);
+    expect(config.rulesFileCount).toBe(1);
+    expect(config.hasCustomSkills).toBe(true);
+  });
+
+  it("deduplicates plugins across project cwds", () => {
+    const projA = join(TEST_CWD, "proj-a");
+    mkdirSync(join(projA, ".claude"), { recursive: true });
+    writeFileSync(join(projA, ".claude", "settings.json"), JSON.stringify({
+      enabledPlugins: { "github@official": true, "context7@official": true },
+    }));
+
+    const projB = join(TEST_CWD, "proj-b");
+    mkdirSync(join(projB, ".claude"), { recursive: true });
+    writeFileSync(join(projB, ".claude", "settings.json"), JSON.stringify({
+      enabledPlugins: { "github@official": true, "vcp@vcp": true },
+    }));
+
+    const config = parseClaudeConfig([projA, projB]);
+    expect(config.pluginCount).toBe(3); // github, context7, vcp (deduped)
   });
 });

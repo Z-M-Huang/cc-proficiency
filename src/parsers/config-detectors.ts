@@ -21,43 +21,49 @@ export function parseGlobalClaudeMd(result: ConfigSignals): void {
   }
 }
 
-export function parseSettings(result: ConfigSignals): void {
-  const settingsPath = join(CLAUDE_DIR, "settings.json");
-  if (!existsSync(settingsPath)) return;
+export function parseSettings(result: ConfigSignals, cwd: string): void {
+  const settingsPaths = [
+    join(CLAUDE_DIR, "settings.json"),
+    join(cwd, ".claude", "settings.json"),
+  ];
+  const allPluginNames = new Set(result.pluginNames);
 
-  try {
-    const settings = JSON.parse(readFileSync(settingsPath, "utf-8"));
+  for (const settingsPath of settingsPaths) {
+    if (!existsSync(settingsPath)) continue;
 
-    if (settings.enabledPlugins) {
-      const names = Object.keys(settings.enabledPlugins).filter(
-        (k) => settings.enabledPlugins[k] === true
-      );
-      result.pluginCount = names.length;
-      result.pluginNames = names;
-    }
+    try {
+      const settings = JSON.parse(readFileSync(settingsPath, "utf-8"));
 
-    result.effortLevel = settings.effortLevel ?? "";
+      if (settings.enabledPlugins) {
+        for (const k of Object.keys(settings.enabledPlugins)) {
+          if (settings.enabledPlugins[k] === true) allPluginNames.add(k);
+        }
+      }
 
-    if (settings.hooks) {
-      const allHooks = Object.values(settings.hooks) as unknown[][];
-      let totalHooks = 0;
-      let matcherHooks = 0;
-      for (const eventHooks of allHooks) {
-        if (!Array.isArray(eventHooks)) continue;
-        for (const hookGroup of eventHooks) {
-          const group = hookGroup as { matcher?: string; hooks?: unknown[] };
-          if (group.hooks) {
-            totalHooks += group.hooks.length;
-            if (group.matcher) matcherHooks += group.hooks.length;
+      if (settings.effortLevel) {
+        result.effortLevel = settings.effortLevel;
+      }
+
+      if (settings.hooks) {
+        const allHooks = Object.values(settings.hooks) as unknown[][];
+        for (const eventHooks of allHooks) {
+          if (!Array.isArray(eventHooks)) continue;
+          for (const hookGroup of eventHooks) {
+            const group = hookGroup as { matcher?: string; hooks?: unknown[] };
+            if (group.hooks) {
+              result.hasCustomHooks = true;
+              if (group.matcher) result.hookWithMatcherCount += group.hooks.length;
+            }
           }
         }
       }
-      result.hasCustomHooks = totalHooks > 0;
-      result.hookWithMatcherCount = matcherHooks;
+    } catch {
+      // settings unreadable
     }
-  } catch {
-    // settings unreadable
   }
+
+  result.pluginCount = allPluginNames.size;
+  result.pluginNames = [...allPluginNames];
 }
 
 export function parsePluginHooks(result: ConfigSignals): void {
@@ -126,74 +132,78 @@ function scanMemoryDir(memoryDir: string, result: ConfigSignals): void {
   }
 }
 
+/** Scan global ~/.claude/projects/ for CLAUDE.md and memory. */
 export function parseProjectsAndMemory(result: ConfigSignals): void {
-  // Scan ~/.claude/projects/*/CLAUDE.md and */memory/
   const projectsDir = join(CLAUDE_DIR, "projects");
-  if (existsSync(projectsDir)) {
-    try {
-      const projects = readdirSync(projectsDir);
-      for (const proj of projects) {
-        const projDir = join(projectsDir, proj);
-        if (!statSync(projDir).isDirectory()) continue;
+  if (!existsSync(projectsDir)) return;
 
-        if (existsSync(join(projDir, "CLAUDE.md"))) {
-          result.projectClaudeMdCount++;
-        }
+  try {
+    const projects = readdirSync(projectsDir);
+    for (const proj of projects) {
+      const projDir = join(projectsDir, proj);
+      if (!statSync(projDir).isDirectory()) continue;
 
-        scanMemoryDir(join(projDir, "memory"), result);
+      if (existsSync(join(projDir, "CLAUDE.md"))) {
+        result.projectClaudeMdCount++;
       }
-    } catch {
-      // can't read projects dir
+
+      scanMemoryDir(join(projDir, "memory"), result);
     }
+  } catch {
+    // can't read projects dir
   }
 
-  // Detect cwd project-level CLAUDE.md
-  const cwd = process.cwd();
-  if (existsSync(join(cwd, "CLAUDE.md"))) result.projectClaudeMdCount++;
-  if (existsSync(join(cwd, ".claude", "CLAUDE.md"))) result.projectClaudeMdCount++;
-
-  // Scan agent-memory dirs (user + project level)
-  const agentMemoryDirs = [
-    join(CLAUDE_DIR, "agent-memory"),
-    join(cwd, ".claude", "agent-memory"),
-  ];
-  for (const dir of agentMemoryDirs) {
-    if (!existsSync(dir) || !statSync(dir).isDirectory()) continue;
+  // Global agent-memory
+  const globalAgentMem = join(CLAUDE_DIR, "agent-memory");
+  if (existsSync(globalAgentMem) && statSync(globalAgentMem).isDirectory()) {
     try {
-      for (const sub of readdirSync(dir)) {
-        scanMemoryDir(join(dir, sub), result);
+      for (const sub of readdirSync(globalAgentMem)) {
+        scanMemoryDir(join(globalAgentMem, sub), result);
       }
-    } catch {
-      // skip
-    }
+    } catch { /* skip */ }
   }
 }
 
-export function parseRulesFiles(result: ConfigSignals): void {
+/** Scan a project cwd for CLAUDE.md, agent-memory, and project-level settings. */
+export function parseProjectCwd(result: ConfigSignals, cwd: string): void {
+  // Project-level CLAUDE.md
+  if (existsSync(join(cwd, "CLAUDE.md"))) result.projectClaudeMdCount++;
+  if (existsSync(join(cwd, ".claude", "CLAUDE.md"))) result.projectClaudeMdCount++;
+
+  // Project-level agent-memory
+  const agentMemDir = join(cwd, ".claude", "agent-memory");
+  if (existsSync(agentMemDir) && statSync(agentMemDir).isDirectory()) {
+    try {
+      for (const sub of readdirSync(agentMemDir)) {
+        scanMemoryDir(join(agentMemDir, sub), result);
+      }
+    } catch { /* skip */ }
+  }
+}
+
+export function parseRulesFiles(result: ConfigSignals, cwd: string): void {
   const dirs = [
     join(CLAUDE_DIR, "rules"),
-    join(process.cwd(), ".claude", "rules"),
+    join(cwd, ".claude", "rules"),
   ];
   for (const rulesDir of dirs) {
     if (!existsSync(rulesDir)) continue;
     try {
       const rules = readdirSync(rulesDir).filter((f) => f.endsWith(".md"));
-      if (rules.length > 0) {
-        result.hasRulesFiles = true;
-        return;
-      }
+      result.rulesFileCount += rules.length;
     } catch {
       // can't read
     }
   }
+  result.hasRulesFiles = result.rulesFileCount > 0;
 }
 
-export function parseMcpServers(result: ConfigSignals): void {
+export function parseMcpServers(result: ConfigSignals, cwd: string): void {
   const mcpPaths = [
     join(CLAUDE_DIR, ".mcp.json"),
     join(CLAUDE_DIR, "mcp.json"),
-    join(process.cwd(), ".mcp.json"),
-    join(process.cwd(), "mcp.json"),
+    join(cwd, ".mcp.json"),
+    join(cwd, "mcp.json"),
   ];
   for (const mcpPath of mcpPaths) {
     if (existsSync(mcpPath)) {
@@ -241,10 +251,10 @@ export function parseMcpServers(result: ConfigSignals): void {
   } catch { /* skip */ }
 }
 
-export function parseCustomAgents(result: ConfigSignals): void {
+export function parseCustomAgents(result: ConfigSignals, cwd: string): void {
   const dirs = [
     join(CLAUDE_DIR, "agents"),
-    join(process.cwd(), ".claude", "agents"),
+    join(cwd, ".claude", "agents"),
   ];
   for (const agentsDir of dirs) {
     if (!existsSync(agentsDir)) continue;
@@ -260,10 +270,10 @@ export function parseCustomAgents(result: ConfigSignals): void {
   }
 }
 
-export function parseCustomSkills(result: ConfigSignals): void {
+export function parseCustomSkills(result: ConfigSignals, cwd: string): void {
   const dirs = [
     join(CLAUDE_DIR, "skills"),
-    join(process.cwd(), ".claude", "skills"),
+    join(cwd, ".claude", "skills"),
   ];
   for (const skillsDir of dirs) {
     if (!existsSync(skillsDir)) continue;
