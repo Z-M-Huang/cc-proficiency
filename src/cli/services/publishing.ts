@@ -1,5 +1,6 @@
 import { renderBadge } from "../../renderer/svg.js";
-import { loadStore, loadConfig, saveBadge, getBadgePath, logError } from "../../store/local-store.js";
+import { renderAnimatedBadge } from "../../renderer/animated-svg.js";
+import { loadStore, loadConfig, saveBadge, saveAnimatedBadge, getBadgePath, logError } from "../../store/local-store.js";
 import { isGhAuthenticated, getGistRawUrl, readGistFile, pushGistFiles } from "../../gist/uploader.js";
 import { emptyRemoteStore, parseRemoteStore, mergeIntoRemote, getTotalStats, getUTCDate, getWeekMonday, mergeWeeklyTrends } from "../../store/remote-store.js";
 import { checkAchievements, getAchievementDef } from "../../store/achievements.js";
@@ -71,11 +72,15 @@ export function mergeAndPush(
 
   result.streak = merged.streak.current;
   result.achievementCount = merged.achievements.length;
-  const finalSvg = renderBadge(result, getConfigLocale());
+  const locale = getConfigLocale();
+  const finalSvg = renderBadge(result, locale);
+  const animatedSvg = renderAnimatedBadge(result, locale);
   saveBadge(finalSvg);
+  saveAnimatedBadge(animatedSvg);
 
   const pushResult = pushGistFiles(gistId, {
     "cc-proficiency.svg": finalSvg,
+    "cc-proficiency-animated.svg": animatedSvg,
     "cc-proficiency.json": JSON.stringify(merged, null, 2),
   });
 
@@ -85,8 +90,10 @@ export function mergeAndPush(
 
   if (verbose) {
     const rawUrl = getGistRawUrl(username, gistId);
+    const animatedUrl = getGistRawUrl(username, gistId, "cc-proficiency-animated.svg");
     console.log("\u2713 Badge + data pushed to Gist");
-    console.log(`  ${rawUrl}`);
+    console.log(`  Static:   ${rawUrl}`);
+    console.log(`  Animated: ${animatedUrl}`);
     console.log(`  ${totals.sessions} sessions \u00B7 ${totals.hours.toFixed(1)}h \u00B7 ${merged.achievements.length} achievements \u00B7 \uD83D\uDD25 ${merged.streak.current}d streak`);
   }
 

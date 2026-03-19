@@ -40,6 +40,8 @@ Run each command via Bash (`node dist/cli/index.js <cmd>`) and verify expected o
 
 12. **badge**: Run `node dist/cli/index.js badge` — must produce output containing `Badge saved to`. Must not error.
 
+12b. **badge --animated**: Run `node dist/cli/index.js badge --animated` — must produce output containing `Badge saved to` and the path must contain `animated`. Must not error.
+
 13. **process**: Run `node dist/cli/index.js process` — must produce output containing `Queue empty` or `Processed`. Must not error. (This exercises the mergeAndPush path when sessions are queued.)
 
 14. **leaderboard**: Run `node dist/cli/index.js leaderboard` — must produce output containing `Leaderboard` (either rankings or "unavailable"). Must not error.
@@ -80,7 +82,21 @@ Verify all critical runtime paths resolve correctly after build. Run via Bash:
     - If store.json `lastResult.streak` is set, SVG must contain the streak emoji 🔥
     - If store.json `lastResult.achievementCount` is set and > 0, SVG must contain the trophy emoji 🏆
 
-20. **Validate hook log** (`~/.cc-proficiency/hook.log`):
+20. **Validate animated SVG badge** (`~/.cc-proficiency/cc-proficiency-animated.svg`):
+    - File must exist and be non-empty
+    - Must start with `<svg` and contain `xmlns="http://www.w3.org/2000/svg"`
+    - Must contain SMIL `<animate` elements (proves it's the animated variant, not a copy of the static badge)
+    - Must contain `attributeName="width"` (bar-fill animation) and `attributeName="opacity"` (fade-in animation)
+    - Must contain `calcMode="spline"` (eased animation, not linear)
+    - Must contain `fill="freeze"` (animations hold their end state)
+    - Must contain the username from store.json's `lastResult.username`
+    - Must contain all 5 domain labels: `CC Mastery`, `Tool`, `Agentic`, `Prompt`, `Context`
+    - Must contain all 8 mini-bar labels: `Hooks`, `Plugins`, `Skills`, `MCP`, `Agents`, `Plan`, `Memory`, `Rules`
+    - Must be well-formed XML — validate that it ends with `</svg>`
+    - Height must match the static badge: extract `height="N"` from both files and verify they are equal
+    - File size should be between 4KB and 80KB (animated SVG is larger due to `<animate>` elements)
+
+21. **Validate hook log** (`~/.cc-proficiency/hook.log`):
     - If the file exists, each non-empty line must match the pattern `[ISO_TIMESTAMP] MESSAGE`
     - If it does not exist, that is OK (hook hasn't fired yet) — note this as "not yet created"
 
@@ -158,6 +174,7 @@ Report a summary table at the end:
 | CLI: status             | ...    |
 | CLI: config             | ...    |
 | CLI: badge              | ...    |
+| CLI: badge --animated   | ...    |
 | CLI: process            | ...    |
 | CLI: leaderboard        | ...    |
 | CLI: share              | ...    |
@@ -165,6 +182,7 @@ Report a summary table at the end:
 | Store JSON              | ...    |
 | Config JSON             | ...    |
 | SVG badge               | ...    |
+| Animated SVG badge      | ...    |
 | Hook log                | ...    |
 | Feature scores          | ...    |
 | Explain Flags           | ...    |

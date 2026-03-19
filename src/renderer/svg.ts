@@ -1,7 +1,7 @@
 import type { ProficiencyResult, DomainScore, ConfidenceLevel } from "../types.js";
 import { getLocale, type Locale, type LocaleStrings } from "../i18n/locales.js";
 
-const C = {
+export const C = {
   bg: "#0d1117",
   card: "#161b22",
   border: "#30363d",
@@ -14,7 +14,7 @@ const C = {
   blue: "#58a6ff",
 };
 
-const DOMAIN_COLORS: Record<string, string> = {
+export const DOMAIN_COLORS: Record<string, string> = {
   "cc-mastery": "#a371f7",   // purple
   "tool-mcp": "#58a6ff",     // blue
   "agentic": "#3fb950",      // green
@@ -22,14 +22,14 @@ const DOMAIN_COLORS: Record<string, string> = {
   "context-mgmt": "#d29922", // gold
 };
 
-const SANS = `'Segoe UI', system-ui, -apple-system, sans-serif`;
-const MONO = `ui-monospace, 'SF Mono', SFMono-Regular, monospace`;
+export const SANS = `'Segoe UI', system-ui, -apple-system, sans-serif`;
+export const MONO = `ui-monospace, 'SF Mono', SFMono-Regular, monospace`;
 
-function escapeXml(str: string): string {
+export function escapeXml(str: string): string {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
-function confidenceSymbol(c: ConfidenceLevel): string {
+export function confidenceSymbol(c: ConfidenceLevel): string {
   switch (c) {
     case "low": return "\u25CB";
     case "medium": return "\u25D0";
@@ -37,13 +37,13 @@ function confidenceSymbol(c: ConfidenceLevel): string {
   }
 }
 
-function defs(): string {
+export function svgDefs(): string {
   return `<defs>
     <filter id="glow"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>`;
 }
 
-function domainLabel(id: string, t: LocaleStrings): string {
+export function domainLabel(id: string, t: LocaleStrings): string {
   const map: Record<string, keyof LocaleStrings> = {
     "cc-mastery": "ccMastery", "tool-mcp": "toolMcp", "agentic": "agentic",
     "prompt-craft": "promptCraft", "context-mgmt": "contextMgmt",
@@ -66,14 +66,14 @@ function renderDomainRow(d: DomainScore, y: number, t: LocaleStrings): string {
     </g>`;
 }
 
-function formatHours(h: number): string {
+export function formatHours(h: number): string {
   if (h >= 1000) return (h / 1000).toFixed(1) + "kh";
   return h + "h";
 }
 
 // ── 8 Feature Mini-Bars (heatmap row) ──
 
-const MINI_BAR_KEYS: Array<{ key: string; localeKey: keyof LocaleStrings; color: string }> = [
+export const MINI_BAR_KEYS: Array<{ key: string; localeKey: keyof LocaleStrings; color: string }> = [
   { key: "hooks", localeKey: "hooks", color: "#a371f7" },
   { key: "plugins", localeKey: "plugins", color: "#a371f7" },
   { key: "skills", localeKey: "skills", color: "#58a6ff" },
@@ -84,12 +84,12 @@ const MINI_BAR_KEYS: Array<{ key: string; localeKey: keyof LocaleStrings; color:
   { key: "rules", localeKey: "rules", color: "#d29922" },
 ];
 
-function miniBarColor(score: number, baseColor: string): string {
+export function miniBarColor(score: number, baseColor: string): string {
   if (score === 0) return C.barBg;
   return baseColor;
 }
 
-function miniBarOpacity(score: number): string {
+export function miniBarOpacity(score: number): string {
   if (score === 0) return "0.3";
   if (score < 30) return "0.4";
   if (score < 70) return "0.7";
@@ -124,7 +124,7 @@ function renderMiniBarGrid(featureScores: Record<string, number> | undefined, y:
   return lines.join("\n");
 }
 
-const MINI_BAR_SECTION_HEIGHT = 42; // single row of mini-bars + labels
+export const MINI_BAR_SECTION_HEIGHT = 42; // single row of mini-bars + labels
 
 // ── Calibrating Badge ──
 export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale = "en"): string {
@@ -138,7 +138,7 @@ export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="cc-title cc-desc">
   <title id="cc-title">${escapeXml(t.title)} \u2014 @${u}</title>
   <desc id="cc-desc">${escapeXml(t.calibrating)}: ${result.sessionCount} ${escapeXml(t.sessions)}</desc>
-  ${defs()}
+  ${svgDefs()}
   <rect width="${width}" height="${height}" rx="12" fill="${C.bg}"/>
   <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="11.5" fill="${C.card}" stroke="${C.border}"/>
   <text x="25" y="34" fill="${C.text}" font-size="18" font-family="${SANS}" font-weight="600">${escapeXml(t.title)}</text>
@@ -179,7 +179,7 @@ export function renderFullBadge(result: ProficiencyResult, locale: Locale = "en"
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="cc-title cc-desc">
   <title id="cc-title">${escapeXml(t.title)} \u2014 @${u}</title>
   <desc id="cc-desc">${result.sessionCount} ${escapeXml(t.sessions)}, ${result.projectCount} ${escapeXml(t.projects)}</desc>
-  ${defs()}
+  ${svgDefs()}
   <rect width="${width}" height="${height}" rx="12" fill="${C.bg}"/>
   <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="11.5" fill="${C.card}" stroke="${C.border}"/>
   <text x="25" y="34" fill="${C.text}" font-size="18" font-family="${SANS}" font-weight="600">${escapeXml(t.title)}</text>

@@ -49,7 +49,10 @@
 
 <p align="center">
   <a href="https://github.com/Z-M-Huang/cc-proficiency">
-    <img src="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency.svg" alt="CC Proficiency 徽章示例" />
+    <img src="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency.svg" alt="CC Proficiency 徽章 — 静态" />
+  </a>
+  <a href="https://github.com/Z-M-Huang/cc-proficiency">
+    <img src="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency-animated.svg" alt="CC Proficiency 徽章 — 动画" />
   </a>
 </p>
 
@@ -141,7 +144,11 @@ cc-proficiency badge
 运行 `cc-proficiency init` 后，在 README 中添加：
 
 ```markdown
+<!-- 静态徽章 -->
 ![Claude Code Proficiency](https://gist.githubusercontent.com/<用户名>/<gist-id>/raw/cc-proficiency.svg)
+
+<!-- 动画徽章（加载时进度条填充） -->
+![Claude Code Proficiency](https://gist.githubusercontent.com/<用户名>/<gist-id>/raw/cc-proficiency-animated.svg)
 ```
 
 ## 渐进式徽章
