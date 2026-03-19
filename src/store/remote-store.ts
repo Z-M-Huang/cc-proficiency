@@ -1,5 +1,6 @@
 import { hostname } from "node:os";
-import type { RemoteStore, ProficiencyResult, StreakData, WeeklyTrend } from "../types.js";
+import type { RemoteStore, ProficiencyResult, StreakData, WeeklyTrend, TokenWindows } from "../types.js";
+import { computeTokenWindows } from "./local-store.js";
 
 const RETENTION_DAYS = 90;
 
@@ -50,13 +51,22 @@ export function parseRemoteStore(json: string): RemoteStore | null {
  */
 export function mergeIntoRemote(
   remote: RemoteStore,
-  localSessions: Array<{ id: string; date: string; hours: number }>,
+  localSessions: Array<{ id: string; date: string; hours: number; tokens?: number; endTimestamp?: string }>,
   result: ProficiencyResult
 ): RemoteStore {
-  // Merge recent sessions (dedupe by ID)
-  const existingIds = new Set(remote.recentSessions.map((s) => s.id));
-  const newSessions = localSessions.filter((s) => !existingIds.has(s.id));
-  const allRecent = [...remote.recentSessions, ...newSessions];
+  // Merge recent sessions (upsert enrichment fields for existing, append new)
+  const existingById = new Map(remote.recentSessions.map((s) => [s.id, s]));
+  for (const local of localSessions) {
+    const existing = existingById.get(local.id);
+    if (existing) {
+      // Always update token data from local (handles reparsed/corrected values)
+      if (local.tokens != null) existing.tokens = local.tokens;
+      if (local.endTimestamp) existing.endTimestamp = local.endTimestamp;
+    } else {
+      remote.recentSessions.push(local);
+    }
+  }
+  const allRecent = remote.recentSessions;
 
   // Roll old sessions into archive (keep only last 90 days in recent)
   const cutoff = new Date();
@@ -199,4 +209,21 @@ export function getWeekMonday(timestamp: string): string {
  */
 export function getUTCDate(timestamp: string): string {
   return new Date(timestamp).toISOString().slice(0, 10);
+}
+
+/**
+ * Compute token windows from merged remote recentSessions.
+ * Uses endTimestamp for accuracy, falls back to date + "T23:59:59Z".
+ */
+export function computeTokenWindowsFromRemote(
+  recentSessions: RemoteStore["recentSessions"]
+): TokenWindows {
+  const tokenLog = recentSessions
+    .filter((s) => s.tokens != null && s.tokens > 0)
+    .map((s) => ({
+      sessionId: s.id,
+      timestamp: s.endTimestamp ?? s.date + "T23:59:59Z",
+      tokens: s.tokens!,
+    }));
+  return computeTokenWindows(tokenLog);
 }

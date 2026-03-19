@@ -16,6 +16,13 @@ describe("parseTranscript", () => {
     expect(session.events.length).toBeGreaterThan(0);
   });
 
+  it("sums totalTokens from assistant message usage", async () => {
+    const session = await parseTranscript(join(FIXTURE_DIR, "sample-session.jsonl"));
+    // Fixture has 3 assistant entries with usage:
+    // (3 + 16254 + 135) + (1 + 30737 + 216) + (1 + 32104 + 68) = 79519
+    expect(session.totalTokens).toBe(79519);
+  });
+
   it("extracts user prompts", async () => {
     const session = await parseTranscript(join(FIXTURE_DIR, "sample-session.jsonl"));
     const prompts = session.events.filter(

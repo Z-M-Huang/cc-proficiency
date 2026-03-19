@@ -131,4 +131,25 @@ describe("renderAnimatedBadge", () => {
     expect(svg).toContain("42d");
     expect(svg).toContain("15");
   });
+
+  it("shows token line when tokenWindows provided", () => {
+    const svg = renderAnimatedBadge(makeResult(), "en", { tokens24h: 1500000, tokens30d: 15300000 });
+    expect(svg).toContain("tokens");
+    expect(svg).toContain("1.5M/24h");
+    expect(svg).toContain("15.3M/30d");
+  });
+
+  it("omits token line when tokenWindows undefined", () => {
+    const svg = renderAnimatedBadge(makeResult());
+    expect(svg).not.toContain("tokens");
+    expect(svg).not.toContain("/24h");
+  });
+
+  it("increases badge height when tokens present", () => {
+    const svgWithout = renderAnimatedBadge(makeResult());
+    const svgWith = renderAnimatedBadge(makeResult(), "en", { tokens24h: 1000, tokens30d: 5000 });
+    const heightWithout = parseInt(svgWithout.match(/height="(\d+)"/)?.[1] ?? "0");
+    const heightWith = parseInt(svgWith.match(/height="(\d+)"/)?.[1] ?? "0");
+    expect(heightWith).toBeGreaterThan(heightWithout);
+  });
 });

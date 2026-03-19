@@ -17,7 +17,7 @@ const emptyChecklist: SetupChecklist = {
 };
 
 function makeSession(events: NormalizedEvent[], id = "s1"): ParsedSession {
-  return { sessionId: id, startTime: "2026-03-15T10:00:00Z", endTime: "2026-03-15T11:00:00Z", project: "test", events, version: "2.1.76" };
+  return { sessionId: id, startTime: "2026-03-15T10:00:00Z", endTime: "2026-03-15T11:00:00Z", project: "test", events, version: "2.1.76", totalTokens: 0 };
 }
 function tc(name: string, ts = "t1"): NormalizedEvent {
   return { kind: "tool_call", sessionId: "s1", timestamp: ts, toolName: name, toolId: `t_${Math.random().toString(36).slice(2)}`, input: {} };

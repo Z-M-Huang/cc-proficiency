@@ -1,5 +1,5 @@
 import { renderBadge } from "../../renderer/svg.js";
-import { loadStore, loadConfig, saveConfig, saveBadge, getBadgePath, getStoreDir } from "../../store/local-store.js";
+import { loadStore, loadConfig, saveConfig, saveBadge, getBadgePath, getStoreDir, computeTokenWindows } from "../../store/local-store.js";
 import { ensureStoreDir } from "../../store/queue.js";
 import { isGhAuthenticated, getGhUsername, createGist, updateGist, getGistRawUrl } from "../../gist/uploader.js";
 import { detectLocale } from "../../i18n/locales.js";
@@ -41,7 +41,7 @@ export async function cmdInit(): Promise<void> {
   const store = loadStore();
   let badgeSvg = '<svg xmlns="http://www.w3.org/2000/svg"><text>No data</text></svg>';
   if (store.lastResult) {
-    badgeSvg = renderBadge(store.lastResult, getConfigLocale());
+    badgeSvg = renderBadge(store.lastResult, getConfigLocale(), computeTokenWindows(store.tokenLog));
     saveBadge(badgeSvg);
   }
 

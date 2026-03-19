@@ -1,8 +1,8 @@
 import { renderBadge } from "../../renderer/svg.js";
 import { renderAnimatedBadge } from "../../renderer/animated-svg.js";
-import { loadStore, loadConfig, saveBadge, saveAnimatedBadge, getBadgePath, logError } from "../../store/local-store.js";
+import { loadStore, loadConfig, saveBadge, saveAnimatedBadge, getBadgePath, logError, computeTokenWindows } from "../../store/local-store.js";
 import { isGhAuthenticated, getGistRawUrl, readGistFile, pushGistFiles } from "../../gist/uploader.js";
-import { emptyRemoteStore, parseRemoteStore, mergeIntoRemote, getTotalStats, getUTCDate, getWeekMonday, mergeWeeklyTrends } from "../../store/remote-store.js";
+import { emptyRemoteStore, parseRemoteStore, mergeIntoRemote, getTotalStats, getUTCDate, getWeekMonday, mergeWeeklyTrends, computeTokenWindowsFromRemote } from "../../store/remote-store.js";
 import { checkAchievements, getAchievementDef } from "../../store/achievements.js";
 import { buildPublicProfile } from "../../store/public-profile.js";
 import { parseClaudeConfig } from "../../parsers/config-parser.js";
@@ -34,12 +34,16 @@ export function mergeAndPush(
   if (!remote) remote = emptyRemoteStore(username);
 
   const avgHours = result.features.totalHours / Math.max(store.processedSessionIds.length, 1);
+  const tokenMap = new Map((store.tokenLog ?? []).map((t) => [t.sessionId, t]));
   const localSessions = store.processedSessionIds.map((id) => {
     const snap = store.snapshots.find((s) => s.sessionId === id);
+    const tokenEntry = tokenMap.get(id);
     return {
       id,
       date: snap ? getUTCDate(snap.timestamp) : new Date().toISOString().slice(0, 10),
       hours: avgHours,
+      tokens: tokenEntry?.tokens,
+      endTimestamp: tokenEntry?.timestamp,
     };
   });
 
@@ -76,8 +80,9 @@ export function mergeAndPush(
   result.streak = merged.streak.current;
   result.achievementCount = merged.achievements.length;
   const locale = getConfigLocale();
-  const finalSvg = renderBadge(result, locale);
-  const animatedSvg = renderAnimatedBadge(result, locale);
+  const tokenWindows = computeTokenWindowsFromRemote(merged.recentSessions);
+  const finalSvg = renderBadge(result, locale, tokenWindows);
+  const animatedSvg = renderAnimatedBadge(result, locale, tokenWindows);
   saveBadge(finalSvg);
   saveAnimatedBadge(animatedSvg);
 
@@ -127,7 +132,8 @@ export function pushToGist(): void {
     return;
   }
 
-  const svg = renderBadge(store.lastResult, getConfigLocale());
+  const tokenWindows = computeTokenWindows(store.tokenLog);
+  const svg = renderBadge(store.lastResult, getConfigLocale(), tokenWindows);
   saveBadge(svg);
 
   if (!isGhAuthenticated() || !config.gistId) {

@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync, statSync, appendFileSync, renameSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import type { LocalStore, SessionSnapshot, CCProficiencyConfig, LeaderboardCache } from "../types.js";
+import type { LocalStore, SessionSnapshot, CCProficiencyConfig, LeaderboardCache, TokenLogEntry, TokenWindows } from "../types.js";
 import { ensureStoreDir } from "./queue.js";
 
 const STORE_DIR = join(homedir(), ".cc-proficiency");
@@ -44,6 +44,14 @@ export function saveStore(store: LocalStore): void {
     const ts = new Date(s.timestamp).getTime();
     return !isNaN(ts) && ts > cutoff;
   });
+
+  // Prune old token log entries (>90 days)
+  if (store.tokenLog) {
+    store.tokenLog = store.tokenLog.filter((e) => {
+      const ts = new Date(e.timestamp).getTime();
+      return !isNaN(ts) && ts > cutoff;
+    });
+  }
 
   const tmpFile = join(STORE_DIR, ".store.json.tmp");
   writeFileSync(tmpFile, JSON.stringify(store, null, 2), "utf-8");
@@ -126,4 +134,39 @@ export function loadLeaderboardCache(): LeaderboardCache | null {
 export function saveLeaderboardCache(cache: LeaderboardCache): void {
   ensureStoreDir();
   writeFileSync(LEADERBOARD_CACHE_FILE, JSON.stringify(cache, null, 2), "utf-8");
+}
+
+export function upsertTokenLog(store: LocalStore, entries: TokenLogEntry[]): void {
+  if (!store.tokenLog) store.tokenLog = [];
+  const byId = new Map(store.tokenLog.map((e) => [e.sessionId, e]));
+  for (const entry of entries) {
+    const existing = byId.get(entry.sessionId);
+    if (existing) {
+      existing.tokens = entry.tokens;
+      existing.timestamp = entry.timestamp;
+    } else {
+      store.tokenLog.push(entry);
+      byId.set(entry.sessionId, entry);
+    }
+  }
+}
+
+export function computeTokenWindows(tokenLog?: TokenLogEntry[]): TokenWindows {
+  if (!tokenLog || tokenLog.length === 0) {
+    return { tokens24h: 0, tokens30d: 0 };
+  }
+  const now = Date.now();
+  const h24 = now - 24 * 60 * 60 * 1000;
+  const d30 = now - 30 * 24 * 60 * 60 * 1000;
+  let tokens24h = 0;
+  let tokens30d = 0;
+  for (const entry of tokenLog) {
+    const ts = new Date(entry.timestamp).getTime();
+    if (isNaN(ts)) continue;
+    if (ts > d30) {
+      tokens30d += entry.tokens;
+      if (ts > h24) tokens24h += entry.tokens;
+    }
+  }
+  return { tokens24h, tokens30d };
 }

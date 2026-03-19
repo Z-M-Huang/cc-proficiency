@@ -19,6 +19,7 @@ function makeSession(events: NormalizedEvent[], id: string = "s1", project: stri
     project,
     events,
     version: "2.1.76",
+    totalTokens: 0,
   };
 }
 

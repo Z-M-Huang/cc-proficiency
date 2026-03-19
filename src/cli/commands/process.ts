@@ -3,7 +3,7 @@ import { parseTranscript } from "../../parsers/transcript-parser.js";
 import { buildSetupChecklist } from "../../parsers/config-parser.js";
 import { computeProficiency } from "../../scoring/engine.js";
 import { renderBadge } from "../../renderer/svg.js";
-import { loadStore, saveStore, isSessionProcessed, loadConfig, saveBadge, logError } from "../../store/local-store.js";
+import { loadStore, saveStore, isSessionProcessed, loadConfig, saveBadge, logError, upsertTokenLog, computeTokenWindows } from "../../store/local-store.js";
 import { readQueue, writeQueue, acquireLock, releaseLock } from "../../store/queue.js";
 import { isGhAuthenticated, readGistFile } from "../../gist/uploader.js";
 import { getConfigWithSync, gatherAllProcessedSessions } from "../services/sessions.js";
@@ -61,6 +61,13 @@ export async function cmdProcess(): Promise<void> {
     store.knownProjectCwds = allCwds;
 
     if (newSessions.length > 0) {
+      // Build token log entries from newly parsed sessions
+      upsertTokenLog(store, newSessions.map((s) => ({
+        sessionId: s.sessionId,
+        timestamp: s.endTime,
+        tokens: s.totalTokens,
+      })));
+
       const config = getConfigWithSync(allCwds.length > 0 ? allCwds : undefined);
       const allSessions = await gatherAllProcessedSessions(store);
       const sessionsToScore = allSessions.length > 0 ? allSessions : newSessions;
@@ -77,7 +84,8 @@ export async function cmdProcess(): Promise<void> {
       store.lastResult = result;
 
       // Save local badge first (always works, even offline)
-      const svg = renderBadge(result, getConfigLocale());
+      const tokenWindows = computeTokenWindows(store.tokenLog);
+      const svg = renderBadge(result, getConfigLocale(), tokenWindows);
       const badgePath = saveBadge(svg);
 
       // Push SVG + JSON atomically (preserves achievements/streak)

@@ -14,6 +14,7 @@ import { cmdUninstall } from "./commands/uninstall.js";
 import { cmdShare } from "./commands/share.js";
 import { cmdLeaderboard } from "./commands/leaderboard.js";
 import { cmdUpdate } from "./commands/update.js";
+import { cmdRefresh } from "./commands/refresh.js";
 import { checkForUpdates } from "./utils/update-check.js";
 import { getVersion } from "./utils/version.js";
 
@@ -27,6 +28,7 @@ Commands:
   process               Process queued sessions from hook
   badge [--output <f>]  Generate SVG badge
   push                  Upload badge to GitHub Gist
+  refresh [--force]     Refresh token stats and re-render badge
   explain               Show score drivers and improvement tips
   status                Show hook activity, queue, and config
   config [key] [value]  View or set configuration
@@ -82,6 +84,8 @@ async function main(): Promise<void> {
     case "leaderboard":
       await cmdLeaderboard(args);
       break;
+    case "refresh":
+      return cmdRefresh(args);
     case "update":
       return cmdUpdate();
     case "uninstall":

@@ -14,6 +14,7 @@ export async function parseTranscript(filePath: string): Promise<ParsedSession> 
   let project = "";
   let firstTimestamp = "";
   let lastTimestamp = "";
+  let totalTokens = 0;
 
   const rl = createInterface({
     input: createReadStream(filePath, { encoding: "utf-8" }),
@@ -43,6 +44,15 @@ export async function parseTranscript(filePath: string): Promise<ParsedSession> 
         lastTimestamp = raw.timestamp;
       }
 
+      // Sum token usage from assistant messages
+      if (raw.type === "assistant" && raw.message?.usage) {
+        const u = raw.message.usage;
+        totalTokens += (u.input_tokens ?? 0)
+          + (u.cache_creation_input_tokens ?? 0)
+          + (u.cache_read_input_tokens ?? 0)
+          + (u.output_tokens ?? 0);
+      }
+
       const normalized = normalizeEntry(raw);
       events.push(...normalized);
     } catch {
@@ -57,6 +67,7 @@ export async function parseTranscript(filePath: string): Promise<ParsedSession> 
     project,
     events,
     version,
+    totalTokens,
   };
 }
 

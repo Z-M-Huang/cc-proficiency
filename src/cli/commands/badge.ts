@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 import { renderBadge } from "../../renderer/svg.js";
 import { renderAnimatedBadge } from "../../renderer/animated-svg.js";
-import { loadStore, saveBadge, saveAnimatedBadge } from "../../store/local-store.js";
+import { loadStore, saveBadge, saveAnimatedBadge, computeTokenWindows } from "../../store/local-store.js";
 import { getConfigLocale } from "../utils/locale.js";
 
 export function cmdBadge(args: string[]): void {
@@ -13,9 +13,10 @@ export function cmdBadge(args: string[]): void {
 
   const animated = args.includes("--animated");
   const locale = getConfigLocale();
+  const tokenWindows = computeTokenWindows(store.tokenLog);
   const svg = animated
-    ? renderAnimatedBadge(store.lastResult, locale)
-    : renderBadge(store.lastResult, locale);
+    ? renderAnimatedBadge(store.lastResult, locale, tokenWindows)
+    : renderBadge(store.lastResult, locale, tokenWindows);
 
   const outputIdx = args.indexOf("--output");
   if (outputIdx !== -1 && args[outputIdx + 1]) {

@@ -16,7 +16,7 @@ const emptyChecklist: SetupChecklist = {
 };
 
 function makeSession(events: NormalizedEvent[] = [], id = "s1"): ParsedSession {
-  return { sessionId: id, startTime: "2026-03-15T10:00:00Z", endTime: "2026-03-15T11:00:00Z", project: "test", events, version: "2.1.76" };
+  return { sessionId: id, startTime: "2026-03-15T10:00:00Z", endTime: "2026-03-15T11:00:00Z", project: "test", events, version: "2.1.76", totalTokens: 0 };
 }
 
 describe("getPhase", () => {

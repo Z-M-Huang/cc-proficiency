@@ -1,10 +1,11 @@
-import type { ProficiencyResult, DomainScore } from "../types.js";
+import type { ProficiencyResult, DomainScore, TokenWindows } from "../types.js";
 import { getLocale, type Locale, type LocaleStrings } from "../i18n/locales.js";
 import {
   C, DOMAIN_COLORS, SANS, MONO, MINI_BAR_KEYS, MINI_BAR_SECTION_HEIGHT,
   escapeXml, confidenceSymbol, domainLabel, formatHours,
   svgDefs, miniBarColor, miniBarOpacity, renderCalibratingBadge,
 } from "./svg.js";
+import { formatTokens } from "../utils/format.js";
 
 // ── Animation timing ──
 
@@ -82,14 +83,20 @@ function renderAnimatedMiniBarGrid(
 
 // ── Full animated badge ──
 
-export function renderAnimatedFullBadge(result: ProficiencyResult, locale: Locale = "en"): string {
+function hasTokens(tw?: TokenWindows): boolean {
+  return tw != null && (tw.tokens24h > 0 || tw.tokens30d > 0);
+}
+
+export function renderAnimatedFullBadge(result: ProficiencyResult, locale: Locale = "en", tokenWindows?: TokenWindows): string {
   const t = getLocale(locale);
   const width = 495;
   const rows = result.domains.length;
   const separatorY = 62 + rows * 28 + 6;
   const miniBarY = separatorY + 14;
   const footerY = miniBarY + MINI_BAR_SECTION_HEIGHT + 6;
-  const height = footerY + 40;
+  const showTokens = hasTokens(tokenWindows);
+  const tokenOffset = showTokens ? 16 : 0;
+  const height = footerY + 40 + tokenOffset;
   const u = escapeXml(result.username);
 
   // Timing: last domain bar finishes at barDelay(rows-1) + 1.0s
@@ -124,8 +131,9 @@ export function renderAnimatedFullBadge(result: ProficiencyResult, locale: Local
 
   <line x1="25" y1="${footerY}" x2="${width - 25}" y2="${footerY}" stroke="${C.border}"/>
   <text x="25" y="${footerY + 16}" fill="${C.textMuted}" font-size="11" font-family="${MONO}" opacity="0">${formatHours(result.features.totalHours)} \u00B7 ${result.sessionCount} ${escapeXml(t.sessions)} \u00B7 ${result.projectCount} ${escapeXml(t.projects)}${result.streak ? ` \u00B7 \uD83D\uDD25 ${result.streak}d` : ""}${result.achievementCount ? ` \u00B7 \uD83C\uDFC6 ${result.achievementCount}` : ""}<animate attributeName="opacity" from="0" to="1" dur="0.4s" begin="${footerDelay}s" fill="freeze"/></text>
-  <text x="25" y="${footerY + 32}" fill="${C.textMuted}" font-size="9" font-family="${MONO}" opacity="0">${result.timestamp.slice(0, 10)}<animate attributeName="opacity" from="0" to="1" dur="0.4s" begin="${footerDelay2}s" fill="freeze"/></text>
-  <text x="${width - 25}" y="${footerY + 32}" fill="${C.textMuted}" font-size="9" font-family="${MONO}" text-anchor="end" opacity="0">github.com/Z-M-Huang/cc-proficiency<animate attributeName="opacity" from="0" to="1" dur="0.4s" begin="${footerDelay2}s" fill="freeze"/></text>
+  ${showTokens ? `<text x="25" y="${footerY + 30}" fill="${C.textDim}" font-size="10" font-family="${MONO}" opacity="0">tokens  ${formatTokens(tokenWindows!.tokens24h)}/24h \u00B7 ${formatTokens(tokenWindows!.tokens30d)}/30d<animate attributeName="opacity" from="0" to="1" dur="0.4s" begin="${footerDelay}s" fill="freeze"/></text>` : ""}
+  <text x="25" y="${footerY + 16 + tokenOffset + 16}" fill="${C.textMuted}" font-size="9" font-family="${MONO}" opacity="0">${result.timestamp.slice(0, 10)}<animate attributeName="opacity" from="0" to="1" dur="0.4s" begin="${footerDelay2}s" fill="freeze"/></text>
+  <text x="${width - 25}" y="${footerY + 16 + tokenOffset + 16}" fill="${C.textMuted}" font-size="9" font-family="${MONO}" text-anchor="end" opacity="0">github.com/Z-M-Huang/cc-proficiency<animate attributeName="opacity" from="0" to="1" dur="0.4s" begin="${footerDelay2}s" fill="freeze"/></text>
   ${phaseLabel}
 </svg>`;
 }
@@ -134,9 +142,9 @@ export function renderAnimatedFullBadge(result: ProficiencyResult, locale: Local
  * Render animated badge. Falls back to static calibrating badge
  * (no animation needed for the calibrating phase).
  */
-export function renderAnimatedBadge(result: ProficiencyResult, locale: Locale = "en"): string {
+export function renderAnimatedBadge(result: ProficiencyResult, locale: Locale = "en", tokenWindows?: TokenWindows): string {
   if (result.phase === "calibrating") {
-    return renderCalibratingBadge(result, locale);
+    return renderCalibratingBadge(result, locale, tokenWindows);
   }
-  return renderAnimatedFullBadge(result, locale);
+  return renderAnimatedFullBadge(result, locale, tokenWindows);
 }
