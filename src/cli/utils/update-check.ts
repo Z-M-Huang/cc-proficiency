@@ -32,7 +32,7 @@ function saveCache(cache: VersionCache): void {
   }
 }
 
-function compareVersions(a: string, b: string): number {
+export function compareVersions(a: string, b: string): number {
   // Strip prerelease/build metadata, compare major.minor.patch only
   const pa = a.split("-")[0]!.split(".").map(Number);
   const pb = b.split("-")[0]!.split(".").map(Number);
@@ -45,7 +45,7 @@ function compareVersions(a: string, b: string): number {
   return 0;
 }
 
-function fetchLatestVersion(): Promise<string | null> {
+export function fetchLatestVersion(): Promise<string | null> {
   return new Promise((resolve) => {
     let resolved = false;
     const done = (val: string | null): void => {
@@ -123,5 +123,5 @@ export async function checkForUpdates(currentVersion: string): Promise<void> {
 
 function printNotice(current: string, latest: string): void {
   console.log(`\n  Update available: v${current} \u2192 v${latest}`);
-  console.log("  Run: npm update -g cc-proficiency\n");
+  console.log("  Run: cc-proficiency update\n");
 }

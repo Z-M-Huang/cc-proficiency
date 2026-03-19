@@ -312,6 +312,7 @@ Config evidence is weighted more heavily during calibration, less as transcripts
 | `cc-proficiency config [key] [value]` | View/set configuration |
 | `cc-proficiency share [--remove]` | Join or leave the community leaderboard |
 | `cc-proficiency leaderboard` | View community rankings |
+| `cc-proficiency update` | Update to the latest version |
 | `cc-proficiency uninstall` | Remove hooks and clean up |
 
 ### Community Leaderboard

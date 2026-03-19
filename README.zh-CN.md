@@ -253,6 +253,7 @@ cc-proficiency 使用 **~55 条模式匹配规则**，而不是简单计数：
 | `cc-proficiency config locale zh-CN` | 切换到中文徽章 |
 | `cc-proficiency share [--remove]` | 加入或退出社区排行榜 |
 | `cc-proficiency leaderboard` | 查看社区排名 |
+| `cc-proficiency update` | 更新到最新版本 |
 | `cc-proficiency uninstall` | 移除钩子和清理数据 |
 
 ## 架构
