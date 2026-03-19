@@ -19,32 +19,52 @@ export function injectHook(): void {
   const hooks = (settings.hooks ?? {}) as Record<string, unknown[]>;
   const stopHooks = (hooks.Stop ?? []) as Array<{ hooks?: Array<{ command?: string }> }>;
 
-  const alreadyInstalled = stopHooks.some((group) =>
-    group.hooks?.some((h) => h.command?.includes("cc-proficiency"))
-  );
-
-  if (alreadyInstalled) {
-    console.log("  Hook already installed (skipping)");
-    return;
-  }
-
   if (!existsSync(CLAUDE_DIR)) {
     mkdirSync(CLAUDE_DIR, { recursive: true });
   }
 
-  // When compiled: dist/cli/services/hooks.js -> dist/hooks/session-end.js
-  const hookScript = join(__dirname, "..", "..", "hooks", "session-end.js");
-  const hookCommand = `node "${hookScript}"`;
+  let changed = false;
 
-  stopHooks.push({
-    hooks: [
-      {
-        type: "command" as const,
-        command: hookCommand,
-        timeout: 5,
-      } as Record<string, unknown>,
-    ],
-  } as Record<string, unknown>);
+  // Session-end hook (queue + process)
+  const sessionEndInstalled = stopHooks.some((group) =>
+    group.hooks?.some((h) => h.command?.includes("session-end"))
+  );
+  if (!sessionEndInstalled) {
+    const hookScript = join(__dirname, "..", "..", "hooks", "session-end.js");
+    stopHooks.push({
+      hooks: [
+        {
+          type: "command" as const,
+          command: `node "${hookScript}"`,
+          timeout: 5,
+        } as Record<string, unknown>,
+      ],
+    } as Record<string, unknown>);
+    changed = true;
+  }
+
+  // Token refresh hook (staleness check + re-render)
+  const refreshInstalled = stopHooks.some((group) =>
+    group.hooks?.some((h) => h.command?.includes("token-refresh"))
+  );
+  if (!refreshInstalled) {
+    const refreshScript = join(__dirname, "..", "..", "hooks", "token-refresh.js");
+    stopHooks.push({
+      hooks: [
+        {
+          type: "command" as const,
+          command: `node "${refreshScript}"`,
+          timeout: 5,
+        } as Record<string, unknown>,
+      ],
+    } as Record<string, unknown>);
+    changed = true;
+  }
+
+  if (!changed) {
+    console.log("  Hook already installed (skipping)");
+    return;
+  }
 
   hooks.Stop = stopHooks;
   settings.hooks = hooks;
@@ -60,7 +80,7 @@ export function removeHook(): void {
     const settings = JSON.parse(readFileSync(settingsPath, "utf-8"));
     if (settings.hooks?.Stop) {
       settings.hooks.Stop = (settings.hooks.Stop as Array<{ hooks?: Array<{ command?: string }> }>).filter((group) =>
-        !group.hooks?.some((h) => h.command?.includes("cc-proficiency"))
+        !group.hooks?.some((h) => h.command?.includes("cc-proficiency") || h.command?.includes("token-refresh"))
       );
       if (settings.hooks.Stop.length === 0) {
         delete settings.hooks.Stop;

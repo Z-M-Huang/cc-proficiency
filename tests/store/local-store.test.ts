@@ -16,8 +16,9 @@ vi.mock("node:os", async () => {
 import {
   loadStore, saveStore, isSessionProcessed, addSnapshot,
   loadConfig, saveConfig, saveBadge, getBadgePath, logError, getStoreDir,
+  upsertTokenLog, computeTokenWindows,
 } from "../../src/store/local-store.js";
-import type { ExtractedSignals, SessionSnapshot } from "../../src/types.js";
+import type { ExtractedSignals, SessionSnapshot, TokenLogEntry } from "../../src/types.js";
 
 const STORE_DIR = join(TEST_HOME, ".cc-proficiency");
 
@@ -95,6 +96,72 @@ describe("saveBadge / getBadgePath", () => {
     expect(existsSync(p)).toBe(true);
     expect(readFileSync(p, "utf-8")).toBe("<svg>t</svg>");
     expect(getBadgePath()).toBe(p);
+  });
+});
+
+describe("upsertTokenLog", () => {
+  it("inserts new entries", () => {
+    const store = loadStore();
+    upsertTokenLog(store, [
+      { sessionId: "s1", timestamp: "2026-03-19T10:00:00Z", tokens: 5000 },
+      { sessionId: "s2", timestamp: "2026-03-19T11:00:00Z", tokens: 3000 },
+    ]);
+    expect(store.tokenLog).toHaveLength(2);
+    expect(store.tokenLog![0]!.tokens).toBe(5000);
+  });
+
+  it("updates existing entries by sessionId", () => {
+    const store = loadStore();
+    upsertTokenLog(store, [{ sessionId: "s1", timestamp: "2026-03-19T10:00:00Z", tokens: 5000 }]);
+    upsertTokenLog(store, [{ sessionId: "s1", timestamp: "2026-03-19T10:00:00Z", tokens: 8000 }]);
+    expect(store.tokenLog).toHaveLength(1);
+    expect(store.tokenLog![0]!.tokens).toBe(8000);
+  });
+});
+
+describe("computeTokenWindows", () => {
+  it("returns zeros for undefined tokenLog", () => {
+    expect(computeTokenWindows(undefined)).toEqual({ tokens24h: 0, tokens30d: 0 });
+  });
+
+  it("returns zeros for empty tokenLog", () => {
+    expect(computeTokenWindows([])).toEqual({ tokens24h: 0, tokens30d: 0 });
+  });
+
+  it("computes 24h and 30d windows correctly", () => {
+    const now = Date.now();
+    const entries: TokenLogEntry[] = [
+      { sessionId: "s1", timestamp: new Date(now - 2 * 3600_000).toISOString(), tokens: 1000 },   // 2h ago → in 24h + 30d
+      { sessionId: "s2", timestamp: new Date(now - 48 * 3600_000).toISOString(), tokens: 2000 },  // 2d ago → in 30d only
+      { sessionId: "s3", timestamp: new Date(now - 40 * 86400_000).toISOString(), tokens: 3000 }, // 40d ago → neither
+    ];
+    const result = computeTokenWindows(entries);
+    expect(result.tokens24h).toBe(1000);
+    expect(result.tokens30d).toBe(3000); // 1000 + 2000
+  });
+
+  it("skips entries with invalid timestamps", () => {
+    const entries: TokenLogEntry[] = [
+      { sessionId: "s1", timestamp: "invalid", tokens: 5000 },
+      { sessionId: "s2", timestamp: new Date().toISOString(), tokens: 1000 },
+    ];
+    const result = computeTokenWindows(entries);
+    expect(result.tokens24h).toBe(1000);
+    expect(result.tokens30d).toBe(1000);
+  });
+});
+
+describe("saveStore token log pruning", () => {
+  it("prunes >90 day old token log entries", () => {
+    const store = loadStore();
+    store.tokenLog = [
+      { sessionId: "old", timestamp: new Date(Date.now() - 100 * 86400_000).toISOString(), tokens: 1000 },
+      { sessionId: "new", timestamp: new Date().toISOString(), tokens: 2000 },
+    ];
+    saveStore(store);
+    const loaded = loadStore();
+    expect(loaded.tokenLog).toHaveLength(1);
+    expect(loaded.tokenLog![0]!.sessionId).toBe("new");
   });
 });
 

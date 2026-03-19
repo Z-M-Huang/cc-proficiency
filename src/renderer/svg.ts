@@ -1,7 +1,8 @@
-import type { ProficiencyResult, DomainScore, ConfidenceLevel } from "../types.js";
+import type { ProficiencyResult, DomainScore, ConfidenceLevel, TokenWindows } from "../types.js";
+import { formatTokens } from "../utils/format.js";
 import { getLocale, type Locale, type LocaleStrings } from "../i18n/locales.js";
 
-const C = {
+export const C = {
   bg: "#0d1117",
   card: "#161b22",
   border: "#30363d",
@@ -14,7 +15,7 @@ const C = {
   blue: "#58a6ff",
 };
 
-const DOMAIN_COLORS: Record<string, string> = {
+export const DOMAIN_COLORS: Record<string, string> = {
   "cc-mastery": "#a371f7",   // purple
   "tool-mcp": "#58a6ff",     // blue
   "agentic": "#3fb950",      // green
@@ -22,14 +23,14 @@ const DOMAIN_COLORS: Record<string, string> = {
   "context-mgmt": "#d29922", // gold
 };
 
-const SANS = `'Segoe UI', system-ui, -apple-system, sans-serif`;
-const MONO = `ui-monospace, 'SF Mono', SFMono-Regular, monospace`;
+export const SANS = `'Segoe UI', system-ui, -apple-system, sans-serif`;
+export const MONO = `ui-monospace, 'SF Mono', SFMono-Regular, monospace`;
 
-function escapeXml(str: string): string {
+export function escapeXml(str: string): string {
   return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
 }
 
-function confidenceSymbol(c: ConfidenceLevel): string {
+export function confidenceSymbol(c: ConfidenceLevel): string {
   switch (c) {
     case "low": return "\u25CB";
     case "medium": return "\u25D0";
@@ -37,13 +38,13 @@ function confidenceSymbol(c: ConfidenceLevel): string {
   }
 }
 
-function defs(): string {
+export function svgDefs(): string {
   return `<defs>
     <filter id="glow"><feGaussianBlur stdDeviation="1.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>`;
 }
 
-function domainLabel(id: string, t: LocaleStrings): string {
+export function domainLabel(id: string, t: LocaleStrings): string {
   const map: Record<string, keyof LocaleStrings> = {
     "cc-mastery": "ccMastery", "tool-mcp": "toolMcp", "agentic": "agentic",
     "prompt-craft": "promptCraft", "context-mgmt": "contextMgmt",
@@ -66,14 +67,14 @@ function renderDomainRow(d: DomainScore, y: number, t: LocaleStrings): string {
     </g>`;
 }
 
-function formatHours(h: number): string {
+export function formatHours(h: number): string {
   if (h >= 1000) return (h / 1000).toFixed(1) + "kh";
   return h + "h";
 }
 
 // ── 8 Feature Mini-Bars (heatmap row) ──
 
-const MINI_BAR_KEYS: Array<{ key: string; localeKey: keyof LocaleStrings; color: string }> = [
+export const MINI_BAR_KEYS: Array<{ key: string; localeKey: keyof LocaleStrings; color: string }> = [
   { key: "hooks", localeKey: "hooks", color: "#a371f7" },
   { key: "plugins", localeKey: "plugins", color: "#a371f7" },
   { key: "skills", localeKey: "skills", color: "#58a6ff" },
@@ -84,12 +85,12 @@ const MINI_BAR_KEYS: Array<{ key: string; localeKey: keyof LocaleStrings; color:
   { key: "rules", localeKey: "rules", color: "#d29922" },
 ];
 
-function miniBarColor(score: number, baseColor: string): string {
+export function miniBarColor(score: number, baseColor: string): string {
   if (score === 0) return C.barBg;
   return baseColor;
 }
 
-function miniBarOpacity(score: number): string {
+export function miniBarOpacity(score: number): string {
   if (score === 0) return "0.3";
   if (score < 30) return "0.4";
   if (score < 70) return "0.7";
@@ -124,13 +125,22 @@ function renderMiniBarGrid(featureScores: Record<string, number> | undefined, y:
   return lines.join("\n");
 }
 
-const MINI_BAR_SECTION_HEIGHT = 42; // single row of mini-bars + labels
+export const MINI_BAR_SECTION_HEIGHT = 42; // single row of mini-bars + labels
+
+function hasTokens(tw?: TokenWindows): boolean {
+  return tw != null && (tw.tokens24h > 0 || tw.tokens30d > 0);
+}
+
+function tokenLine(tw: TokenWindows, x: number, y: number): string {
+  return `<text x="${x}" y="${y}" fill="${C.textDim}" font-size="10" font-family="${MONO}">tokens  ${formatTokens(tw.tokens24h)}/24h \u00B7 ${formatTokens(tw.tokens30d)}/30d</text>`;
+}
 
 // ── Calibrating Badge ──
-export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale = "en"): string {
+export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale = "en", tokenWindows?: TokenWindows): string {
   const t = getLocale(locale);
   const width = 495;
-  const height = 250;
+  const showTokens = hasTokens(tokenWindows);
+  const height = showTokens ? 266 : 250;
   const cl = result.setupChecklist;
   const needed = Math.max(0, 3 - result.sessionCount);
   const u = escapeXml(result.username);
@@ -138,7 +148,7 @@ export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="cc-title cc-desc">
   <title id="cc-title">${escapeXml(t.title)} \u2014 @${u}</title>
   <desc id="cc-desc">${escapeXml(t.calibrating)}: ${result.sessionCount} ${escapeXml(t.sessions)}</desc>
-  ${defs()}
+  ${svgDefs()}
   <rect width="${width}" height="${height}" rx="12" fill="${C.bg}"/>
   <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="11.5" fill="${C.card}" stroke="${C.border}"/>
   <text x="25" y="34" fill="${C.text}" font-size="18" font-family="${SANS}" font-weight="600">${escapeXml(t.title)}</text>
@@ -156,20 +166,23 @@ export function renderCalibratingBadge(result: ProficiencyResult, locale: Locale
   <text x="240" y="178" fill="${cl.hasRules ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasRules ? "\u2713" : "\u2717"} ${escapeXml(t.rules)}</text>
   <text x="25" y="198" fill="${cl.hasAgents ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasAgents ? "\u2713" : "\u2717"} ${escapeXml(t.agents)}</text>
   <text x="145" y="198" fill="${cl.hasSkills ? C.green : C.textMuted}" font-size="12" font-family="${SANS}">${cl.hasSkills ? "\u2713" : "\u2717"} ${escapeXml(t.skills)}</text>
+  ${showTokens ? tokenLine(tokenWindows!, 25, height - 30) : ""}
   <text x="25" y="${height - 14}" fill="${C.textMuted}" font-size="10" font-family="${MONO}">${result.timestamp.slice(0, 10)}</text>
   <text x="${width - 25}" y="${height - 14}" fill="${C.textMuted}" font-size="9" font-family="${MONO}" text-anchor="end">github.com/Z-M-Huang/cc-proficiency</text>
 </svg>`;
 }
 
 // ── Full Badge (also used for early) ──
-export function renderFullBadge(result: ProficiencyResult, locale: Locale = "en"): string {
+export function renderFullBadge(result: ProficiencyResult, locale: Locale = "en", tokenWindows?: TokenWindows): string {
   const t = getLocale(locale);
   const width = 495;
   const rows = result.domains.length;
   const separatorY = 62 + rows * 28 + 6;
   const miniBarY = separatorY + 14;
   const footerY = miniBarY + MINI_BAR_SECTION_HEIGHT + 6;
-  const height = footerY + 40;
+  const showTokens = hasTokens(tokenWindows);
+  const tokenOffset = showTokens ? 16 : 0;
+  const height = footerY + 40 + tokenOffset;
   const u = escapeXml(result.username);
 
   const domainSvg = result.domains.map((d, i) => renderDomainRow(d, 62 + i * 28, t)).join("\n");
@@ -179,7 +192,7 @@ export function renderFullBadge(result: ProficiencyResult, locale: Locale = "en"
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="cc-title cc-desc">
   <title id="cc-title">${escapeXml(t.title)} \u2014 @${u}</title>
   <desc id="cc-desc">${result.sessionCount} ${escapeXml(t.sessions)}, ${result.projectCount} ${escapeXml(t.projects)}</desc>
-  ${defs()}
+  ${svgDefs()}
   <rect width="${width}" height="${height}" rx="12" fill="${C.bg}"/>
   <rect x="0.5" y="0.5" width="${width - 1}" height="${height - 1}" rx="11.5" fill="${C.card}" stroke="${C.border}"/>
   <text x="25" y="34" fill="${C.text}" font-size="18" font-family="${SANS}" font-weight="600">${escapeXml(t.title)}</text>
@@ -194,15 +207,16 @@ export function renderFullBadge(result: ProficiencyResult, locale: Locale = "en"
 
   <line x1="25" y1="${footerY}" x2="${width - 25}" y2="${footerY}" stroke="${C.border}"/>
   <text x="25" y="${footerY + 16}" fill="${C.textMuted}" font-size="11" font-family="${MONO}">${formatHours(result.features.totalHours)} \u00B7 ${result.sessionCount} ${escapeXml(t.sessions)} \u00B7 ${result.projectCount} ${escapeXml(t.projects)}${result.streak ? ` \u00B7 \uD83D\uDD25 ${result.streak}d` : ""}${result.achievementCount ? ` \u00B7 \uD83C\uDFC6 ${result.achievementCount}` : ""}</text>
-  <text x="25" y="${footerY + 32}" fill="${C.textMuted}" font-size="9" font-family="${MONO}">${result.timestamp.slice(0, 10)}</text>
-  <text x="${width - 25}" y="${footerY + 32}" fill="${C.textMuted}" font-size="9" font-family="${MONO}" text-anchor="end">github.com/Z-M-Huang/cc-proficiency</text>
+  ${showTokens ? tokenLine(tokenWindows!, 25, footerY + 30) : ""}
+  <text x="25" y="${footerY + 16 + tokenOffset + 16}" fill="${C.textMuted}" font-size="9" font-family="${MONO}">${result.timestamp.slice(0, 10)}</text>
+  <text x="${width - 25}" y="${footerY + 16 + tokenOffset + 16}" fill="${C.textMuted}" font-size="9" font-family="${MONO}" text-anchor="end">github.com/Z-M-Huang/cc-proficiency</text>
   ${phaseLabel}
 </svg>`;
 }
 
-export function renderBadge(result: ProficiencyResult, locale: Locale = "en"): string {
-  if (result.phase === "calibrating") return renderCalibratingBadge(result, locale);
-  return renderFullBadge(result, locale);
+export function renderBadge(result: ProficiencyResult, locale: Locale = "en", tokenWindows?: TokenWindows): string {
+  if (result.phase === "calibrating") return renderCalibratingBadge(result, locale, tokenWindows);
+  return renderFullBadge(result, locale, tokenWindows);
 }
 
 export function getInsights(result: ProficiencyResult): { topStrength: string; nextAction: string } {

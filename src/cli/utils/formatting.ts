@@ -1,4 +1,5 @@
-import type { ProficiencyResult, SetupChecklist } from "../../types.js";
+import type { ProficiencyResult, SetupChecklist, TokenWindows } from "../../types.js";
+import { formatTokens } from "../../utils/format.js";
 
 export function progressBar(score: number, width: number): string {
   const filled = Math.round((score / 100) * width);
@@ -6,7 +7,7 @@ export function progressBar(score: number, width: number): string {
   return "\u2588".repeat(filled) + "\u2591".repeat(empty);
 }
 
-export function printResult(result: ProficiencyResult): void {
+export function printResult(result: ProficiencyResult, tokenWindows?: TokenWindows): void {
   console.log(`  Claude Code Proficiency \u2014 @${result.username}`);
   console.log("  " + "\u2500".repeat(40));
 
@@ -46,6 +47,9 @@ export function printResult(result: ProficiencyResult): void {
   console.log("  " + "\u2500".repeat(40));
   const hrs = result.features.totalHours >= 1000 ? (result.features.totalHours / 1000).toFixed(1) + "kh" : result.features.totalHours + "h";
   console.log(`  ${hrs} \u00B7 ${result.sessionCount} sessions \u00B7 ${result.projectCount} projects`);
+  if (tokenWindows && (tokenWindows.tokens24h > 0 || tokenWindows.tokens30d > 0)) {
+    console.log(`  Tokens: ${formatTokens(tokenWindows.tokens24h)}/24h \u00B7 ${formatTokens(tokenWindows.tokens30d)}/30d`);
+  }
 
   if (result.phase === "early") {
     console.log(`  (early results \u2014 stabilizes at 10 sessions)`);

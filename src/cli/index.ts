@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import { SCORING_VERSION } from "../scoring/engine.js";
 import { cmdInit } from "./commands/init.js";
 import { cmdAnalyze } from "./commands/analyze.js";
@@ -15,17 +13,10 @@ import { cmdConfig } from "./commands/config.js";
 import { cmdUninstall } from "./commands/uninstall.js";
 import { cmdShare } from "./commands/share.js";
 import { cmdLeaderboard } from "./commands/leaderboard.js";
+import { cmdUpdate } from "./commands/update.js";
+import { cmdRefresh } from "./commands/refresh.js";
 import { checkForUpdates } from "./utils/update-check.js";
-
-function getVersion(): string {
-  try {
-    // dist/cli/index.js -> ../../package.json
-    const pkg = JSON.parse(readFileSync(join(__dirname, "..", "..", "package.json"), "utf-8"));
-    return pkg.version ?? "0.1.0";
-  } catch {
-    return "0.1.0";
-  }
-}
+import { getVersion } from "./utils/version.js";
 
 function printUsage(): void {
   console.log(`
@@ -37,11 +28,13 @@ Commands:
   process               Process queued sessions from hook
   badge [--output <f>]  Generate SVG badge
   push                  Upload badge to GitHub Gist
+  refresh [--force]     Refresh token stats and re-render badge
   explain               Show score drivers and improvement tips
   status                Show hook activity, queue, and config
   config [key] [value]  View or set configuration
   share [--remove]      Join or leave the community leaderboard
   leaderboard           View community rankings
+  update                Update to the latest version
   uninstall             Remove hooks and clean up
   version               Show version info
 
@@ -91,6 +84,10 @@ async function main(): Promise<void> {
     case "leaderboard":
       await cmdLeaderboard(args);
       break;
+    case "refresh":
+      return cmdRefresh(args);
+    case "update":
+      return cmdUpdate();
     case "uninstall":
       return cmdUninstall();
     case "version":

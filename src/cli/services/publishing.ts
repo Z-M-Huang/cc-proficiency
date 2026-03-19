@@ -1,9 +1,12 @@
 import { renderBadge } from "../../renderer/svg.js";
-import { loadStore, loadConfig, saveBadge, getBadgePath, logError } from "../../store/local-store.js";
+import { renderAnimatedBadge } from "../../renderer/animated-svg.js";
+import { loadStore, loadConfig, saveBadge, saveAnimatedBadge, getBadgePath, logError, computeTokenWindows } from "../../store/local-store.js";
 import { isGhAuthenticated, getGistRawUrl, readGistFile, pushGistFiles } from "../../gist/uploader.js";
-import { emptyRemoteStore, parseRemoteStore, mergeIntoRemote, getTotalStats, getUTCDate, getWeekMonday, mergeWeeklyTrends } from "../../store/remote-store.js";
+import { emptyRemoteStore, parseRemoteStore, mergeIntoRemote, getTotalStats, getUTCDate, getWeekMonday, mergeWeeklyTrends, computeTokenWindowsFromRemote } from "../../store/remote-store.js";
 import { checkAchievements, getAchievementDef } from "../../store/achievements.js";
 import { buildPublicProfile } from "../../store/public-profile.js";
+import { parseClaudeConfig } from "../../parsers/config-parser.js";
+import { buildSnapshotPayload, parseSnapshotsFile } from "../../store/config-sync.js";
 import { getConfigLocale } from "../utils/locale.js";
 import type { ProficiencyResult, LocalStore, RemoteStore, WeeklyTrend } from "../../types.js";
 
@@ -23,19 +26,24 @@ export function mergeAndPush(
   result: ProficiencyResult,
   gistId: string,
   username: string,
-  verbose: boolean = false
+  verbose: boolean = false,
+  configSnapshotJson?: string | null
 ): MergeAndPushResult {
   const remoteJson = readGistFile(gistId, "cc-proficiency.json");
   let remote = remoteJson ? parseRemoteStore(remoteJson) : null;
   if (!remote) remote = emptyRemoteStore(username);
 
   const avgHours = result.features.totalHours / Math.max(store.processedSessionIds.length, 1);
+  const tokenMap = new Map((store.tokenLog ?? []).map((t) => [t.sessionId, t]));
   const localSessions = store.processedSessionIds.map((id) => {
     const snap = store.snapshots.find((s) => s.sessionId === id);
+    const tokenEntry = tokenMap.get(id);
     return {
       id,
       date: snap ? getUTCDate(snap.timestamp) : new Date().toISOString().slice(0, 10),
       hours: avgHours,
+      tokens: tokenEntry?.tokens,
+      endTimestamp: tokenEntry?.timestamp,
     };
   });
 
@@ -71,13 +79,22 @@ export function mergeAndPush(
 
   result.streak = merged.streak.current;
   result.achievementCount = merged.achievements.length;
-  const finalSvg = renderBadge(result, getConfigLocale());
+  const locale = getConfigLocale();
+  const tokenWindows = computeTokenWindowsFromRemote(merged.recentSessions);
+  const finalSvg = renderBadge(result, locale, tokenWindows);
+  const animatedSvg = renderAnimatedBadge(result, locale, tokenWindows);
   saveBadge(finalSvg);
+  saveAnimatedBadge(animatedSvg);
 
-  const pushResult = pushGistFiles(gistId, {
+  const files: Record<string, string> = {
     "cc-proficiency.svg": finalSvg,
+    "cc-proficiency-animated.svg": animatedSvg,
     "cc-proficiency.json": JSON.stringify(merged, null, 2),
-  });
+  };
+  if (configSnapshotJson) {
+    files["config-snapshots.json"] = configSnapshotJson;
+  }
+  const pushResult = pushGistFiles(gistId, files);
 
   if (!pushResult.success) {
     return { success: false, error: pushResult.error };
@@ -85,8 +102,10 @@ export function mergeAndPush(
 
   if (verbose) {
     const rawUrl = getGistRawUrl(username, gistId);
+    const animatedUrl = getGistRawUrl(username, gistId, "cc-proficiency-animated.svg");
     console.log("\u2713 Badge + data pushed to Gist");
-    console.log(`  ${rawUrl}`);
+    console.log(`  Static:   ${rawUrl}`);
+    console.log(`  Animated: ${animatedUrl}`);
     console.log(`  ${totals.sessions} sessions \u00B7 ${totals.hours.toFixed(1)}h \u00B7 ${merged.achievements.length} achievements \u00B7 \uD83D\uDD25 ${merged.streak.current}d streak`);
   }
 
@@ -113,7 +132,8 @@ export function pushToGist(): void {
     return;
   }
 
-  const svg = renderBadge(store.lastResult, getConfigLocale());
+  const tokenWindows = computeTokenWindows(store.tokenLog);
+  const svg = renderBadge(store.lastResult, getConfigLocale(), tokenWindows);
   saveBadge(svg);
 
   if (!isGhAuthenticated() || !config.gistId) {
@@ -128,12 +148,19 @@ export function pushToGist(): void {
     return;
   }
 
+  // Build config snapshot from current config (no re-scan inside mergeAndPush)
+  const localConfig = parseClaudeConfig(store.knownProjectCwds);
+  const existingSnapshots = readGistFile(config.gistId, "config-snapshots.json");
+  const parsedSnapshots = existingSnapshots ? parseSnapshotsFile(existingSnapshots) : null;
+  const configSnapshotJson = JSON.stringify(buildSnapshotPayload(parsedSnapshots, localConfig));
+
   const result = mergeAndPush(
     store,
     store.lastResult,
     config.gistId,
     config.username ?? "unknown",
-    true
+    true,
+    configSnapshotJson
   );
 
   if (!result.success) {

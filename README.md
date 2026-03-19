@@ -49,7 +49,10 @@ Also shows **8 feature mini-bars** (Hooks, Plugins, Skills, MCP, Agents, Plan, M
 
 <p align="center">
   <a href="https://github.com/Z-M-Huang/cc-proficiency">
-    <img src="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency.svg" alt="CC Proficiency Badge Example" />
+    <img src="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency.svg" alt="CC Proficiency Badge — Static" />
+  </a>
+  <a href="https://github.com/Z-M-Huang/cc-proficiency">
+    <img src="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency-animated.svg" alt="CC Proficiency Badge — Animated" />
   </a>
 </p>
 
@@ -190,10 +193,14 @@ $ cc-proficiency badge --output badge.svg
 After running `cc-proficiency init`, add this to your README:
 
 ```markdown
+<!-- Static badge -->
 ![Claude Code Proficiency](https://gist.githubusercontent.com/<username>/<gist-id>/raw/cc-proficiency.svg)
+
+<!-- Animated badge (bars fill on load) -->
+![Claude Code Proficiency](https://gist.githubusercontent.com/<username>/<gist-id>/raw/cc-proficiency-animated.svg)
 ```
 
-The badge updates automatically after each Claude Code session (via the Stop hook).
+Both badges update automatically after each Claude Code session (via the Stop hook).
 
 ## Progressive Badge
 
@@ -305,6 +312,7 @@ Config evidence is weighted more heavily during calibration, less as transcripts
 | `cc-proficiency config [key] [value]` | View/set configuration |
 | `cc-proficiency share [--remove]` | Join or leave the community leaderboard |
 | `cc-proficiency leaderboard` | View community rankings |
+| `cc-proficiency update` | Update to the latest version |
 | `cc-proficiency uninstall` | Remove hooks and clean up |
 
 ### Community Leaderboard

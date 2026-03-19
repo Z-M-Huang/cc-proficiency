@@ -1,4 +1,4 @@
-import { loadStore, saveStore, loadConfig } from "../../store/local-store.js";
+import { loadStore, saveStore, loadConfig, upsertTokenLog, computeTokenWindows } from "../../store/local-store.js";
 import { gatherData, runAnalysis } from "../services/sessions.js";
 import { printResult } from "../utils/formatting.js";
 
@@ -23,6 +23,13 @@ export async function cmdAnalyze(args: string[]): Promise<void> {
   const userConfig = loadConfig();
   const result = runAnalysis(sessions, config, userConfig.username ?? "unknown");
 
+  // Build token log entries from parsed sessions
+  upsertTokenLog(store, sessions.map((s) => ({
+    sessionId: s.sessionId,
+    timestamp: s.endTime,
+    tokens: s.totalTokens,
+  })));
+
   store.lastResult = result;
   for (const s of sessions) {
     if (!store.processedSessionIds.includes(s.sessionId)) {
@@ -31,5 +38,6 @@ export async function cmdAnalyze(args: string[]): Promise<void> {
   }
   saveStore(store);
 
-  printResult(result);
+  const tokenWindows = computeTokenWindows(store.tokenLog);
+  printResult(result, tokenWindows);
 }

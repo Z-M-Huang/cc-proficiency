@@ -8,6 +8,8 @@ export type {
   LocalStore,
   SessionSnapshot,
   QueueEntry,
+  TokenLogEntry,
+  TokenWindows,
 } from "./types.js";
 
 export { parseTranscript, sanitizeProjectSlug } from "./parsers/transcript-parser.js";
@@ -21,3 +23,4 @@ export { RULES } from "./scoring/rules.js";
 export { computeFeatureDepthScores } from "./scoring/feature-scores.js";
 export { logCurve, cappedRatio, binary, ratioToScore, weightedSum } from "./scoring/curves.js";
 export { isCIEnvironment } from "./utils/ci-detect.js";
+export { formatTokens } from "./utils/format.js";

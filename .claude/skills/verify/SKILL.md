@@ -28,7 +28,7 @@ Run each command via Bash (`node dist/cli/index.js <cmd>`) and verify expected o
 
 6. **help**: Run with no args — must print usage text containing `Commands:`.
 
-7. **analyze**: Run `node dist/cli/index.js analyze --full` — must produce output containing domain scores or "No sessions found". Must not error.
+7. **analyze**: Run `node dist/cli/index.js analyze --full` — must produce output containing domain scores or "No sessions found". If sessions are found, output should contain `Tokens:` followed by `/24h` and `/30d` (token consumption status). Must not error.
 
 8. **explain**: Run `node dist/cli/index.js explain` — must produce output containing `Strengths:` or "No analysis data". Must not error.
 
@@ -39,6 +39,8 @@ Run each command via Bash (`node dist/cli/index.js <cmd>`) and verify expected o
 11. **config**: Run `node dist/cli/index.js config` — must produce valid JSON output containing `autoUpload`. Must not error.
 
 12. **badge**: Run `node dist/cli/index.js badge` — must produce output containing `Badge saved to`. Must not error.
+
+12b. **badge --animated**: Run `node dist/cli/index.js badge --animated` — must produce output containing `Badge saved to` and the path must contain `animated`. Must not error.
 
 13. **process**: Run `node dist/cli/index.js process` — must produce output containing `Queue empty` or `Processed`. Must not error. (This exercises the mergeAndPush path when sessions are queued.)
 
@@ -64,6 +66,8 @@ Verify all critical runtime paths resolve correctly after build. Run via Bash:
     - Must have `lastResult` with: `username` (string), `timestamp` (ISO 8601), `domains` (array of 5), `features` (object), `sessionCount` (number >= 0), `phase` (one of: `calibrating`, `early`, `full`), `setupChecklist` (object)
     - Each domain in `lastResult.domains` must have: `id`, `label`, `score` (0-100), `weight`, `confidence` (one of: `low`, `medium`, `high`), `dataPoints`
     - `lastUpdated` must be a valid ISO 8601 timestamp
+    - If `tokenLog` exists, it must be an array where each entry has: `sessionId` (string), `timestamp` (valid ISO 8601), `tokens` (number >= 0)
+    - If `processedSessionIds` is non-empty and sessions have been analyzed, `tokenLog` should be non-empty (tokens are extracted from transcripts during analyze/process)
 
 18. **Validate config** (`~/.cc-proficiency/config.json`):
     - File must exist and be valid JSON
@@ -79,8 +83,24 @@ Verify all critical runtime paths resolve correctly after build. Run via Bash:
     - File size should be between 2KB and 50KB (sanity check)
     - If store.json `lastResult.streak` is set, SVG must contain the streak emoji 🔥
     - If store.json `lastResult.achievementCount` is set and > 0, SVG must contain the trophy emoji 🏆
+    - If store.json `tokenLog` has entries within the last 30 days with tokens > 0, SVG must contain `tokens` and `/24h` and `/30d` (token consumption footer line)
 
-20. **Validate hook log** (`~/.cc-proficiency/hook.log`):
+20. **Validate animated SVG badge** (`~/.cc-proficiency/cc-proficiency-animated.svg`):
+    - File must exist and be non-empty
+    - Must start with `<svg` and contain `xmlns="http://www.w3.org/2000/svg"`
+    - Must contain SMIL `<animate` elements (proves it's the animated variant, not a copy of the static badge)
+    - Must contain `attributeName="width"` (bar-fill animation) and `attributeName="opacity"` (fade-in animation)
+    - Must contain `calcMode="spline"` (eased animation, not linear)
+    - Must contain `fill="freeze"` (animations hold their end state)
+    - Must contain the username from store.json's `lastResult.username`
+    - Must contain all 5 domain labels: `CC Mastery`, `Tool`, `Agentic`, `Prompt`, `Context`
+    - Must contain all 8 mini-bar labels: `Hooks`, `Plugins`, `Skills`, `MCP`, `Agents`, `Plan`, `Memory`, `Rules`
+    - Must be well-formed XML — validate that it ends with `</svg>`
+    - Height must match the static badge: extract `height="N"` from both files and verify they are equal
+    - File size should be between 4KB and 80KB (animated SVG is larger due to `<animate>` elements)
+    - If the static badge contains a token line (`tokens` and `/24h`), the animated badge must also contain it
+
+21. **Validate hook log** (`~/.cc-proficiency/hook.log`):
     - If the file exists, each non-empty line must match the pattern `[ISO_TIMESTAMP] MESSAGE`
     - If it does not exist, that is OK (hook hasn't fired yet) — note this as "not yet created"
 
@@ -158,6 +178,7 @@ Report a summary table at the end:
 | CLI: status             | ...    |
 | CLI: config             | ...    |
 | CLI: badge              | ...    |
+| CLI: badge --animated   | ...    |
 | CLI: process            | ...    |
 | CLI: leaderboard        | ...    |
 | CLI: share              | ...    |
@@ -165,6 +186,7 @@ Report a summary table at the end:
 | Store JSON              | ...    |
 | Config JSON             | ...    |
 | SVG badge               | ...    |
+| Animated SVG badge      | ...    |
 | Hook log                | ...    |
 | Feature scores          | ...    |
 | Explain Flags           | ...    |
@@ -173,6 +195,8 @@ Report a summary table at the end:
 | Project-level config    | ...    |
 | Multi-project merge     | ...    |
 | Known cwds persistence  | ...    |
+| Token log in store      | ...    |
+| Token line in SVG       | ...    |
 | Locale precedence       | ...    |
 | Locale fallback         | ...    |
 | File sizes              | ...    |

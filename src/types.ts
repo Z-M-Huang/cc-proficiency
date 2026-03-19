@@ -151,6 +151,7 @@ export interface ParsedSession {
   project: string; // sanitized slug, NOT full path
   events: NormalizedEvent[];
   version: string;
+  totalTokens: number; // sum of all input + output + cache tokens
 }
 
 // ── Extracted Signals ──
@@ -308,6 +309,18 @@ export interface LocalStore {
   lastResult?: ProficiencyResult;
   lastUpdated?: string;
   knownProjectCwds?: string[];
+  tokenLog?: TokenLogEntry[];
+}
+
+export interface TokenLogEntry {
+  sessionId: string;
+  timestamp: string; // ISO string, session end time
+  tokens: number;    // total tokens consumed
+}
+
+export interface TokenWindows {
+  tokens24h: number;
+  tokens30d: number;
 }
 
 // ── Remote Store (Gist-as-Database) ──
@@ -320,8 +333,10 @@ export interface RemoteStore {
   // Recent sessions (last 90 days — for dedupe/streak/trends)
   recentSessions: Array<{
     id: string;
-    date: string;      // UTC YYYY-MM-DD
+    date: string;           // UTC YYYY-MM-DD
     hours: number;
+    tokens?: number;        // total tokens for this session
+    endTimestamp?: string;   // ISO timestamp for accurate 24h window
   }>;
 
   // Archived stats (older sessions collapsed into counters)
@@ -424,6 +439,22 @@ export interface QueueEntry {
   transcriptPath: string;
   cwd: string;
   timestamp: string;
+}
+
+// ── Config Sync ──
+
+import type { ConfigSignals } from "./parsers/config-parser.js";
+
+export type SyncableConfigSignals = Omit<ConfigSignals, "pluginNames">;
+
+export interface ConfigSnapshot {
+  timestamp: string;
+  signals: SyncableConfigSignals;
+}
+
+export interface ConfigSnapshotsFile {
+  version: "1.0.0";
+  snapshots: Record<string, ConfigSnapshot>;
 }
 
 // ── History ──
