@@ -1,5 +1,6 @@
 import { renderBadge } from "../../renderer/svg.js";
-import { loadStore, loadConfig, saveConfig, saveBadge, getBadgePath, getStoreDir, computeTokenWindows } from "../../store/local-store.js";
+import { renderAnimatedBadge } from "../../renderer/animated-svg.js";
+import { loadStore, loadConfig, saveConfig, saveBadge, saveAnimatedBadge, getBadgePath, getStoreDir, computeTokenWindows } from "../../store/local-store.js";
 import { ensureStoreDir } from "../../store/queue.js";
 import { isGhAuthenticated, getGhUsername, createGist, updateGist, getGistRawUrl } from "../../gist/uploader.js";
 import { detectLocale } from "../../i18n/locales.js";
@@ -40,9 +41,14 @@ export async function cmdInit(): Promise<void> {
 
   const store = loadStore();
   let badgeSvg = '<svg xmlns="http://www.w3.org/2000/svg"><text>No data</text></svg>';
+  let animatedSvg = badgeSvg;
   if (store.lastResult) {
-    badgeSvg = renderBadge(store.lastResult, getConfigLocale(), computeTokenWindows(store.tokenLog));
+    const tokenWindows = computeTokenWindows(store.tokenLog);
+    const locale = getConfigLocale();
+    badgeSvg = renderBadge(store.lastResult, locale, tokenWindows);
+    animatedSvg = renderAnimatedBadge(store.lastResult, locale, tokenWindows);
     saveBadge(badgeSvg);
+    saveAnimatedBadge(animatedSvg);
   }
 
   if (config.username && isGhAuthenticated() && !config.gistId) {
@@ -59,6 +65,7 @@ export async function cmdInit(): Promise<void> {
     }
   } else if (config.gistId && isGhAuthenticated()) {
     const gistResult = updateGist(config.gistId, badgeSvg);
+    updateGist(config.gistId, animatedSvg, "cc-proficiency-animated.svg");
     if (gistResult.success) {
       const rawUrl = getGistRawUrl(config.username ?? "", config.gistId);
       console.log(`  \u2713 Badge pushed to Gist: ${rawUrl}`);

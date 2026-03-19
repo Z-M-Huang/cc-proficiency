@@ -21,25 +21,25 @@ beforeEach(() => {
 
 describe("checkForUpdate", () => {
   it("returns available: false when current >= latest", async () => {
-    vi.mocked(fetchLatestVersion).mockResolvedValue("0.2.6");
+    vi.mocked(fetchLatestVersion).mockResolvedValue("0.2.7");
     vi.mocked(compareVersions).mockReturnValue(0);
-    const result = await checkForUpdate("0.2.6");
+    const result = await checkForUpdate("0.2.7");
     expect(result.available).toBe(false);
-    expect(result.current).toBe("0.2.6");
+    expect(result.current).toBe("0.2.7");
   });
 
   it("returns available: true when outdated", async () => {
     vi.mocked(fetchLatestVersion).mockResolvedValue("0.3.0");
     vi.mocked(compareVersions).mockReturnValue(1);
-    const result = await checkForUpdate("0.2.6");
+    const result = await checkForUpdate("0.2.7");
     expect(result.available).toBe(true);
-    expect(result.current).toBe("0.2.6");
+    expect(result.current).toBe("0.2.7");
     expect(result.latest).toBe("0.3.0");
   });
 
   it("returns fetchFailed: true when registry unreachable", async () => {
     vi.mocked(fetchLatestVersion).mockResolvedValue(null);
-    const result = await checkForUpdate("0.2.6");
+    const result = await checkForUpdate("0.2.7");
     expect(result.available).toBe(false);
     expect(result.fetchFailed).toBe(true);
   });
