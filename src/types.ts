@@ -426,6 +426,22 @@ export interface QueueEntry {
   timestamp: string;
 }
 
+// ── Config Sync ──
+
+import type { ConfigSignals } from "./parsers/config-parser.js";
+
+export type SyncableConfigSignals = Omit<ConfigSignals, "pluginNames">;
+
+export interface ConfigSnapshot {
+  timestamp: string;
+  signals: SyncableConfigSignals;
+}
+
+export interface ConfigSnapshotsFile {
+  version: "1.0.0";
+  snapshots: Record<string, ConfigSnapshot>;
+}
+
 // ── History ──
 
 export interface HistoryEntry {

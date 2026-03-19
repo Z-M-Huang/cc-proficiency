@@ -4,7 +4,9 @@ import { homedir } from "node:os";
 import { parseTranscript } from "../../parsers/transcript-parser.js";
 import { parseClaudeConfig, buildSetupChecklist } from "../../parsers/config-parser.js";
 import { computeProficiency } from "../../scoring/engine.js";
-import { loadStore, isSessionProcessed } from "../../store/local-store.js";
+import { loadStore, isSessionProcessed, loadConfig } from "../../store/local-store.js";
+import { isGhAuthenticated } from "../../gist/uploader.js";
+import { mergeRemoteConfig } from "../../store/config-sync.js";
 import type { ParsedSession } from "../../types.js";
 import type { ConfigSignals } from "../../parsers/config-parser.js";
 
@@ -13,7 +15,7 @@ const CLAUDE_DIR = join(homedir(), ".claude");
 export async function gatherData(full: boolean): Promise<{ sessions: ParsedSession[]; config: ConfigSignals }> {
   const realStore = loadStore();
   const knownCwds = [...new Set([process.cwd(), ...(realStore.knownProjectCwds ?? [])])];
-  const config = parseClaudeConfig(knownCwds);
+  const config = getConfigWithSync(knownCwds);
   const sessions: ParsedSession[] = [];
   const store = full ? { processedSessionIds: [] as string[] } : realStore;
 
@@ -70,6 +72,15 @@ export async function gatherAllProcessedSessions(store: ReturnType<typeof loadSt
   }
 
   return sessions;
+}
+
+export function getConfigWithSync(cwds?: string[]): ConfigSignals {
+  let config = parseClaudeConfig(cwds);
+  const userConfig = loadConfig();
+  if (userConfig.gistId && isGhAuthenticated()) {
+    config = mergeRemoteConfig(config, userConfig.gistId);
+  }
+  return config;
 }
 
 export function runAnalysis(

@@ -5,6 +5,8 @@ import { isGhAuthenticated, getGistRawUrl, readGistFile, pushGistFiles } from ".
 import { emptyRemoteStore, parseRemoteStore, mergeIntoRemote, getTotalStats, getUTCDate, getWeekMonday, mergeWeeklyTrends } from "../../store/remote-store.js";
 import { checkAchievements, getAchievementDef } from "../../store/achievements.js";
 import { buildPublicProfile } from "../../store/public-profile.js";
+import { parseClaudeConfig } from "../../parsers/config-parser.js";
+import { buildSnapshotPayload, parseSnapshotsFile } from "../../store/config-sync.js";
 import { getConfigLocale } from "../utils/locale.js";
 import type { ProficiencyResult, LocalStore, RemoteStore, WeeklyTrend } from "../../types.js";
 
@@ -24,7 +26,8 @@ export function mergeAndPush(
   result: ProficiencyResult,
   gistId: string,
   username: string,
-  verbose: boolean = false
+  verbose: boolean = false,
+  configSnapshotJson?: string | null
 ): MergeAndPushResult {
   const remoteJson = readGistFile(gistId, "cc-proficiency.json");
   let remote = remoteJson ? parseRemoteStore(remoteJson) : null;
@@ -78,11 +81,15 @@ export function mergeAndPush(
   saveBadge(finalSvg);
   saveAnimatedBadge(animatedSvg);
 
-  const pushResult = pushGistFiles(gistId, {
+  const files: Record<string, string> = {
     "cc-proficiency.svg": finalSvg,
     "cc-proficiency-animated.svg": animatedSvg,
     "cc-proficiency.json": JSON.stringify(merged, null, 2),
-  });
+  };
+  if (configSnapshotJson) {
+    files["config-snapshots.json"] = configSnapshotJson;
+  }
+  const pushResult = pushGistFiles(gistId, files);
 
   if (!pushResult.success) {
     return { success: false, error: pushResult.error };
@@ -135,12 +142,19 @@ export function pushToGist(): void {
     return;
   }
 
+  // Build config snapshot from current config (no re-scan inside mergeAndPush)
+  const localConfig = parseClaudeConfig(store.knownProjectCwds);
+  const existingSnapshots = readGistFile(config.gistId, "config-snapshots.json");
+  const parsedSnapshots = existingSnapshots ? parseSnapshotsFile(existingSnapshots) : null;
+  const configSnapshotJson = JSON.stringify(buildSnapshotPayload(parsedSnapshots, localConfig));
+
   const result = mergeAndPush(
     store,
     store.lastResult,
     config.gistId,
     config.username ?? "unknown",
-    true
+    true,
+    configSnapshotJson
   );
 
   if (!result.success) {
