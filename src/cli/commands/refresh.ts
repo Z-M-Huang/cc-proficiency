@@ -4,7 +4,6 @@ import { renderAnimatedBadge } from "../../renderer/animated-svg.js";
 import { loadStore, loadConfig, saveBadge, saveAnimatedBadge, getBadgePath, computeTokenWindows } from "../../store/local-store.js";
 import { isGhAuthenticated, readGistFile, pushGistFiles } from "../../gist/uploader.js";
 import { computeTokenWindowsFromRemote, parseRemoteStore } from "../../store/remote-store.js";
-import { getConfigLocale } from "../utils/locale.js";
 
 const STALE_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -37,7 +36,6 @@ export function cmdRefresh(args: string[]): void {
   }
 
   const config = loadConfig();
-  const locale = getConfigLocale();
 
   // Compute fresh token windows — prefer merged remote data if available,
   // but only if it actually has token entries (avoids zeroing out on legacy gists)
@@ -54,8 +52,8 @@ export function cmdRefresh(args: string[]): void {
   }
 
   // Re-render badges with fresh windows
-  const svg = renderBadge(store.lastResult, locale, tokenWindows);
-  const animatedSvg = renderAnimatedBadge(store.lastResult, locale, tokenWindows);
+  const svg = renderBadge(store.lastResult, tokenWindows);
+  const animatedSvg = renderAnimatedBadge(store.lastResult, tokenWindows);
   saveBadge(svg);
   saveAnimatedBadge(animatedSvg);
 

@@ -1,5 +1,7 @@
-import type { ProficiencyResult, SetupChecklist, TokenWindows } from "../../types.js";
+import type { ProficiencyResult, DomainId, SetupChecklist, TokenWindows } from "../../types.js";
 import { formatTokens } from "../../utils/format.js";
+import { t } from "../../i18n/index.js";
+import { padEndDisplay } from "../../utils/display-width.js";
 
 export function progressBar(score: number, width: number): string {
   const filled = Math.round((score / 100) * width);
@@ -8,21 +10,23 @@ export function progressBar(score: number, width: number): string {
 }
 
 export function printResult(result: ProficiencyResult, tokenWindows?: TokenWindows): void {
-  console.log(`  Claude Code Proficiency \u2014 @${result.username}`);
+  const s = t();
+  console.log(`  ${s.badge.title} \u2014 @${result.username}`);
   console.log("  " + "\u2500".repeat(40));
 
   if (result.phase === "calibrating") {
     const needed = Math.max(0, 3 - result.sessionCount);
-    console.log(`  \u23F3 Calibrating... (${result.sessionCount} sessions, need ${needed} more)`);
+    console.log(s.formatting.calibratingStatus(result.sessionCount, needed));
     console.log("");
     printSetupChecklist(result.setupChecklist);
     return;
   }
 
   for (const d of result.domains) {
+    const label = s.badge.domainLabels[d.id as DomainId] ?? d.label;
     const bar = progressBar(d.score, 20);
     const conf = d.confidence === "high" ? "\u25CF" : d.confidence === "medium" ? "\u25D0" : "\u25CB";
-    console.log(`  ${d.label.padEnd(14)} ${bar}  ${String(d.score).padStart(3)}  ${conf}`);
+    console.log(`  ${padEndDisplay(label, 14)} ${bar}  ${String(d.score).padStart(3)}  ${conf}`);
   }
 
   console.log("  " + "\u2500".repeat(40));
@@ -34,25 +38,25 @@ export function printResult(result: ProficiencyResult, tokenWindows?: TokenWindo
     console.log(`  Hooks   ${shown}${more}`);
   }
   if (f.skills.length > 0) {
-    const shown = f.skills.slice(0, 3).map((s) => `${s.name} (${s.count}x)`).join(", ");
+    const shown = f.skills.slice(0, 3).map((sk) => `${sk.name} (${sk.count}x)`).join(", ");
     const more = f.skills.length > 3 ? ` +${f.skills.length - 3}` : "";
     console.log(`  Skills  ${shown}${more}`);
   }
   if (f.mcpServers.length > 0) {
     console.log(`  MCP     ${f.mcpServers.join(", ")}`);
   }
-  const toolSummary = f.topTools.slice(0, 4).map((t) => `${t.name} ${t.count}`).join(" \u00B7 ");
-  console.log(`  Tools   ${toolSummary} (+${f.uniqueToolCount - Math.min(4, f.topTools.length)} more)`);
+  const toolSummary = f.topTools.slice(0, 4).map((tl) => `${tl.name} ${tl.count}`).join(" \u00B7 ");
+  console.log(`  Tools   ${toolSummary} (+${f.uniqueToolCount - Math.min(4, f.topTools.length)} ${s.cli.explain.more})`);
 
   console.log("  " + "\u2500".repeat(40));
   const hrs = result.features.totalHours >= 1000 ? (result.features.totalHours / 1000).toFixed(1) + "kh" : result.features.totalHours + "h";
-  console.log(`  ${hrs} \u00B7 ${result.sessionCount} sessions \u00B7 ${result.projectCount} projects`);
+  console.log(`  ${hrs} \u00B7 ${result.sessionCount} ${s.badge.sessions} \u00B7 ${result.projectCount} ${s.badge.projects}`);
   if (tokenWindows && (tokenWindows.tokens24h > 0 || tokenWindows.tokens30d > 0)) {
-    console.log(`  Tokens: ${formatTokens(tokenWindows.tokens24h)}/24h \u00B7 ${formatTokens(tokenWindows.tokens30d)}/30d`);
+    console.log(`  ${s.formatting.tokensLabel} ${formatTokens(tokenWindows.tokens24h)}/24h \u00B7 ${formatTokens(tokenWindows.tokens30d)}/30d`);
   }
 
   if (result.phase === "early") {
-    console.log(`  (early results \u2014 stabilizes at 10 sessions)`);
+    console.log(s.formatting.earlyResultsNote);
   }
 }
 
@@ -68,8 +72,10 @@ export function printSetupChecklist(cl: SetupChecklist): void {
     ["Skills", cl.hasSkills],
   ] as const;
 
-  console.log("  Setup:");
+  const setupItems = t().formatting.setupItems;
+  console.log(t().formatting.setupLabel);
   for (const [label, ok] of items) {
-    console.log(`    ${ok ? "\u2713" : "\u2717"} ${label}`);
+    const localizedLabel = setupItems[label] ?? label;
+    console.log(`    ${ok ? "\u2713" : "\u2717"} ${localizedLabel}`);
   }
 }

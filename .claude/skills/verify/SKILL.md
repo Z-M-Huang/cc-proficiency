@@ -30,15 +30,15 @@ Run each command via Bash (`node dist/cli/index.js <cmd>`) and verify expected o
 
 7. **analyze**: Run `node dist/cli/index.js analyze --full` — must produce output containing domain scores or "No sessions found". If sessions are found, output should contain `Tokens:` followed by `/24h` and `/30d` (token consumption status). Must not error.
 
-8. **explain**: Run `node dist/cli/index.js explain` — must produce output containing `Strengths:` or "No analysis data". Must not error.
+8. **explain**: Run `node dist/cli/index.js explain` — must produce output containing the locale-appropriate strengths label (e.g., `Strengths:` for en, `优势：` for zh-CN) or "No analysis data" / the locale equivalent. Must not error.
 
-9. **achievements**: Run `node dist/cli/index.js achievements` — must produce output containing `Achievements (` or "No analysis data". Must not error.
+9. **achievements**: Run `node dist/cli/index.js achievements` — must produce output containing the locale-appropriate achievements title (e.g., `Achievements (` for en) or "No analysis data" / the locale equivalent. Must not error.
 
 10. **status**: Run `node dist/cli/index.js status` — must produce output containing `cc-proficiency status`. Must not error.
 
 11. **config**: Run `node dist/cli/index.js config` — must produce valid JSON output containing `autoUpload`. Must not error.
 
-12. **badge**: Run `node dist/cli/index.js badge` — must produce output containing `Badge saved to`. Must not error.
+12. **badge**: Run `node dist/cli/index.js badge` — must produce output containing `Badge saved to`. The generated SVG is a multi-locale badge using SVG `<switch>` elements. Must not error.
 
 12b. **badge --animated**: Run `node dist/cli/index.js badge --animated` — must produce output containing `Badge saved to` and the path must contain `animated`. Must not error.
 
@@ -72,18 +72,19 @@ Verify all critical runtime paths resolve correctly after build. Run via Bash:
 18. **Validate config** (`~/.cc-proficiency/config.json`):
     - File must exist and be valid JSON
     - Must have `autoUpload` (boolean) and `public` (boolean)
-    - If `locale` is set, must be one of: `en`, `zh-CN`
+    - If `locale` is set, must be one of: `en`, `zh-CN`, `es`, `fr`, `ja`, `ko`
 
 19. **Validate SVG badge** (`~/.cc-proficiency/cc-proficiency.svg`):
     - File must exist and be non-empty
     - Must start with `<svg` and contain `xmlns="http://www.w3.org/2000/svg"`
     - Must contain the username from store.json's `lastResult.username`
-    - Must contain all 5 domain labels: `CC Mastery`, `Tool`, `Agentic`, `Prompt`, `Context`
+    - Must contain `<switch>` elements and `systemLanguage` attributes (multi-locale auto-detection)
+    - Must contain domain labels from ALL locales in the same SVG (e.g., `CC Mastery` AND `CC 精通` AND `CC熟練` must all be present)
     - Must be well-formed XML — validate that it ends with `</svg>`
     - File size should be between 2KB and 50KB (sanity check)
     - If store.json `lastResult.streak` is set, SVG must contain the streak emoji 🔥
     - If store.json `lastResult.achievementCount` is set and > 0, SVG must contain the trophy emoji 🏆
-    - If store.json `tokenLog` has entries within the last 30 days with tokens > 0, SVG must contain `tokens` and `/24h` and `/30d` (token consumption footer line)
+    - If store.json `tokenLog` has entries within the last 30 days with tokens > 0, SVG must contain `tokens` and `/24h` and `/30d`
 
 20. **Validate animated SVG badge** (`~/.cc-proficiency/cc-proficiency-animated.svg`):
     - File must exist and be non-empty
@@ -93,8 +94,9 @@ Verify all critical runtime paths resolve correctly after build. Run via Bash:
     - Must contain `calcMode="spline"` (eased animation, not linear)
     - Must contain `fill="freeze"` (animations hold their end state)
     - Must contain the username from store.json's `lastResult.username`
-    - Must contain all 5 domain labels: `CC Mastery`, `Tool`, `Agentic`, `Prompt`, `Context`
-    - Must contain all 8 mini-bar labels: `Hooks`, `Plugins`, `Skills`, `MCP`, `Agents`, `Plan`, `Memory`, `Rules`
+    - Must contain `<switch>` elements and `systemLanguage` attributes (multi-locale auto-detection, same as static SVG)
+    - Must contain domain labels from ALL locales (e.g., `CC Mastery` AND `CC 精通` must both be present)
+    - Must contain all 8 mini-bar feature labels (for `en`: `Hooks`, `Plugins`, `Skills`, `MCP`, `Agents`, `Plan`, `Memory`, `Rules`)
     - Must be well-formed XML — validate that it ends with `</svg>`
     - Height must match the static badge: extract `height="N"` from both files and verify they are equal
     - File size should be between 4KB and 80KB (animated SVG is larger due to `<animate>` elements)
@@ -141,23 +143,49 @@ Verify all critical runtime paths resolve correctly after build. Run via Bash:
     - If the array has entries, each must be a non-empty string
     - Run `node dist/cli/index.js analyze --full` — after running, reload store.json and verify `knownProjectCwds` contains `process.cwd()` (the current project directory should always be persisted)
 
-### Step 6 — Locale detection
+### Step 6 — Locale detection and i18n
 
 31. **Locale precedence**: Run via Bash:
     ```
-    node -e "process.env.LC_ALL='zh_CN.UTF-8'; process.env.LANG='en_US.UTF-8'; const {detectLocale}=require('./dist/i18n/locales.js'); console.log(detectLocale())"
+    node -e "process.env.LC_ALL='zh_CN.UTF-8'; process.env.LANG='en_US.UTF-8'; const {detectLocale}=require('./dist/i18n/index.js'); console.log(detectLocale())"
     ```
     Must print `zh-CN` (LC_ALL overrides LANG).
 
 32. **Locale fallback**: Run via Bash:
     ```
-    node -e "delete process.env.LC_ALL; delete process.env.LC_MESSAGES; process.env.LANG='en_US.UTF-8'; const {detectLocale}=require('./dist/i18n/locales.js'); console.log(detectLocale())"
+    node -e "delete process.env.LC_ALL; delete process.env.LC_MESSAGES; process.env.LANG='en_US.UTF-8'; const {detectLocale}=require('./dist/i18n/index.js'); console.log(detectLocale())"
     ```
     Must print `en`.
 
+33b. **All 6 locales load**: Run via Bash:
+    ```
+    node -e "const {SUPPORTED_LOCALES,getLocaleStrings}=require('./dist/i18n/index.js'); for(const l of SUPPORTED_LOCALES){const s=getLocaleStrings(l); console.log(l+': '+s.badge.title)}"
+    ```
+    Must print 6 lines, one per locale, each with a non-empty title.
+
+33c. **SVG switch elements with correct structure**: Run via Bash:
+    ```
+    grep -c '<switch>' ~/.cc-proficiency/cc-proficiency.svg
+    ```
+    Must return > 0 (proves multi-locale `<switch>` elements are present). Additionally verify:
+    - Each `<switch>` block contains `systemLanguage="zh"`, `systemLanguage="es"`, `systemLanguage="fr"`, `systemLanguage="ja"`, `systemLanguage="ko"` entries
+    - The last `<text>` in each `<switch>` has NO `systemLanguage` attribute (English fallback)
+    - Feature labels from ja locale (e.g., `フック`, `プラグイン`) AND ko locale (e.g., `훅`, `플러그인`) must be present (proves non-English feature labels are wrapped)
+    - Token prefix variants must be present if token line exists (e.g., `tokens`, `Token`, `トークン`, `토큰`)
+
+33d. **Calibrating badge switch**: If store.json has `lastResult.phase` = `calibrating`, generate a badge and verify it also contains `<switch>` elements with all locale variants of the calibrating status text. (Skip if phase is not calibrating.)
+
+33e. **Badge always multi-locale**: Run `node dist/cli/index.js badge --output /tmp/test-multi.svg 2>&1`. Verify the output SVG contains `<switch>` elements — the badge is always multi-locale regardless of arguments.
+
+33f. **Config locale validation**: Run via Bash:
+    ```
+    node dist/cli/index.js config locale invalid-locale 2>&1
+    ```
+    Must print an error about invalid locale, not silently save it.
+
 ### Step 7 — File size check
 
-33. **Source file sizes**: Run `wc -l src/**/*.ts src/*.ts | sort -rn | head -8` via Bash. Flag any file over 300 lines that is NOT `types.ts` or `scoring/rules.ts`.
+34. **Source file sizes**: Run `wc -l src/**/*.ts src/*.ts | sort -rn | head -8` via Bash. Flag any file over 300 lines that is NOT `types.ts` or `scoring/rules.ts`.
 
 ### Report
 
@@ -199,6 +227,11 @@ Report a summary table at the end:
 | Token line in SVG       | ...    |
 | Locale precedence       | ...    |
 | Locale fallback         | ...    |
+| All 6 locales load      | ...    |
+| SVG switch structure    | ...    |
+| Calibrating switch      | ...    |
+| Badge always multi-locale| ...   |
+| Config locale validation| ...    |
 | File sizes              | ...    |
 ```
 

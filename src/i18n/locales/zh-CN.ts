@@ -1,0 +1,297 @@
+import type { AllStrings } from "../types.js";
+
+export const zhCN: AllStrings = {
+  common: {
+    noAnalysisData: "没有分析数据。请先运行 'cc-proficiency analyze'。",
+    ghNotAuthenticated: "\u26a0 GitHub CLI 未认证。",
+    ghNotAuthenticatedHint: "启用方法：gh auth login && cc-proficiency init",
+    noGistConfigured: "未配置 Gist。请先运行 'cc-proficiency init'。",
+    badgeSavedLocally: (path) => `徽章已保存到本地：${path}`,
+    unknownKey: (key) => `未知的键：${key}`,
+    invalidLocale: (val, supported) => `无效的语言：${val}。支持的语言：${supported}`,
+  },
+
+  badge: {
+    title: "Claude Code 能力概览",
+    calibrating: "正在分析使用模式...",
+    needMore: (n) => `还需 ${n} 次才能评分`,
+    sessions: "会话",
+    projects: "项目",
+    setup: "配置",
+    earlyResults: "初步结果",
+    domainLabels: {
+      "cc-mastery": "CC 精通",
+      "tool-mcp": "工具 & MCP",
+      "agentic": "Agentic",
+      "prompt-craft": "提示词工程",
+      "context-mgmt": "上下文管理",
+    },
+    featureLabels: {
+      hooks: "Hooks",
+      plugins: "Plugins",
+      skills: "Skills",
+      mcp: "MCP",
+      agents: "Agents",
+      plan: "Plan",
+      memory: "Memory",
+      rules: "Rules",
+    },
+    claudeMd: "CLAUDE.md",
+    tokensPrefix: "Token",
+  },
+
+  cli: {
+    help: {
+      description: "cc-proficiency \u2014 Claude Code 能力概览徽章生成器",
+      commands: {
+        init: "初始化配置和钩子",
+        analyze: "分析会话并计算评分",
+        process: "处理钩子中的排队会话",
+        badge: "生成 SVG 徽章",
+        push: "上传徽章到 GitHub Gist",
+        refresh: "刷新 Token 统计并重新渲染徽章",
+        explain: "显示评分驱动因素和改进建议",
+        status: "显示钩子活动、队列和配置",
+        config: "查看或设置配置",
+        share: "加入或退出社区排行榜",
+        leaderboard: "查看社区排名",
+        update: "更新到最新版本",
+        uninstall: "移除钩子并清理",
+        version: "显示版本信息",
+      },
+      examples: "  cc-proficiency init\n  cc-proficiency analyze --full\n  cc-proficiency badge --output badge.svg\n  cc-proficiency explain",
+    },
+
+    init: {
+      initializing: "正在初始化 cc-proficiency...",
+      githubUser: (username) => `  GitHub 用户：@${username}`,
+      badgeSavedLocallyHint: (path) => `  徽章将保存到本地：${path}`,
+      ghEnableHint: "  启用自动上传：gh auth login && cc-proficiency init",
+      localeDetected: (locale) => `  语言：${locale}`,
+      hookInjected: "  \u2713 钩子已注入 ~/.claude/settings.json",
+      runningInitialAnalysis: "  正在运行初始分析...",
+      creatingGist: "  正在创建包含徽章的私有 Gist...",
+      gistCreated: "  \u2713 Gist 已创建",
+      addToReadme: "  添加到你的 README：",
+      gistCreateFailed: (err) => `  \u26a0 无法创建 Gist：${err}`,
+      badgePushedToGist: (url) => `  \u2713 徽章已推送到 Gist：${url}`,
+      configSaved: (path) => `  \u2713 配置已保存到 ${path}`,
+    },
+
+    analyze: {
+      runningFull: "正在运行完整分析...",
+      runningIncremental: "正在运行增量分析...",
+      noSessionsFound: "未找到会话。请先使用 Claude Code，然后再次运行 analyze。",
+    },
+
+    explain: {
+      titleLine: (username) => `  Claude Code 能力概览 \u2014 @${username}`,
+      strengths: "  优势：",
+      areasToImprove: "  待改进：",
+      featureUsage: "  功能使用：",
+      domainTips: {
+        "cc-mastery": "完善 CLAUDE.md 并使用导入，添加带匹配器的钩子，创建规则文件，使用计划模式",
+        "tool-mcp": "有意识地链接工具（Grep\u2192Read\u2192Edit），配置 MCP 服务器，使用 LSP 集成",
+        "agentic": "使用不同类型的子智能体（探索、计划），尝试并行智能体和工作树",
+        "prompt-craft": "使用 Markdown 列表构建提示，提供代码块和文件引用",
+        "context-mgmt": "使用跨会话记忆文件，跨多个项目工作，更新 CLAUDE.md",
+      },
+      hooksLabel: "Hooks：",
+      skillsLabel: "Skills：",
+      mcpLabel: "MCP：",
+      toolsLabel: "Tools：",
+      flagsLabel: "功能：",
+      more: "更多",
+      sessionsSummary: (sessions, projects) => `  ${sessions} 个会话 \u00b7 ${projects} 个项目`,
+    },
+
+    achievements: {
+      title: (unlocked, total) => `  成就（${unlocked}/${total}）`,
+      done: "完成！",
+    },
+
+    status: {
+      title: "  cc-proficiency 状态",
+      username: "  用户名：",
+      gistId: "  Gist ID：",
+      autoUpload: "  自动上传：",
+      locale: "  语言：",
+      leaderboardLabel: "  排行榜：",
+      joined: (gistId) => `已加入（${gistId}）`,
+      notJoined: "未加入",
+      pending: "待处理",
+      sessionsProcessed: "  已处理会话：",
+      lastUpdated: "  最后更新：",
+      never: "从未",
+      queuePending: "  队列待处理：",
+      hookLog: (count) => `  钩子日志（最近 ${count} 条）：`,
+      lastHookFired: (time) => `  上次钩子触发：${time}`,
+      noHookEntries: "  钩子日志：暂无记录（钩子尚未触发）",
+      queueLock: "  队列锁：",
+      queueLockHeld: (age) => `已持有（${age}秒前）`,
+      queueLockStale: " \u2190 已过期",
+      queueLockPresent: "存在（未知时间）",
+      queueLockNone: "无",
+      notSet: "（未设置）",
+    },
+
+    config: {
+      setValue: (key, val) => `已设置 ${key} = ${val}`,
+    },
+
+    share: {
+      joining: "  正在加入 cc-proficiency 排行榜...",
+      sharingPublicly: "  将公开分享以下内容：",
+      sharedItems: "    - GitHub 用户名、领域评分、连续天数、成就数量\n    - 总会话数和时长、加入日期",
+      notShared: "  不会分享：会话详情、项目名称、文件路径、工具",
+      alreadyOnLeaderboard: "已在排行榜中。推送时会自动更新个人资料。",
+      creatingPublicGist: "  正在创建公开的个人资料 Gist...",
+      publicGistCreated: (url) => `  \u2713 公开 Gist 已创建：${url}`,
+      publicGistUpdated: (url) => `  \u2713 公开 Gist 已更新：${url}`,
+      publicGistCreateFailed: (err) => `\u2717 创建公开 Gist 失败：${err}`,
+      publicGistUpdateFailed: (err) => `\u2717 更新公开 Gist 失败：${err}`,
+      registering: "  正在注册到排行榜...",
+      registrationCreated: "  \u2713 注册请求已创建",
+      profileWillAppear: "  你的个人资料将在请求处理后显示。",
+      syncFailed: (err) => `\u2717 同步数据失败：${err}`,
+      noMergedData: "\u2717 构建公开个人资料失败 \u2014 没有合并数据",
+      registerFailed: (err) => `\u2717 注册失败：${err}`,
+      leaving: "  正在退出 cc-proficiency 排行榜...",
+      removalCreated: (url) => `  \u2713 移除请求已创建：${url}`,
+      publicGistDeleted: "  \u2713 公开个人资料 Gist 已删除",
+      publicGistDeleteFailed: (err) => `  \u26a0 无法删除公开 Gist：${err}`,
+      unchangedNotice: "  你的排行榜条目和公开 Gist 未更改。",
+      removedFromLeaderboard: "  已从排行榜移除。",
+    },
+
+    leaderboard: {
+      title: (count) => `  cc-proficiency 排行榜（${count} 位用户）`,
+      unavailable: "排行榜暂不可用。请稍后再试。",
+      columnHeader: "   #  用户             均分   CC  Tool  Agen  Prmp  Ctx",
+      users: (count, skipped) => `${count} 位用户${skipped > 0 ? `（跳过 ${skipped} 位）` : ""}`,
+      updatedJustNow: "刚刚",
+      updatedRecently: "最近",
+      cached: "（缓存）",
+      sortHelp: "  --sort=<avg|cc-mastery|tool-mcp|agentic|prompt-craft|context-mgmt|hours|streak>",
+      limitHelp: "  --limit=N（默认 20）",
+    },
+
+    update: {
+      checking: "正在检查更新...",
+      alreadyLatest: (version) => `已是最新版本（v${version}）。`,
+      available: (current, latest) => `有可用更新：v${current} \u2192 v${latest}`,
+      updating: "正在更新 cc-proficiency...",
+      updated: (version) => `\u2713 已更新到 v${version}`,
+      permissionDenied: "\u2717 权限不足。",
+      runAsAdmin: "请在管理员终端中运行此命令。",
+      runSudo: (version) => `请运行：sudo npm install -g cc-proficiency@${version}`,
+      npmNotFound: "\u2717 未找到 npm。请先安装 Node.js/npm。",
+      fetchFailed: "无法连接到 npm 注册表。请检查网络连接。",
+      failed: (err) => `\u2717 更新失败：${err}`,
+      tryManually: (version) => `请手动尝试：npm install -g cc-proficiency@${version}`,
+    },
+
+    uninstall: {
+      uninstalling: "正在卸载 cc-proficiency...",
+      localDataRemoved: "  \u2713 本地数据已移除",
+      couldNotRemove: (path) => `  \u26a0 无法完全移除 ${path}`,
+      npmUninstallHint: "  cc-proficiency 已卸载。运行 'npm uninstall -g cc-proficiency' 以移除软件包。",
+    },
+
+    process: {
+      anotherRunning: "另一个进程正在运行。已跳过。",
+      queueEmpty: "队列为空。没有需要处理的内容。",
+      processed: (count, path) => `已处理 ${count} 个会话。徽章已保存到 ${path}`,
+    },
+    badge: {
+      writtenTo: (path) => `徽章已写入 ${path}`,
+      savedTo: (path) => `徽章已保存到 ${path}`,
+    },
+  },
+
+  services: {
+    publishing: {
+      achievementUnlocked: (icon, name) => `  \ud83c\udfc6 成就解锁：${icon} ${name}`,
+      pushedToGist: "\u2713 徽章和数据已推送到 Gist",
+      pushFailed: (err) => `\u2717 推送失败：${err}`,
+      staticUrl: (url) => `  静态：  ${url}`,
+      animatedUrl: (url) => `  动态：  ${url}`,
+      pushSummary: (sessions, hours, achievements, streak) =>
+        `  ${sessions} 个会话 \u00b7 ${hours}小时 \u00b7 ${achievements} 个成就 \u00b7 \ud83d\udd25 连续 ${streak} 天`,
+    },
+    hooks: {
+      alreadyInstalled: "  钩子已安装（跳过）",
+      couldNotParse: "  \u26a0 无法解析 settings.json，正在创建新的钩子配置",
+      hookRemoved: "  \u2713 钩子已从 settings.json 移除",
+      couldNotUpdate: "  \u26a0 无法更新 settings.json",
+    },
+  },
+
+  formatting: {
+    calibratingStatus: (sessions, needed) =>
+      `  \u23f3 校准中...（${sessions} 个会话，还需 ${needed} 个）`,
+    setupLabel: "  配置：",
+    setupItems: {
+      "CLAUDE.md": "CLAUDE.md",
+      "Hooks": "Hooks",
+      "Plugins": "Plugins",
+      "MCP Servers": "MCP Servers",
+      "Memory": "Memory",
+      "Rules": "Rules",
+      "Agents": "Agents",
+      "Skills": "Skills",
+    },
+    earlyResultsNote: "  （初步结果 \u2014 10 个会话后趋于稳定）",
+    tokensLabel: "  Token：",
+  },
+
+  updateCheck: {
+    available: (current, latest) => `  有可用更新：v${current} \u2192 v${latest}`,
+    runUpdate: "  运行：cc-proficiency update",
+  },
+
+  achievements: {
+    "first-session": { name: "初出茅庐", description: "完成你的第一次会话" },
+    "ten-sessions": { name: "渐入佳境", description: "完成 10 次会话" },
+    "century-club": { name: "百战老将", description: "完成 100 次会话" },
+    "hour-10": { name: "十小时里程碑", description: "在 Claude Code 中使用超过 10 小时" },
+    "hour-100": { name: "百炼成钢", description: "在 Claude Code 中使用超过 100 小时" },
+    "perfect-domain": { name: "登峰造极", description: "在任一领域达到 100 分" },
+    "all-above-50": { name: "全面发展", description: "所有 5 个领域达到 50 分以上" },
+    "all-above-80": { name: "大师之路", description: "所有 5 个领域达到 80 分以上" },
+    "streak-7": { name: "周周不辍", description: "保持 7 天连续使用" },
+    "streak-30": { name: "月月精进", description: "保持 30 天连续使用" },
+    "multi-project-5": { name: "探索者", description: "跨越 5 个以上项目工作" },
+    "agent-master": { name: "智能体大师", description: "使用 3 种以上不同类型的子智能体" },
+    "mcp-explorer": { name: "MCP 探险家", description: "使用 2 个以上 MCP 服务器" },
+    "night-owl": { name: "夜猫子", description: "在 UTC 午夜之后进行会话" },
+    "community-member": { name: "社区成员", description: "加入熟练度排行榜" },
+  },
+
+  insights: {
+    domainLabels: {
+      "cc-mastery": "CC 配置精通",
+      "tool-mcp": "工具与 MCP 集成",
+      "agentic": "智能体工作流",
+      "prompt-craft": "提示词工程",
+      "context-mgmt": "上下文管理",
+    },
+    domainActions: {
+      "cc-mastery": "完善 CLAUDE.md，添加带匹配器的钩子",
+      "tool-mcp": "有意识地链接工具（Grep\u2192Read\u2192Edit）",
+      "agentic": "使用不同类型的子智能体",
+      "prompt-craft": "使用 Markdown 和代码块构建提示",
+      "context-mgmt": "使用跨会话记忆文件",
+    },
+    fallbackAction: (label) => `提升${label}`,
+  },
+
+  registry: {
+    joinTitle: (username) => `[leaderboard] join @${username}`,
+    joinBody: (username, gistId) =>
+      `**Username:** ${username}\n**Public Gist ID:** ${gistId}\n\nThis issue was automatically created by \`cc-proficiency share\`.\nA GitHub Action will validate and add this entry to the leaderboard registry.`,
+    leaveTitle: (username) => `[leaderboard] leave @${username}`,
+    leaveBody: (username) =>
+      `**Username:** ${username}\n\nThis issue was automatically created by \`cc-proficiency share --remove\`.\nA GitHub Action will remove this entry from the leaderboard registry.`,
+  },
+};

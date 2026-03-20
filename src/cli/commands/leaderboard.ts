@@ -1,5 +1,6 @@
 import { fetchLeaderboard } from "../services/leaderboard.js";
 import { loadConfig } from "../../store/local-store.js";
+import { t } from "../../i18n/index.js";
 
 export function cmdLeaderboard(args: string[]): void {
   // Parse --sort and --limit
@@ -16,18 +17,19 @@ export function cmdLeaderboard(args: string[]): void {
   }
 
   const { entries, fromCache, skipped } = fetchLeaderboard(sortBy, limit);
+  const s = t().cli.leaderboard;
 
   if (entries.length === 0) {
-    console.log("Leaderboard unavailable. Try again later.");
+    console.log(s.unavailable);
     return;
   }
 
   const config = loadConfig();
   const myUsername = config.username;
 
-  console.log(`\n  cc-proficiency Leaderboard (${entries.length} users)`);
+  console.log(`\n${s.title(entries.length)}`);
   console.log("  " + "\u2500".repeat(58));
-  console.log("   #  User             Avg   CC   Tool  Agen  Prmp  Ctx");
+  console.log(s.columnHeader);
   console.log("  " + "\u2500".repeat(58));
 
   for (let i = 0; i < entries.length; i++) {
@@ -43,12 +45,11 @@ export function cmdLeaderboard(args: string[]): void {
 
   console.log("  " + "\u2500".repeat(58));
 
-  const cacheNote = fromCache ? " (cached)" : "";
-  const skipNote = skipped > 0 ? ` (${skipped} skipped)` : "";
-  console.log(`  ${entries.length} users${skipNote} \u00B7 Updated ${getTimeAgo(fromCache)}${cacheNote}`);
+  const cacheNote = fromCache ? s.cached : "";
+  console.log(`  ${s.users(entries.length, skipped)} \u00B7 Updated ${getTimeAgo(fromCache)}${cacheNote}`);
 
-  console.log("\n  --sort=<avg|cc-mastery|tool-mcp|agentic|prompt-craft|context-mgmt|hours|streak>");
-  console.log("  --limit=N (default 20)\n");
+  console.log(`\n${s.sortHelp}`);
+  console.log(s.limitHelp + "\n");
 }
 
 function getDomainScores(entry: { domains: Array<{ id: string; score: number }> }): string {
@@ -60,6 +61,7 @@ function getDomainScores(entry: { domains: Array<{ id: string; score: number }> 
 }
 
 function getTimeAgo(fromCache: boolean): string {
-  if (!fromCache) return "just now";
-  return "recently";
+  const s = t().cli.leaderboard;
+  if (!fromCache) return s.updatedJustNow;
+  return s.updatedRecently;
 }

@@ -1,6 +1,6 @@
 {
   "name": "cc-proficiency",
-  "version": "0.2.7",
+  "version": "0.2.8",
   "description": "Claude Code proficiency badge generator — analyze usage patterns across 5 domains aligned with Claude Certified Architect",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

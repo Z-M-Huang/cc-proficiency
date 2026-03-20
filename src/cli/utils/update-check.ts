@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { homedir } from "node:os";
 import { get } from "node:https";
 import { ensureStoreDir } from "../../store/queue.js";
+import { t } from "../../i18n/index.js";
 
 const STORE_DIR = join(homedir(), ".cc-proficiency");
 const CACHE_FILE = join(STORE_DIR, "version-check.json");
@@ -122,6 +123,6 @@ export async function checkForUpdates(currentVersion: string): Promise<void> {
 }
 
 function printNotice(current: string, latest: string): void {
-  console.log(`\n  Update available: v${current} \u2192 v${latest}`);
-  console.log("  Run: cc-proficiency update\n");
+  console.log(`\n${t().updateCheck.available(current, latest)}`);
+  console.log(`${t().updateCheck.runUpdate}\n`);
 }

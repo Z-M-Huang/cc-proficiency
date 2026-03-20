@@ -131,7 +131,7 @@ describe("renderBadge", () => {
 
 describe("renderBadge with tokenWindows", () => {
   it("shows token line when tokenWindows provided", () => {
-    const svg = renderBadge(makeResult(), "en", { tokens24h: 1500000, tokens30d: 15300000 });
+    const svg = renderBadge(makeResult(), { tokens24h: 1500000, tokens30d: 15300000 });
     expect(svg).toContain("tokens");
     expect(svg).toContain("1.5M/24h");
     expect(svg).toContain("15.3M/30d");
@@ -144,14 +144,14 @@ describe("renderBadge with tokenWindows", () => {
   });
 
   it("omits token line when both values are zero", () => {
-    const svg = renderBadge(makeResult(), "en", { tokens24h: 0, tokens30d: 0 });
+    const svg = renderBadge(makeResult(), { tokens24h: 0, tokens30d: 0 });
     expect(svg).not.toContain("tokens");
     expect(svg).not.toContain("/24h");
   });
 
   it("increases badge height when tokens present", () => {
     const svgWithout = renderBadge(makeResult());
-    const svgWith = renderBadge(makeResult(), "en", { tokens24h: 1000, tokens30d: 5000 });
+    const svgWith = renderBadge(makeResult(), { tokens24h: 1000, tokens30d: 5000 });
     const heightWithout = parseInt(svgWithout.match(/height="(\d+)"/)?.[1] ?? "0");
     const heightWith = parseInt(svgWith.match(/height="(\d+)"/)?.[1] ?? "0");
     expect(heightWith).toBeGreaterThan(heightWithout);
@@ -159,7 +159,7 @@ describe("renderBadge with tokenWindows", () => {
 
   it("shows tokens on calibrating badge", () => {
     const result = makeResult({ phase: "calibrating", sessionCount: 1 });
-    const svg = renderBadge(result, "en", { tokens24h: 500, tokens30d: 2000 });
+    const svg = renderBadge(result, { tokens24h: 500, tokens30d: 2000 });
     expect(svg).toContain("tokens");
     expect(svg).toContain("500/24h");
   });

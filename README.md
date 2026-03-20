@@ -28,7 +28,8 @@
   <a href="#embed-in-your-readme">Embed</a> &nbsp;·&nbsp;
   <a href="#how-scoring-works">Scoring</a> &nbsp;·&nbsp;
   <a href="#privacy">Privacy</a> &nbsp;·&nbsp;
-  <a href="./README.zh-CN.md">中文</a>
+  <a href="#localization">Localization</a> &nbsp;·&nbsp;
+  <strong>English</strong> · <a href="./README.zh-CN.md">中文</a> · <a href="./README.es.md">Español</a> · <a href="./README.fr.md">Français</a> · <a href="./README.ja.md">日本語</a> · <a href="./README.ko.md">한국어</a>
 </p>
 
 ---
@@ -295,6 +296,27 @@ Config evidence is weighted more heavily during calibration, less as transcripts
 | **Gist visibility** | **Private by default** (secret URL, not listed on your profile) |
 | **Offline mode** | Works fully offline without `gh` CLI (local-only mode) |
 | **CI/CD** | Non-interactive sessions are automatically detected and excluded |
+
+## Localization
+
+cc-proficiency supports 6 languages: English, 中文, Español, Français, 日本語, 한국어.
+
+Your locale is auto-detected from system environment on `init`. To change it:
+
+```bash
+cc-proficiency config locale zh-CN   # Chinese
+cc-proficiency config locale es       # Spanish
+cc-proficiency config locale fr       # French
+cc-proficiency config locale ja       # Japanese
+cc-proficiency config locale ko       # Korean
+cc-proficiency config locale en       # English (default)
+```
+
+SVG badges automatically display in the viewer's preferred language using SVG `<switch>` elements with `systemLanguage` attributes. All 6 languages are embedded in a single SVG file -- no need to generate separate badges per locale.
+
+### Contributing Translations
+
+To add a new language, copy `src/i18n/locales/en.ts` to `src/i18n/locales/<code>.ts`, translate all strings, and register the locale in `src/i18n/index.ts`.
 
 ## Commands
 

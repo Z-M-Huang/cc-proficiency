@@ -1,0 +1,297 @@
+import type { AllStrings } from "../types.js";
+
+export const en: AllStrings = {
+  common: {
+    noAnalysisData: "No analysis data. Run 'cc-proficiency analyze' first.",
+    ghNotAuthenticated: "\u26a0 GitHub CLI not authenticated.",
+    ghNotAuthenticatedHint: "To enable: gh auth login && cc-proficiency init",
+    noGistConfigured: "No Gist configured. Run 'cc-proficiency init' first.",
+    badgeSavedLocally: (path) => `Badge saved locally to: ${path}`,
+    unknownKey: (key) => `Unknown key: ${key}`,
+    invalidLocale: (val, supported) => `Invalid locale: ${val}. Supported: ${supported}`,
+  },
+
+  badge: {
+    title: "Claude Code Proficiency",
+    calibrating: "Analyzing usage patterns...",
+    needMore: (n) => `Need ${n} more for scoring`,
+    sessions: "sessions",
+    projects: "projects",
+    setup: "Setup",
+    earlyResults: "early results",
+    domainLabels: {
+      "cc-mastery": "CC Mastery",
+      "tool-mcp": "Tool & MCP",
+      "agentic": "Agentic",
+      "prompt-craft": "Prompt Craft",
+      "context-mgmt": "Context Mgmt",
+    },
+    featureLabels: {
+      hooks: "Hooks",
+      plugins: "Plugins",
+      skills: "Skills",
+      mcp: "MCP",
+      agents: "Agents",
+      plan: "Plan",
+      memory: "Memory",
+      rules: "Rules",
+    },
+    claudeMd: "CLAUDE.md",
+    tokensPrefix: "tokens",
+  },
+
+  cli: {
+    help: {
+      description: "cc-proficiency \u2014 Claude Code Proficiency Badge Generator",
+      commands: {
+        init: "Set up configuration and hooks",
+        analyze: "Analyze sessions and compute scores",
+        process: "Process queued sessions from hook",
+        badge: "Generate SVG badge",
+        push: "Upload badge to GitHub Gist",
+        refresh: "Refresh token stats and re-render badge",
+        explain: "Show score drivers and improvement tips",
+        status: "Show hook activity, queue, and config",
+        config: "View or set configuration",
+        share: "Join or leave the community leaderboard",
+        leaderboard: "View community rankings",
+        update: "Update to the latest version",
+        uninstall: "Remove hooks and clean up",
+        version: "Show version info",
+      },
+      examples: "  cc-proficiency init\n  cc-proficiency analyze --full\n  cc-proficiency badge --output badge.svg\n  cc-proficiency explain",
+    },
+
+    init: {
+      initializing: "Initializing cc-proficiency...",
+      githubUser: (username) => `  GitHub user: @${username}`,
+      badgeSavedLocallyHint: (path) => `  Badge will be saved locally to: ${path}`,
+      ghEnableHint: "  To enable auto-upload: gh auth login && cc-proficiency init",
+      localeDetected: (locale) => `  Locale: ${locale}`,
+      hookInjected: "  \u2713 Hook injected into ~/.claude/settings.json",
+      runningInitialAnalysis: "  Running initial analysis...",
+      creatingGist: "  Creating private Gist with badge...",
+      gistCreated: "  \u2713 Gist created",
+      addToReadme: "  Add to your README:",
+      gistCreateFailed: (err) => `  \u26a0 Could not create Gist: ${err}`,
+      badgePushedToGist: (url) => `  \u2713 Badge pushed to Gist: ${url}`,
+      configSaved: (path) => `  \u2713 Configuration saved to ${path}`,
+    },
+
+    analyze: {
+      runningFull: "Running full analysis...",
+      runningIncremental: "Running incremental analysis...",
+      noSessionsFound: "No sessions found. Use Claude Code first, then run analyze again.",
+    },
+
+    explain: {
+      titleLine: (username) => `  Claude Code Proficiency \u2014 @${username}`,
+      strengths: "  Strengths:",
+      areasToImprove: "  Areas to Improve:",
+      featureUsage: "  Feature Usage:",
+      domainTips: {
+        "cc-mastery": "Enhance CLAUDE.md with imports, add hooks with matchers, create rules files, use plan mode",
+        "tool-mcp": "Chain tools deliberately (Grep\u2192Read\u2192Edit), set up MCP servers, use LSP integration",
+        "agentic": "Use subagents with different types (Explore, Plan), try parallel agents and worktrees",
+        "prompt-craft": "Structure prompts with markdown lists, provide code blocks and file references",
+        "context-mgmt": "Use cross-session memory files, work across multiple projects, update CLAUDE.md",
+      },
+      hooksLabel: "Hooks:",
+      skillsLabel: "Skills:",
+      mcpLabel: "MCP:",
+      toolsLabel: "Tools:",
+      flagsLabel: "Flags:",
+      more: "more",
+      sessionsSummary: (sessions, projects) => `  ${sessions} sessions \u00b7 ${projects} projects`,
+    },
+
+    achievements: {
+      title: (unlocked, total) => `  Achievements (${unlocked}/${total})`,
+      done: "Done!",
+    },
+
+    status: {
+      title: "  cc-proficiency status",
+      username: "  Username:",
+      gistId: "  Gist ID:",
+      autoUpload: "  Auto-upload:",
+      locale: "  Locale:",
+      leaderboardLabel: "  Leaderboard:",
+      joined: (gistId) => `joined (${gistId})`,
+      notJoined: "not joined",
+      pending: "pending",
+      sessionsProcessed: "  Sessions processed:",
+      lastUpdated: "  Last updated:",
+      never: "never",
+      queuePending: "  Queue pending:",
+      hookLog: (count) => `  Hook log (last ${count} entries):`,
+      lastHookFired: (time) => `  Last hook fired: ${time}`,
+      noHookEntries: "  Hook log: no entries yet (hook hasn't fired)",
+      queueLock: "  Queue lock:",
+      queueLockHeld: (age) => `held (${age}s ago)`,
+      queueLockStale: " \u2190 STALE",
+      queueLockPresent: "present (unknown age)",
+      queueLockNone: "none",
+      notSet: "(not set)",
+    },
+
+    config: {
+      setValue: (key, val) => `Set ${key} = ${val}`,
+    },
+
+    share: {
+      joining: "  Joining the cc-proficiency leaderboard...",
+      sharingPublicly: "  This will share publicly:",
+      sharedItems: "    - GitHub username, domain scores, streak, achievement count\n    - Total sessions and hours, member since date",
+      notShared: "  NOT shared: session details, project names, file paths, tools",
+      alreadyOnLeaderboard: "Already on the leaderboard. Profile auto-updates on push.",
+      creatingPublicGist: "  Creating public profile gist...",
+      publicGistCreated: (url) => `  \u2713 Public gist created: ${url}`,
+      publicGistUpdated: (url) => `  \u2713 Public gist updated: ${url}`,
+      publicGistCreateFailed: (err) => `\u2717 Failed to create public gist: ${err}`,
+      publicGistUpdateFailed: (err) => `\u2717 Failed to update public gist: ${err}`,
+      registering: "  Registering on leaderboard...",
+      registrationCreated: "  \u2713 Registration issue created",
+      profileWillAppear: "  Your profile will appear once the issue is processed.",
+      syncFailed: (err) => `\u2717 Failed to sync data: ${err}`,
+      noMergedData: "\u2717 Failed to build public profile \u2014 no merged data",
+      registerFailed: (err) => `\u2717 Failed to register: ${err}`,
+      leaving: "  Leaving the cc-proficiency leaderboard...",
+      removalCreated: (url) => `  \u2713 Removal issue created: ${url}`,
+      publicGistDeleted: "  \u2713 Public profile gist deleted",
+      publicGistDeleteFailed: (err) => `  \u26a0 Could not delete public gist: ${err}`,
+      unchangedNotice: "  Your leaderboard entry and public gist are unchanged.",
+      removedFromLeaderboard: "  Removed from leaderboard.",
+    },
+
+    leaderboard: {
+      title: (count) => `  cc-proficiency Leaderboard (${count} users)`,
+      unavailable: "Leaderboard unavailable. Try again later.",
+      columnHeader: "   #  User             Avg   CC   Tool  Agen  Prmp  Ctx",
+      users: (count, skipped) => `${count} users${skipped > 0 ? ` (${skipped} skipped)` : ""}`,
+      updatedJustNow: "just now",
+      updatedRecently: "recently",
+      cached: " (cached)",
+      sortHelp: "  --sort=<avg|cc-mastery|tool-mcp|agentic|prompt-craft|context-mgmt|hours|streak>",
+      limitHelp: "  --limit=N (default 20)",
+    },
+
+    update: {
+      checking: "Checking for updates...",
+      alreadyLatest: (version) => `Already on the latest version (v${version}).`,
+      available: (current, latest) => `Update available: v${current} \u2192 v${latest}`,
+      updating: "Updating cc-proficiency...",
+      updated: (version) => `\u2713 Updated to v${version}`,
+      permissionDenied: "\u2717 Permission denied.",
+      runAsAdmin: "Run this command in an Administrator terminal.",
+      runSudo: (version) => `Run: sudo npm install -g cc-proficiency@${version}`,
+      npmNotFound: "\u2717 npm not found. Install Node.js/npm first.",
+      fetchFailed: "Could not reach the npm registry. Check your internet connection.",
+      failed: (err) => `\u2717 Update failed: ${err}`,
+      tryManually: (version) => `Try manually: npm install -g cc-proficiency@${version}`,
+    },
+
+    uninstall: {
+      uninstalling: "Uninstalling cc-proficiency...",
+      localDataRemoved: "  \u2713 Local data removed",
+      couldNotRemove: (path) => `  \u26a0 Could not fully remove ${path}`,
+      npmUninstallHint: "  cc-proficiency uninstalled. Run 'npm uninstall -g cc-proficiency' to remove the package.",
+    },
+
+    process: {
+      anotherRunning: "Another process is running. Skipping.",
+      queueEmpty: "Queue empty. Nothing to process.",
+      processed: (count, path) => `Processed ${count} session(s). Badge saved to ${path}`,
+    },
+    badge: {
+      writtenTo: (path) => `Badge written to ${path}`,
+      savedTo: (path) => `Badge saved to ${path}`,
+    },
+  },
+
+  services: {
+    publishing: {
+      achievementUnlocked: (icon, name) => `  \ud83c\udfc6 Achievement unlocked: ${icon} ${name}`,
+      pushedToGist: "\u2713 Badge + data pushed to Gist",
+      pushFailed: (err) => `\u2717 Push failed: ${err}`,
+      staticUrl: (url) => `  Static:   ${url}`,
+      animatedUrl: (url) => `  Animated: ${url}`,
+      pushSummary: (sessions, hours, achievements, streak) =>
+        `  ${sessions} sessions \u00b7 ${hours}h \u00b7 ${achievements} achievements \u00b7 \ud83d\udd25 ${streak}d streak`,
+    },
+    hooks: {
+      alreadyInstalled: "  Hook already installed (skipping)",
+      couldNotParse: "  \u26a0 Could not parse settings.json, creating new hooks section",
+      hookRemoved: "  \u2713 Hook removed from settings.json",
+      couldNotUpdate: "  \u26a0 Could not update settings.json",
+    },
+  },
+
+  formatting: {
+    calibratingStatus: (sessions, needed) =>
+      `  \u23f3 Calibrating... (${sessions} sessions, need ${needed} more)`,
+    setupLabel: "  Setup:",
+    setupItems: {
+      "CLAUDE.md": "CLAUDE.md",
+      "Hooks": "Hooks",
+      "Plugins": "Plugins",
+      "MCP Servers": "MCP Servers",
+      "Memory": "Memory",
+      "Rules": "Rules",
+      "Agents": "Agents",
+      "Skills": "Skills",
+    },
+    earlyResultsNote: "  (early results \u2014 stabilizes at 10 sessions)",
+    tokensLabel: "  Tokens:",
+  },
+
+  updateCheck: {
+    available: (current, latest) => `  Update available: v${current} \u2192 v${latest}`,
+    runUpdate: "  Run: cc-proficiency update",
+  },
+
+  achievements: {
+    "first-session": { name: "First Steps", description: "Complete your first session" },
+    "ten-sessions": { name: "Getting Started", description: "Complete 10 sessions" },
+    "century-club": { name: "Century Club", description: "Complete 100 sessions" },
+    "hour-10": { name: "10 Hour Mark", description: "Spend 10+ hours in Claude Code" },
+    "hour-100": { name: "Centurion", description: "Spend 100+ hours in Claude Code" },
+    "perfect-domain": { name: "Perfect Score", description: "Reach 100 in any domain" },
+    "all-above-50": { name: "Well-Rounded", description: "All 5 domains at 50+" },
+    "all-above-80": { name: "Master Class", description: "All 5 domains at 80+" },
+    "streak-7": { name: "Week Warrior", description: "Maintain a 7-day streak" },
+    "streak-30": { name: "Monthly Grinder", description: "Maintain a 30-day streak" },
+    "multi-project-5": { name: "Explorer", description: "Work across 5+ projects" },
+    "agent-master": { name: "Agent Master", description: "Use 3+ different subagent types" },
+    "mcp-explorer": { name: "MCP Explorer", description: "Use 2+ MCP servers" },
+    "night-owl": { name: "Night Owl", description: "Have a session after midnight (UTC)" },
+    "community-member": { name: "Community", description: "Join the proficiency leaderboard" },
+  },
+
+  insights: {
+    domainLabels: {
+      "cc-mastery": "CC configuration mastery",
+      "tool-mcp": "tool & MCP integration",
+      "agentic": "agentic workflows",
+      "prompt-craft": "prompt engineering",
+      "context-mgmt": "context management",
+    },
+    domainActions: {
+      "cc-mastery": "enhance CLAUDE.md, add hooks with matchers",
+      "tool-mcp": "chain tools deliberately (Grep\u2192Read\u2192Edit)",
+      "agentic": "use subagents with different types",
+      "prompt-craft": "structure prompts with markdown and code blocks",
+      "context-mgmt": "use cross-session memory files",
+    },
+    fallbackAction: (label) => `improve ${label}`,
+  },
+
+  registry: {
+    joinTitle: (username) => `[leaderboard] join @${username}`,
+    joinBody: (username, gistId) =>
+      `**Username:** ${username}\n**Public Gist ID:** ${gistId}\n\nThis issue was automatically created by \`cc-proficiency share\`.\nA GitHub Action will validate and add this entry to the leaderboard registry.`,
+    leaveTitle: (username) => `[leaderboard] leave @${username}`,
+    leaveBody: (username) =>
+      `**Username:** ${username}\n\nThis issue was automatically created by \`cc-proficiency share --remove\`.\nA GitHub Action will remove this entry from the leaderboard registry.`,
+  },
+};

@@ -7,7 +7,7 @@ import { checkAchievements, getAchievementDef } from "../../store/achievements.j
 import { buildPublicProfile } from "../../store/public-profile.js";
 import { parseClaudeConfig } from "../../parsers/config-parser.js";
 import { buildSnapshotPayload, parseSnapshotsFile } from "../../store/config-sync.js";
-import { getConfigLocale } from "../utils/locale.js";
+import { t } from "../../i18n/index.js";
 import type { ProficiencyResult, LocalStore, RemoteStore, WeeklyTrend } from "../../types.js";
 
 export interface MergeAndPushResult {
@@ -65,7 +65,7 @@ export function mergeAndPush(
   for (const id of newAchievements) {
     merged.achievements.push({ id, unlockedAt: new Date().toISOString() });
     const def = getAchievementDef(id);
-    if (def && verbose) console.log(`  \uD83C\uDFC6 Achievement unlocked: ${def.icon} ${def.name}`);
+    if (def && verbose) console.log(t().services.publishing.achievementUnlocked(def.icon, t().achievements[id]?.name ?? id));
   }
 
   const thisWeek = getWeekMonday(new Date().toISOString());
@@ -79,10 +79,9 @@ export function mergeAndPush(
 
   result.streak = merged.streak.current;
   result.achievementCount = merged.achievements.length;
-  const locale = getConfigLocale();
   const tokenWindows = computeTokenWindowsFromRemote(merged.recentSessions);
-  const finalSvg = renderBadge(result, locale, tokenWindows);
-  const animatedSvg = renderAnimatedBadge(result, locale, tokenWindows);
+  const finalSvg = renderBadge(result, tokenWindows);
+  const animatedSvg = renderAnimatedBadge(result, tokenWindows);
   saveBadge(finalSvg);
   saveAnimatedBadge(animatedSvg);
 
@@ -103,10 +102,10 @@ export function mergeAndPush(
   if (verbose) {
     const rawUrl = getGistRawUrl(username, gistId);
     const animatedUrl = getGistRawUrl(username, gistId, "cc-proficiency-animated.svg");
-    console.log("\u2713 Badge + data pushed to Gist");
-    console.log(`  Static:   ${rawUrl}`);
-    console.log(`  Animated: ${animatedUrl}`);
-    console.log(`  ${totals.sessions} sessions \u00B7 ${totals.hours.toFixed(1)}h \u00B7 ${merged.achievements.length} achievements \u00B7 \uD83D\uDD25 ${merged.streak.current}d streak`);
+    console.log(t().services.publishing.pushedToGist);
+    console.log(t().services.publishing.staticUrl(rawUrl));
+    console.log(t().services.publishing.animatedUrl(animatedUrl));
+    console.log(t().services.publishing.pushSummary(totals.sessions, totals.hours.toFixed(1), merged.achievements.length, merged.streak.current));
   }
 
   // Auto-update public profile if leaderboard is enabled
@@ -128,23 +127,23 @@ export function pushToGist(): void {
   const store = loadStore();
 
   if (!store.lastResult) {
-    console.log("No analysis data. Run 'cc-proficiency analyze' first.");
+    console.log(t().common.noAnalysisData);
     return;
   }
 
   const tokenWindows = computeTokenWindows(store.tokenLog);
-  const svg = renderBadge(store.lastResult, getConfigLocale(), tokenWindows);
+  const svg = renderBadge(store.lastResult, tokenWindows);
   saveBadge(svg);
 
   if (!isGhAuthenticated() || !config.gistId) {
     if (!isGhAuthenticated()) {
-      console.log("\u26A0 GitHub CLI not authenticated.");
-      console.log("To enable: gh auth login && cc-proficiency init");
+      console.log(t().common.ghNotAuthenticated);
+      console.log(t().common.ghNotAuthenticatedHint);
     }
     if (!config.gistId) {
-      console.log("No Gist configured. Run 'cc-proficiency init' first.");
+      console.log(t().common.noGistConfigured);
     }
-    console.log("Badge saved locally to: " + getBadgePath());
+    console.log(t().common.badgeSavedLocally(getBadgePath()));
     return;
   }
 
@@ -164,6 +163,6 @@ export function pushToGist(): void {
   );
 
   if (!result.success) {
-    console.log(`\u2717 Push failed: ${result.error}`);
+    console.log(t().services.publishing.pushFailed(result.error ?? "unknown"));
   }
 }

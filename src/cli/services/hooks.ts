@@ -1,6 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
+import { t } from "../../i18n/index.js";
 
 const CLAUDE_DIR = join(homedir(), ".claude");
 
@@ -12,7 +13,7 @@ export function injectHook(): void {
     try {
       settings = JSON.parse(readFileSync(settingsPath, "utf-8"));
     } catch {
-      console.log("  \u26A0 Could not parse settings.json, creating new hooks section");
+      console.log(t().services.hooks.couldNotParse);
     }
   }
 
@@ -62,7 +63,7 @@ export function injectHook(): void {
   }
 
   if (!changed) {
-    console.log("  Hook already installed (skipping)");
+    console.log(t().services.hooks.alreadyInstalled);
     return;
   }
 
@@ -89,9 +90,9 @@ export function removeHook(): void {
         delete settings.hooks;
       }
       writeFileSync(settingsPath, JSON.stringify(settings, null, 2), "utf-8");
-      console.log("  \u2713 Hook removed from settings.json");
+      console.log(t().services.hooks.hookRemoved);
     }
   } catch {
-    console.log("  \u26A0 Could not update settings.json");
+    console.log(t().services.hooks.couldNotUpdate);
   }
 }

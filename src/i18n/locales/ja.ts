@@ -1,0 +1,297 @@
+import type { AllStrings } from "../types.js";
+
+export const ja: AllStrings = {
+  common: {
+    noAnalysisData: "分析データがありません。先に 'cc-proficiency analyze' を実行してください。",
+    ghNotAuthenticated: "\u26a0 GitHub CLI が認証されていません。",
+    ghNotAuthenticatedHint: "有効にするには: gh auth login && cc-proficiency init",
+    noGistConfigured: "Gist が設定されていません。先に 'cc-proficiency init' を実行してください。",
+    badgeSavedLocally: (path) => `バッジをローカルに保存しました: ${path}`,
+    unknownKey: (key) => `不明なキー: ${key}`,
+    invalidLocale: (val, supported) => `無効なロケール: ${val}。対応: ${supported}`,
+  },
+
+  badge: {
+    title: "Claude Code 熟練度",
+    calibrating: "使用パターンを分析中...",
+    needMore: (n) => `スコア算出まであと${n}回`,
+    sessions: "セッション",
+    projects: "プロジェクト",
+    setup: "設定",
+    earlyResults: "暫定結果",
+    domainLabels: {
+      "cc-mastery": "CC熟練",
+      "tool-mcp": "ツール・MCP",
+      "agentic": "エージェント",
+      "prompt-craft": "プロンプト",
+      "context-mgmt": "コンテキスト",
+    },
+    featureLabels: {
+      hooks: "フック",
+      plugins: "プラグイン",
+      skills: "スキル",
+      mcp: "MCP",
+      agents: "エージェント",
+      plan: "プラン",
+      memory: "メモリ",
+      rules: "ルール",
+    },
+    claudeMd: "CLAUDE.md",
+    tokensPrefix: "トークン",
+  },
+
+  cli: {
+    help: {
+      description: "cc-proficiency \u2014 Claude Code 熟練度バッジ生成ツール",
+      commands: {
+        init: "設定とフックのセットアップ",
+        analyze: "セッションを分析しスコアを算出",
+        process: "フックからキューに入ったセッションを処理",
+        badge: "SVG バッジを生成",
+        push: "バッジを GitHub Gist にアップロード",
+        refresh: "トークン統計を更新しバッジを再描画",
+        explain: "スコアの要因と改善のヒントを表示",
+        status: "フックの状態、キュー、設定を表示",
+        config: "設定の表示または変更",
+        share: "コミュニティリーダーボードに参加・脱退",
+        leaderboard: "コミュニティランキングを表示",
+        update: "最新バージョンに更新",
+        uninstall: "フックの削除とクリーンアップ",
+        version: "バージョン情報を表示",
+      },
+      examples: "  cc-proficiency init\n  cc-proficiency analyze --full\n  cc-proficiency badge --output badge.svg\n  cc-proficiency explain",
+    },
+
+    init: {
+      initializing: "cc-proficiency を初期化中...",
+      githubUser: (username) => `  GitHub ユーザー: @${username}`,
+      badgeSavedLocallyHint: (path) => `  バッジのローカル保存先: ${path}`,
+      ghEnableHint: "  自動アップロードを有効にするには: gh auth login && cc-proficiency init",
+      localeDetected: (locale) => `  ロケール: ${locale}`,
+      hookInjected: "  \u2713 フックを ~/.claude/settings.json に追加しました",
+      runningInitialAnalysis: "  初期分析を実行中...",
+      creatingGist: "  バッジ付きのプライベート Gist を作成中...",
+      gistCreated: "  \u2713 Gist を作成しました",
+      addToReadme: "  README に追加してください:",
+      gistCreateFailed: (err) => `  \u26a0 Gist を作成できませんでした: ${err}`,
+      badgePushedToGist: (url) => `  \u2713 バッジを Gist にプッシュしました: ${url}`,
+      configSaved: (path) => `  \u2713 設定を ${path} に保存しました`,
+    },
+
+    analyze: {
+      runningFull: "フル分析を実行中...",
+      runningIncremental: "差分分析を実行中...",
+      noSessionsFound: "セッションが見つかりません。先に Claude Code を使用してから再度実行してください。",
+    },
+
+    explain: {
+      titleLine: (username) => `  Claude Code 熟練度 \u2014 @${username}`,
+      strengths: "  強み:",
+      areasToImprove: "  改善の余地:",
+      featureUsage: "  機能の使用状況:",
+      domainTips: {
+        "cc-mastery": "CLAUDE.md にインポートを追加し、マッチャー付きフックを作成し、ルールファイルを作成し、プランモードを使用する",
+        "tool-mcp": "ツールを意図的に連鎖させ (Grep\u2192Read\u2192Edit)、MCP サーバーを設定し、LSP 連携を使用する",
+        "agentic": "異なるタイプのサブエージェント (Explore, Plan) を使用し、並列エージェントとワークツリーを試す",
+        "prompt-craft": "マークダウンリストでプロンプトを構造化し、コードブロックとファイル参照を提供する",
+        "context-mgmt": "セッション間メモリファイルを使用し、複数プロジェクトで作業し、CLAUDE.md を更新する",
+      },
+      hooksLabel: "フック:",
+      skillsLabel: "スキル:",
+      mcpLabel: "MCP:",
+      toolsLabel: "ツール:",
+      flagsLabel: "フラグ:",
+      more: "その他",
+      sessionsSummary: (sessions, projects) => `  ${sessions} セッション \u00b7 ${projects} プロジェクト`,
+    },
+
+    achievements: {
+      title: (unlocked, total) => `  実績 (${unlocked}/${total})`,
+      done: "完了!",
+    },
+
+    status: {
+      title: "  cc-proficiency ステータス",
+      username: "  ユーザー名:",
+      gistId: "  Gist ID:",
+      autoUpload: "  自動アップロード:",
+      locale: "  ロケール:",
+      leaderboardLabel: "  リーダーボード:",
+      joined: (gistId) => `参加中 (${gistId})`,
+      notJoined: "未参加",
+      pending: "保留中",
+      sessionsProcessed: "  処理済みセッション:",
+      lastUpdated: "  最終更新:",
+      never: "なし",
+      queuePending: "  キュー待ち:",
+      hookLog: (count) => `  フックログ (直近${count}件):`,
+      lastHookFired: (time) => `  最終フック実行: ${time}`,
+      noHookEntries: "  フックログ: エントリなし (フック未実行)",
+      queueLock: "  キューロック:",
+      queueLockHeld: (age) => `保持中 (${age}秒前)`,
+      queueLockStale: " \u2190 失効",
+      queueLockPresent: "存在 (経過時間不明)",
+      queueLockNone: "なし",
+      notSet: "(未設定)",
+    },
+
+    config: {
+      setValue: (key, val) => `${key} = ${val} に設定しました`,
+    },
+
+    share: {
+      joining: "  cc-proficiency リーダーボードに参加中...",
+      sharingPublicly: "  以下が公開されます:",
+      sharedItems: "    - GitHub ユーザー名、ドメインスコア、連続日数、実績数\n    - 総セッション数と総時間、参加日",
+      notShared: "  公開されないもの: セッション詳細、プロジェクト名、ファイルパス、ツール",
+      alreadyOnLeaderboard: "既にリーダーボードに参加しています。プロフィールはプッシュ時に自動更新されます。",
+      creatingPublicGist: "  公開プロフィール Gist を作成中...",
+      publicGistCreated: (url) => `  \u2713 公開 Gist を作成しました: ${url}`,
+      publicGistUpdated: (url) => `  \u2713 公開 Gist を更新しました: ${url}`,
+      publicGistCreateFailed: (err) => `\u2717 公開 Gist の作成に失敗しました: ${err}`,
+      publicGistUpdateFailed: (err) => `\u2717 公開 Gist の更新に失敗しました: ${err}`,
+      registering: "  リーダーボードに登録中...",
+      registrationCreated: "  \u2713 登録 Issue を作成しました",
+      profileWillAppear: "  Issue が処理されるとプロフィールが表示されます。",
+      syncFailed: (err) => `\u2717 データの同期に失敗しました: ${err}`,
+      noMergedData: "\u2717 公開プロフィールの構築に失敗しました \u2014 マージ済みデータがありません",
+      registerFailed: (err) => `\u2717 登録に失敗しました: ${err}`,
+      leaving: "  cc-proficiency リーダーボードから脱退中...",
+      removalCreated: (url) => `  \u2713 削除 Issue を作成しました: ${url}`,
+      publicGistDeleted: "  \u2713 公開プロフィール Gist を削除しました",
+      publicGistDeleteFailed: (err) => `  \u26a0 公開 Gist を削除できませんでした: ${err}`,
+      unchangedNotice: "  リーダーボードのエントリと公開 Gist は変更されていません。",
+      removedFromLeaderboard: "  リーダーボードから削除しました。",
+    },
+
+    leaderboard: {
+      title: (count) => `  cc-proficiency リーダーボード (${count}人)`,
+      unavailable: "リーダーボードは利用できません。後でもう一度お試しください。",
+      columnHeader: "   #  ユーザー          平均  CC   ツール エージ プロン コンテ",
+      users: (count, skipped) => `${count}人${skipped > 0 ? ` (${skipped}人スキップ)` : ""}`,
+      updatedJustNow: "たった今",
+      updatedRecently: "最近",
+      cached: " (キャッシュ)",
+      sortHelp: "  --sort=<avg|cc-mastery|tool-mcp|agentic|prompt-craft|context-mgmt|hours|streak>",
+      limitHelp: "  --limit=N (デフォルト 20)",
+    },
+
+    update: {
+      checking: "更新を確認中...",
+      alreadyLatest: (version) => `既に最新バージョンです (v${version})。`,
+      available: (current, latest) => `更新があります: v${current} \u2192 v${latest}`,
+      updating: "cc-proficiency を更新中...",
+      updated: (version) => `\u2713 v${version} に更新しました`,
+      permissionDenied: "\u2717 権限がありません。",
+      runAsAdmin: "管理者権限のターミナルで実行してください。",
+      runSudo: (version) => `実行: sudo npm install -g cc-proficiency@${version}`,
+      npmNotFound: "\u2717 npm が見つかりません。先に Node.js/npm をインストールしてください。",
+      fetchFailed: "npm レジストリに接続できません。インターネット接続を確認してください。",
+      failed: (err) => `\u2717 更新に失敗しました: ${err}`,
+      tryManually: (version) => `手動で実行: npm install -g cc-proficiency@${version}`,
+    },
+
+    uninstall: {
+      uninstalling: "cc-proficiency をアンインストール中...",
+      localDataRemoved: "  \u2713 ローカルデータを削除しました",
+      couldNotRemove: (path) => `  \u26a0 ${path} を完全に削除できませんでした`,
+      npmUninstallHint: "  cc-proficiency をアンインストールしました。パッケージを削除するには 'npm uninstall -g cc-proficiency' を実行してください。",
+    },
+
+    process: {
+      anotherRunning: "別のプロセスが実行中です。スキップします。",
+      queueEmpty: "キューは空です。処理するものがありません。",
+      processed: (count, path) => `${count}件のセッションを処理しました。バッジの保存先: ${path}`,
+    },
+    badge: {
+      writtenTo: (path) => `バッジを ${path} に書き込みました`,
+      savedTo: (path) => `バッジを ${path} に保存しました`,
+    },
+  },
+
+  services: {
+    publishing: {
+      achievementUnlocked: (icon, name) => `  \ud83c\udfc6 実績解除: ${icon} ${name}`,
+      pushedToGist: "\u2713 バッジとデータを Gist にプッシュしました",
+      pushFailed: (err) => `\u2717 プッシュに失敗しました: ${err}`,
+      staticUrl: (url) => `  静的:     ${url}`,
+      animatedUrl: (url) => `  アニメ:   ${url}`,
+      pushSummary: (sessions, hours, achievements, streak) =>
+        `  ${sessions} セッション \u00b7 ${hours}時間 \u00b7 ${achievements} 実績 \u00b7 \ud83d\udd25 ${streak}日連続`,
+    },
+    hooks: {
+      alreadyInstalled: "  フックは既にインストール済みです (スキップ)",
+      couldNotParse: "  \u26a0 settings.json を解析できませんでした。新しいフックセクションを作成します",
+      hookRemoved: "  \u2713 settings.json からフックを削除しました",
+      couldNotUpdate: "  \u26a0 settings.json を更新できませんでした",
+    },
+  },
+
+  formatting: {
+    calibratingStatus: (sessions, needed) =>
+      `  \u23f3 較正中... (${sessions}セッション、あと${needed}回必要)`,
+    setupLabel: "  設定:",
+    setupItems: {
+      "CLAUDE.md": "CLAUDE.md",
+      "Hooks": "Hooks",
+      "Plugins": "Plugins",
+      "MCP Servers": "MCP Servers",
+      "Memory": "Memory",
+      "Rules": "Rules",
+      "Agents": "Agents",
+      "Skills": "Skills",
+    },
+    earlyResultsNote: "  (暫定結果 \u2014 10セッションで安定します)",
+    tokensLabel: "  トークン:",
+  },
+
+  updateCheck: {
+    available: (current, latest) => `  更新があります: v${current} \u2192 v${latest}`,
+    runUpdate: "  実行: cc-proficiency update",
+  },
+
+  achievements: {
+    "first-session": { name: "はじめの一歩", description: "最初のセッションを完了する" },
+    "ten-sessions": { name: "入門", description: "10セッションを完了する" },
+    "century-club": { name: "100回達成", description: "100セッションを完了する" },
+    "hour-10": { name: "10時間突破", description: "Claude Code で10時間以上を過ごす" },
+    "hour-100": { name: "百戦錬磨", description: "Claude Code で100時間以上を過ごす" },
+    "perfect-domain": { name: "満点達成", description: "いずれかのドメインで100に到達する" },
+    "all-above-50": { name: "万能型", description: "全5ドメインで50以上を達成する" },
+    "all-above-80": { name: "マスタークラス", description: "全5ドメインで80以上を達成する" },
+    "streak-7": { name: "一週間の戦士", description: "7日間の連続記録を維持する" },
+    "streak-30": { name: "月間の鉄人", description: "30日間の連続記録を維持する" },
+    "multi-project-5": { name: "探検家", description: "5つ以上のプロジェクトで作業する" },
+    "agent-master": { name: "エージェントの達人", description: "3種類以上のサブエージェントを使用する" },
+    "mcp-explorer": { name: "MCP 探検家", description: "2つ以上の MCP サーバーを使用する" },
+    "night-owl": { name: "夜更かし", description: "深夜 (UTC) 以降にセッションを行う" },
+    "community-member": { name: "コミュニティ", description: "習熟度リーダーボードに参加する" },
+  },
+
+  insights: {
+    domainLabels: {
+      "cc-mastery": "CC 設定の習熟",
+      "tool-mcp": "ツールと MCP の連携",
+      "agentic": "エージェントワークフロー",
+      "prompt-craft": "プロンプトエンジニアリング",
+      "context-mgmt": "コンテキスト管理",
+    },
+    domainActions: {
+      "cc-mastery": "CLAUDE.md を充実させ、マッチャー付きフックを追加する",
+      "tool-mcp": "ツールを意図的に連鎖させる (Grep\u2192Read\u2192Edit)",
+      "agentic": "異なるタイプのサブエージェントを使用する",
+      "prompt-craft": "マークダウンとコードブロックでプロンプトを構造化する",
+      "context-mgmt": "セッション間メモリファイルを使用する",
+    },
+    fallbackAction: (label) => `${label}を改善する`,
+  },
+
+  registry: {
+    joinTitle: (username) => `[leaderboard] join @${username}`,
+    joinBody: (username, gistId) =>
+      `**Username:** ${username}\n**Public Gist ID:** ${gistId}\n\nThis issue was automatically created by \`cc-proficiency share\`.\nA GitHub Action will validate and add this entry to the leaderboard registry.`,
+    leaveTitle: (username) => `[leaderboard] leave @${username}`,
+    leaveBody: (username) =>
+      `**Username:** ${username}\n\nThis issue was automatically created by \`cc-proficiency share --remove\`.\nA GitHub Action will remove this entry from the leaderboard registry.`,
+  },
+};

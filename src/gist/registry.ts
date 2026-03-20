@@ -1,6 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { readGistFile } from "./uploader.js";
 import { parsePublicProfile } from "../store/public-profile.js";
+import { t } from "../i18n/index.js";
 import type { LeaderboardRegistry, PublicProfile } from "../types.js";
 
 // Must match vars.REGISTRY_GIST_ID in .github/workflows/leaderboard-registration.yml
@@ -43,14 +44,8 @@ export function openJoinIssue(
   publicGistId: string
 ): { success: boolean; issueUrl?: string; error?: string } {
   try {
-    const title = `[leaderboard] join @${username}`;
-    const body = [
-      `**Username:** ${username}`,
-      `**Public Gist ID:** ${publicGistId}`,
-      "",
-      "This issue was automatically created by `cc-proficiency share`.",
-      "A GitHub Action will validate and add this entry to the leaderboard registry.",
-    ].join("\n");
+    const title = t().registry.joinTitle(username);
+    const body = t().registry.joinBody(username, publicGistId);
 
     const result = execFileSync("gh", [
       "issue", "create",
@@ -76,13 +71,8 @@ export function openLeaveIssue(
   username: string
 ): { success: boolean; issueUrl?: string; error?: string } {
   try {
-    const title = `[leaderboard] leave @${username}`;
-    const body = [
-      `**Username:** ${username}`,
-      "",
-      "This issue was automatically created by `cc-proficiency share --remove`.",
-      "A GitHub Action will remove this entry from the leaderboard registry.",
-    ].join("\n");
+    const title = t().registry.leaveTitle(username);
+    const body = t().registry.leaveBody(username);
 
     const result = execFileSync("gh", [
       "issue", "create",

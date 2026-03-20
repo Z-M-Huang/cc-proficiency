@@ -288,7 +288,7 @@ export interface CCProficiencyConfig {
   gistId?: string;
   autoUpload: boolean;
   public: boolean;
-  locale?: string; // "en" | "zh-CN"
+  locale?: string;         // validated at read time via isValidLocale()
   leaderboard?: boolean;   // opt-in to public leaderboard
   publicGistId?: string;   // separate gist for public profile
 }
@@ -374,8 +374,6 @@ export interface WeeklyTrend {
 
 export interface AchievementDef {
   id: string;
-  name: string;
-  description: string;
   icon: string;
   progress: (ctx: AchievementContext) => { current: number; target: number };
 }
