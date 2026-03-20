@@ -51,9 +51,8 @@ Also shows **8 feature mini-bars** (Hooks, Plugins, Skills, MCP, Agents, Plan, M
   <a href="https://github.com/Z-M-Huang/cc-proficiency">
     <img src="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency.svg" alt="CC Proficiency Badge — Static" />
   </a>
-  <a href="https://github.com/Z-M-Huang/cc-proficiency">
-    <img src="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency-animated.svg" alt="CC Proficiency Badge — Animated" />
-  </a>
+  <br />
+  <a href="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency-animated.svg">Click to see animated version</a>
 </p>
 
 > **Disclaimer:** This is an unofficial usage estimate, not an actual Anthropic certification score. Not affiliated with or endorsed by Anthropic.
@@ -196,8 +195,8 @@ After running `cc-proficiency init`, add this to your README:
 <!-- Static badge -->
 ![Claude Code Proficiency](https://gist.githubusercontent.com/<username>/<gist-id>/raw/cc-proficiency.svg)
 
-<!-- Animated badge (bars fill on load) -->
-![Claude Code Proficiency](https://gist.githubusercontent.com/<username>/<gist-id>/raw/cc-proficiency-animated.svg)
+<!-- Animated badge (click to view) -->
+[Click to see animated version](https://gist.githubusercontent.com/<username>/<gist-id>/raw/cc-proficiency-animated.svg)
 ```
 
 Both badges update automatically after each Claude Code session (via the Stop hook).
