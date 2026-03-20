@@ -1,0 +1,297 @@
+import type { AllStrings } from "../types.js";
+
+export const ko: AllStrings = {
+  common: {
+    noAnalysisData: "분석 데이터가 없습니다. 먼저 'cc-proficiency analyze'를 실행하세요.",
+    ghNotAuthenticated: "\u26a0 GitHub CLI 인증이 되어 있지 않습니다.",
+    ghNotAuthenticatedHint: "활성화하려면: gh auth login && cc-proficiency init",
+    noGistConfigured: "Gist가 설정되지 않았습니다. 먼저 'cc-proficiency init'을 실행하세요.",
+    badgeSavedLocally: (path) => `배지가 로컬에 저장되었습니다: ${path}`,
+    unknownKey: (key) => `알 수 없는 키: ${key}`,
+    invalidLocale: (val, supported) => `잘못된 로케일: ${val}. 지원: ${supported}`,
+  },
+
+  badge: {
+    title: "Claude Code 숙련도",
+    calibrating: "사용 패턴 분석 중...",
+    needMore: (n) => `점수 산정을 위해 ${n}개 더 필요`,
+    sessions: "세션",
+    projects: "프로젝트",
+    setup: "설정",
+    earlyResults: "초기 결과",
+    domainLabels: {
+      "cc-mastery": "CC 마스터리",
+      "tool-mcp": "도구 & MCP",
+      "agentic": "에이전트",
+      "prompt-craft": "프롬프트",
+      "context-mgmt": "컨텍스트",
+    },
+    featureLabels: {
+      hooks: "훅",
+      plugins: "플러그인",
+      skills: "스킬",
+      mcp: "MCP",
+      agents: "에이전트",
+      plan: "플랜",
+      memory: "메모리",
+      rules: "규칙",
+    },
+    claudeMd: "CLAUDE.md",
+    tokensPrefix: "토큰",
+  },
+
+  cli: {
+    help: {
+      description: "cc-proficiency \u2014 Claude Code 숙련도 배지 생성기",
+      commands: {
+        init: "설정 및 훅 초기화",
+        analyze: "세션 분석 및 점수 계산",
+        process: "훅에서 대기 중인 세션 처리",
+        badge: "SVG 배지 생성",
+        push: "GitHub Gist에 배지 업로드",
+        refresh: "토큰 통계 새로고침 및 배지 재생성",
+        explain: "점수 요인 및 개선 팁 표시",
+        status: "훅 활동, 대기열, 설정 상태 표시",
+        config: "설정 조회 또는 변경",
+        share: "커뮤니티 리더보드 참여 또는 탈퇴",
+        leaderboard: "커뮤니티 순위 보기",
+        update: "최신 버전으로 업데이트",
+        uninstall: "훅 제거 및 정리",
+        version: "버전 정보 표시",
+      },
+      examples: "  cc-proficiency init\n  cc-proficiency analyze --full\n  cc-proficiency badge --output badge.svg\n  cc-proficiency explain",
+    },
+
+    init: {
+      initializing: "cc-proficiency 초기화 중...",
+      githubUser: (username) => `  GitHub 사용자: @${username}`,
+      badgeSavedLocallyHint: (path) => `  배지가 로컬에 저장됩니다: ${path}`,
+      ghEnableHint: "  자동 업로드를 활성화하려면: gh auth login && cc-proficiency init",
+      localeDetected: (locale) => `  로케일: ${locale}`,
+      hookInjected: "  \u2713 훅이 ~/.claude/settings.json에 추가되었습니다",
+      runningInitialAnalysis: "  초기 분석 실행 중...",
+      creatingGist: "  배지 포함 비공개 Gist 생성 중...",
+      gistCreated: "  \u2713 Gist 생성 완료",
+      addToReadme: "  README에 추가하세요:",
+      gistCreateFailed: (err) => `  \u26a0 Gist를 생성할 수 없습니다: ${err}`,
+      badgePushedToGist: (url) => `  \u2713 배지가 Gist에 업로드되었습니다: ${url}`,
+      configSaved: (path) => `  \u2713 설정이 저장되었습니다: ${path}`,
+    },
+
+    analyze: {
+      runningFull: "전체 분석 실행 중...",
+      runningIncremental: "증분 분석 실행 중...",
+      noSessionsFound: "세션을 찾을 수 없습니다. Claude Code를 먼저 사용한 후 다시 분석을 실행하세요.",
+    },
+
+    explain: {
+      titleLine: (username) => `  Claude Code 숙련도 \u2014 @${username}`,
+      strengths: "  강점:",
+      areasToImprove: "  개선 영역:",
+      featureUsage: "  기능 사용:",
+      domainTips: {
+        "cc-mastery": "CLAUDE.md에 import를 추가하고, 매처가 있는 훅을 설정하고, 규칙 파일을 만들고, 플랜 모드를 사용하세요",
+        "tool-mcp": "도구를 의도적으로 연결하고(Grep\u2192Read\u2192Edit), MCP 서버를 설정하고, LSP 통합을 사용하세요",
+        "agentic": "다양한 유형의 서브에이전트(탐색, 계획)를 사용하고, 병렬 에이전트와 워크트리를 시도하세요",
+        "prompt-craft": "마크다운 목록으로 프롬프트를 구조화하고, 코드 블록과 파일 참조를 제공하세요",
+        "context-mgmt": "세션 간 메모리 파일을 사용하고, 여러 프로젝트에서 작업하고, CLAUDE.md를 업데이트하세요",
+      },
+      hooksLabel: "훅:",
+      skillsLabel: "스킬:",
+      mcpLabel: "MCP:",
+      toolsLabel: "도구:",
+      flagsLabel: "플래그:",
+      more: "더 보기",
+      sessionsSummary: (sessions, projects) => `  ${sessions}개 세션 \u00b7 ${projects}개 프로젝트`,
+    },
+
+    achievements: {
+      title: (unlocked, total) => `  업적 (${unlocked}/${total})`,
+      done: "완료!",
+    },
+
+    status: {
+      title: "  cc-proficiency 상태",
+      username: "  사용자명:",
+      gistId: "  Gist ID:",
+      autoUpload: "  자동 업로드:",
+      locale: "  로케일:",
+      leaderboardLabel: "  리더보드:",
+      joined: (gistId) => `참여 중 (${gistId})`,
+      notJoined: "미참여",
+      pending: "대기 중",
+      sessionsProcessed: "  처리된 세션:",
+      lastUpdated: "  마지막 업데이트:",
+      never: "없음",
+      queuePending: "  대기열 보류:",
+      hookLog: (count) => `  훅 로그 (최근 ${count}개 항목):`,
+      lastHookFired: (time) => `  마지막 훅 실행: ${time}`,
+      noHookEntries: "  훅 로그: 아직 항목 없음 (훅이 실행되지 않음)",
+      queueLock: "  대기열 잠금:",
+      queueLockHeld: (age) => `유지 중 (${age}초 전)`,
+      queueLockStale: " \u2190 오래됨",
+      queueLockPresent: "존재 (알 수 없는 기간)",
+      queueLockNone: "없음",
+      notSet: "(설정되지 않음)",
+    },
+
+    config: {
+      setValue: (key, val) => `${key} = ${val} 설정 완료`,
+    },
+
+    share: {
+      joining: "  cc-proficiency 리더보드에 참여하는 중...",
+      sharingPublicly: "  다음 정보가 공개됩니다:",
+      sharedItems: "    - GitHub 사용자명, 도메인 점수, 연속 기록, 업적 수\n    - 총 세션 수 및 시간, 가입일",
+      notShared: "  공개되지 않는 정보: 세션 세부사항, 프로젝트 이름, 파일 경로, 도구",
+      alreadyOnLeaderboard: "이미 리더보드에 참여 중입니다. 프로필은 push 시 자동 업데이트됩니다.",
+      creatingPublicGist: "  공개 프로필 Gist 생성 중...",
+      publicGistCreated: (url) => `  \u2713 공개 Gist 생성 완료: ${url}`,
+      publicGistUpdated: (url) => `  \u2713 공개 Gist 업데이트 완료: ${url}`,
+      publicGistCreateFailed: (err) => `\u2717 공개 Gist 생성 실패: ${err}`,
+      publicGistUpdateFailed: (err) => `\u2717 공개 Gist 업데이트 실패: ${err}`,
+      registering: "  리더보드에 등록 중...",
+      registrationCreated: "  \u2713 등록 이슈 생성 완료",
+      profileWillAppear: "  이슈가 처리되면 프로필이 표시됩니다.",
+      syncFailed: (err) => `\u2717 데이터 동기화 실패: ${err}`,
+      noMergedData: "\u2717 공개 프로필을 생성할 수 없습니다 \u2014 병합된 데이터 없음",
+      registerFailed: (err) => `\u2717 등록 실패: ${err}`,
+      leaving: "  cc-proficiency 리더보드에서 탈퇴하는 중...",
+      removalCreated: (url) => `  \u2713 탈퇴 이슈 생성 완료: ${url}`,
+      publicGistDeleted: "  \u2713 공개 프로필 Gist 삭제 완료",
+      publicGistDeleteFailed: (err) => `  \u26a0 공개 Gist를 삭제할 수 없습니다: ${err}`,
+      unchangedNotice: "  리더보드 항목과 공개 Gist가 변경되지 않았습니다.",
+      removedFromLeaderboard: "  리더보드에서 제거되었습니다.",
+    },
+
+    leaderboard: {
+      title: (count) => `  cc-proficiency 리더보드 (${count}명)`,
+      unavailable: "리더보드를 사용할 수 없습니다. 나중에 다시 시도하세요.",
+      columnHeader: "   #  사용자           평균  CC   도구  에이  프롬  컨텍",
+      users: (count, skipped) => `${count}명${skipped > 0 ? ` (${skipped}명 건너뜀)` : ""}`,
+      updatedJustNow: "방금",
+      updatedRecently: "최근",
+      cached: " (캐시됨)",
+      sortHelp: "  --sort=<avg|cc-mastery|tool-mcp|agentic|prompt-craft|context-mgmt|hours|streak>",
+      limitHelp: "  --limit=N (기본값 20)",
+    },
+
+    update: {
+      checking: "업데이트 확인 중...",
+      alreadyLatest: (version) => `이미 최신 버전입니다 (v${version}).`,
+      available: (current, latest) => `업데이트 가능: v${current} \u2192 v${latest}`,
+      updating: "cc-proficiency 업데이트 중...",
+      updated: (version) => `\u2713 v${version}으로 업데이트 완료`,
+      permissionDenied: "\u2717 권한이 거부되었습니다.",
+      runAsAdmin: "관리자 터미널에서 이 명령을 실행하세요.",
+      runSudo: (version) => `실행: sudo npm install -g cc-proficiency@${version}`,
+      npmNotFound: "\u2717 npm을 찾을 수 없습니다. 먼저 Node.js/npm을 설치하세요.",
+      fetchFailed: "npm 레지스트리에 연결할 수 없습니다. 인터넷 연결을 확인하세요.",
+      failed: (err) => `\u2717 업데이트 실패: ${err}`,
+      tryManually: (version) => `수동으로 시도: npm install -g cc-proficiency@${version}`,
+    },
+
+    uninstall: {
+      uninstalling: "cc-proficiency 제거 중...",
+      localDataRemoved: "  \u2713 로컬 데이터 제거 완료",
+      couldNotRemove: (path) => `  \u26a0 ${path}을(를) 완전히 제거할 수 없습니다`,
+      npmUninstallHint: "  cc-proficiency가 제거되었습니다. 패키지를 제거하려면 'npm uninstall -g cc-proficiency'를 실행하세요.",
+    },
+
+    process: {
+      anotherRunning: "다른 프로세스가 실행 중입니다. 건너뜁니다.",
+      queueEmpty: "대기열이 비어 있습니다. 처리할 항목이 없습니다.",
+      processed: (count, path) => `${count}개 세션 처리 완료. 배지 저장 위치: ${path}`,
+    },
+    badge: {
+      writtenTo: (path) => `배지가 ${path}에 작성되었습니다`,
+      savedTo: (path) => `배지가 ${path}에 저장되었습니다`,
+    },
+  },
+
+  services: {
+    publishing: {
+      achievementUnlocked: (icon, name) => `  \ud83c\udfc6 업적 달성: ${icon} ${name}`,
+      pushedToGist: "\u2713 배지 + 데이터가 Gist에 업로드되었습니다",
+      pushFailed: (err) => `\u2717 푸시 실패: ${err}`,
+      staticUrl: (url) => `  정적:   ${url}`,
+      animatedUrl: (url) => `  애니메이션: ${url}`,
+      pushSummary: (sessions, hours, achievements, streak) =>
+        `  ${sessions}개 세션 \u00b7 ${hours}시간 \u00b7 ${achievements}개 업적 \u00b7 \ud83d\udd25 ${streak}일 연속`,
+    },
+    hooks: {
+      alreadyInstalled: "  훅이 이미 설치되어 있습니다 (건너뜀)",
+      couldNotParse: "  \u26a0 settings.json을 파싱할 수 없어 새 hooks 섹션을 생성합니다",
+      hookRemoved: "  \u2713 settings.json에서 훅이 제거되었습니다",
+      couldNotUpdate: "  \u26a0 settings.json을 업데이트할 수 없습니다",
+    },
+  },
+
+  formatting: {
+    calibratingStatus: (sessions, needed) =>
+      `  \u23f3 보정 중... (${sessions}개 세션, ${needed}개 추가 필요)`,
+    setupLabel: "  설정:",
+    setupItems: {
+      "CLAUDE.md": "CLAUDE.md",
+      "Hooks": "Hooks",
+      "Plugins": "Plugins",
+      "MCP Servers": "MCP Servers",
+      "Memory": "Memory",
+      "Rules": "Rules",
+      "Agents": "Agents",
+      "Skills": "Skills",
+    },
+    earlyResultsNote: "  (초기 결과 \u2014 10개 세션에서 안정화됩니다)",
+    tokensLabel: "  토큰:",
+  },
+
+  updateCheck: {
+    available: (current, latest) => `  업데이트 가능: v${current} \u2192 v${latest}`,
+    runUpdate: "  실행: cc-proficiency update",
+  },
+
+  achievements: {
+    "first-session": { name: "첫 걸음", description: "첫 번째 세션 완료" },
+    "ten-sessions": { name: "시작 단계", description: "10개 세션 완료" },
+    "century-club": { name: "100회 클럽", description: "100개 세션 완료" },
+    "hour-10": { name: "10시간 달성", description: "Claude Code 사용 10시간 이상" },
+    "hour-100": { name: "100시간 달성", description: "Claude Code 사용 100시간 이상" },
+    "perfect-domain": { name: "만점", description: "임의 도메인에서 100점 달성" },
+    "all-above-50": { name: "균형 잡힘", description: "5개 도메인 모두 50점 이상" },
+    "all-above-80": { name: "마스터 클래스", description: "5개 도메인 모두 80점 이상" },
+    "streak-7": { name: "주간 전사", description: "7일 연속 기록 유지" },
+    "streak-30": { name: "월간 장인", description: "30일 연속 기록 유지" },
+    "multi-project-5": { name: "탐험가", description: "5개 이상의 프로젝트에서 작업" },
+    "agent-master": { name: "에이전트 마스터", description: "3개 이상의 서브에이전트 유형 사용" },
+    "mcp-explorer": { name: "MCP 탐험가", description: "2개 이상의 MCP 서버 사용" },
+    "night-owl": { name: "올빼미족", description: "자정(UTC) 이후 세션 진행" },
+    "community-member": { name: "커뮤니티", description: "숙련도 리더보드 참여" },
+  },
+
+  insights: {
+    domainLabels: {
+      "cc-mastery": "CC 설정 숙련도",
+      "tool-mcp": "도구 & MCP 통합",
+      "agentic": "에이전트 워크플로",
+      "prompt-craft": "프롬프트 엔지니어링",
+      "context-mgmt": "컨텍스트 관리",
+    },
+    domainActions: {
+      "cc-mastery": "CLAUDE.md를 보강하고, 매처가 있는 훅을 추가하세요",
+      "tool-mcp": "도구를 의도적으로 연결하세요(Grep\u2192Read\u2192Edit)",
+      "agentic": "다양한 유형의 서브에이전트를 사용하세요",
+      "prompt-craft": "마크다운과 코드 블록으로 프롬프트를 구조화하세요",
+      "context-mgmt": "세션 간 메모리 파일을 사용하세요",
+    },
+    fallbackAction: (label) => `${label} 향상`,
+  },
+
+  registry: {
+    joinTitle: (username) => `[leaderboard] join @${username}`,
+    joinBody: (username, gistId) =>
+      `**사용자명:** ${username}\n**공개 Gist ID:** ${gistId}\n\n이 이슈는 \`cc-proficiency share\`에 의해 자동으로 생성되었습니다.\nGitHub Action이 유효성을 검사하고 리더보드 레지스트리에 이 항목을 추가합니다.`,
+    leaveTitle: (username) => `[leaderboard] leave @${username}`,
+    leaveBody: (username) =>
+      `**사용자명:** ${username}\n\n이 이슈는 \`cc-proficiency share --remove\`에 의해 자동으로 생성되었습니다.\nGitHub Action이 리더보드 레지스트리에서 이 항목을 제거합니다.`,
+  },
+};

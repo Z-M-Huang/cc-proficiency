@@ -8,20 +8,20 @@ import { readQueue, writeQueue, acquireLock, releaseLock } from "../../store/que
 import { isGhAuthenticated, readGistFile } from "../../gist/uploader.js";
 import { getConfigWithSync, gatherAllProcessedSessions } from "../services/sessions.js";
 import { mergeAndPush } from "../services/publishing.js";
-import { getConfigLocale } from "../utils/locale.js";
 import { buildSnapshotPayload, parseSnapshotsFile } from "../../store/config-sync.js";
 import type { ParsedSession } from "../../types.js";
+import { t } from "../../i18n/index.js";
 
 export async function cmdProcess(): Promise<void> {
   if (!acquireLock()) {
-    console.log("Another process is running. Skipping.");
+    console.log(t().cli.process.anotherRunning);
     return;
   }
 
   try {
     const queue = readQueue();
     if (queue.length === 0) {
-      console.log("Queue empty. Nothing to process.");
+      console.log(t().cli.process.queueEmpty);
       return;
     }
 
@@ -85,7 +85,7 @@ export async function cmdProcess(): Promise<void> {
 
       // Save local badge first (always works, even offline)
       const tokenWindows = computeTokenWindows(store.tokenLog);
-      const svg = renderBadge(result, getConfigLocale(), tokenWindows);
+      const svg = renderBadge(result, tokenWindows);
       const badgePath = saveBadge(svg);
 
       // Push SVG + JSON atomically (preserves achievements/streak)
@@ -108,7 +108,7 @@ export async function cmdProcess(): Promise<void> {
         }
       }
 
-      console.log(`Processed ${newSessions.length} session(s). Badge saved to ${badgePath}`);
+      console.log(t().cli.process.processed(newSessions.length, badgePath));
     }
 
     writeQueue(new Set(processed));

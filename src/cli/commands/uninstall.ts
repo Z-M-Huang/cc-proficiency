@@ -2,9 +2,11 @@ import { existsSync, readdirSync, unlinkSync, rmdirSync } from "node:fs";
 import { join } from "node:path";
 import { getStoreDir } from "../../store/local-store.js";
 import { removeHook } from "../services/hooks.js";
+import { t } from "../../i18n/index.js";
 
 export function cmdUninstall(): void {
-  console.log("Uninstalling cc-proficiency...\n");
+  const s = t().cli.uninstall;
+  console.log(s.uninstalling + "\n");
 
   removeHook();
 
@@ -16,11 +18,11 @@ export function cmdUninstall(): void {
         unlinkSync(join(storeDir, f));
       }
       rmdirSync(storeDir);
-      console.log("  \u2713 Local data removed");
+      console.log(s.localDataRemoved);
     } catch {
-      console.log("  \u26A0 Could not fully remove " + storeDir);
+      console.log(s.couldNotRemove(storeDir));
     }
   }
 
-  console.log("\n  cc-proficiency uninstalled. Run 'npm uninstall -g cc-proficiency' to remove the package.");
+  console.log("\n" + s.npmUninstallHint);
 }

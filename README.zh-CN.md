@@ -28,7 +28,8 @@
   <a href="#嵌入到你的-readme">嵌入</a> &nbsp;·&nbsp;
   <a href="#评分系统">评分</a> &nbsp;·&nbsp;
   <a href="#隐私">隐私</a> &nbsp;·&nbsp;
-  <a href="./README.md">English</a>
+  <a href="#本地化">本地化</a> &nbsp;·&nbsp;
+  <a href="./README.md">English</a> · <strong>中文</strong> · <a href="./README.es.md">Español</a> · <a href="./README.fr.md">Français</a> · <a href="./README.ja.md">日本語</a> · <a href="./README.ko.md">한국어</a>
 </p>
 
 ---
@@ -235,6 +236,27 @@ cc-proficiency 使用 **~55 条模式匹配规则**，而不是简单计数：
 | **Gist 可见性** | **默认私有**（秘密 URL，不在个人资料中列出） |
 | **离线模式** | 无需 `gh` CLI 即可完全离线工作（仅本地模式） |
 | **CI/CD** | 非交互式会话自动检测并排除 |
+
+## 本地化
+
+cc-proficiency 支持 6 种语言：English、中文、Español、Français、日本語、한국어。
+
+`init` 时会自动从系统环境检测你的语言。要手动更改：
+
+```bash
+cc-proficiency config locale zh-CN   # 中文
+cc-proficiency config locale es       # 西班牙语
+cc-proficiency config locale fr       # 法语
+cc-proficiency config locale ja       # 日语
+cc-proficiency config locale ko       # 韩语
+cc-proficiency config locale en       # 英语（默认）
+```
+
+SVG 徽章会使用 SVG `<switch>` 元素和 `systemLanguage` 属性自动以查看者的首选语言显示。所有 6 种语言都嵌入在单个 SVG 文件中，无需为每种语言单独生成徽章。
+
+### 贡献翻译
+
+要添加新语言，将 `src/i18n/locales/en.ts` 复制为 `src/i18n/locales/<code>.ts`，翻译所有字符串，然后在 `src/i18n/index.ts` 中注册该语言。
 
 ## 命令
 

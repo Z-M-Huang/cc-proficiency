@@ -17,32 +17,33 @@ import { cmdUpdate } from "./commands/update.js";
 import { cmdRefresh } from "./commands/refresh.js";
 import { checkForUpdates } from "./utils/update-check.js";
 import { getVersion } from "./utils/version.js";
+import { initLocale, t } from "../i18n/index.js";
+import { loadConfig } from "../store/local-store.js";
 
 function printUsage(): void {
+  const h = t().cli.help;
+  const c = h.commands;
   console.log(`
-cc-proficiency \u2014 Claude Code Proficiency Badge Generator
+${h.description}
 
 Commands:
-  init                  Set up configuration and hooks
-  analyze [--full]      Analyze sessions and compute scores
-  process               Process queued sessions from hook
-  badge [--output <f>]  Generate SVG badge
-  push                  Upload badge to GitHub Gist
-  refresh [--force]     Refresh token stats and re-render badge
-  explain               Show score drivers and improvement tips
-  status                Show hook activity, queue, and config
-  config [key] [value]  View or set configuration
-  share [--remove]      Join or leave the community leaderboard
-  leaderboard           View community rankings
-  update                Update to the latest version
-  uninstall             Remove hooks and clean up
-  version               Show version info
+  init                  ${c.init}
+  analyze [--full]      ${c.analyze}
+  process               ${c.process}
+  badge [--output <f>]  ${c.badge}
+  push                  ${c.push}
+  refresh [--force]     ${c.refresh}
+  explain               ${c.explain}
+  status                ${c.status}
+  config [key] [value]  ${c.config}
+  share [--remove]      ${c.share}
+  leaderboard           ${c.leaderboard}
+  update                ${c.update}
+  uninstall             ${c.uninstall}
+  version               ${c.version}
 
 Examples:
-  cc-proficiency init
-  cc-proficiency analyze --full
-  cc-proficiency badge --output badge.svg
-  cc-proficiency explain
+${h.examples}
 `);
 }
 
@@ -52,6 +53,9 @@ const UPDATE_CHECK_COMMANDS = new Set([
 ]);
 
 async function main(): Promise<void> {
+  const cfg = loadConfig();
+  initLocale(cfg.locale);
+
   const args = process.argv.slice(2);
   const command = args[0];
 
