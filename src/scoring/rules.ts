@@ -23,6 +23,8 @@ export interface RuleContext {
   events: NormalizedEvent[];
   config: ConfigSignals;
   sessionCount: number;
+  projectCount: number;
+  projectSessionCounts: Map<string, number>;
 }
 
 export interface RuleFire {
@@ -342,7 +344,7 @@ export const RULES: ScoringRule[] = [
     id: "agent-multi-session-project",
     domain: "agentic", tier: "intermediate", points: 10, featureTags: [],
     evidenceType: "behavior", maxPerSession: 1, reason: "Multi-session project (sustained work)",
-    detect: (ctx) => ctx.sessionCount >= 3 ? 1 : 0,
+    detect: (ctx) => [...ctx.projectSessionCounts.values()].some((c) => c >= 3) ? 1 : 0,
   },
 
   // ═══════════════════════════════════════
@@ -454,13 +456,13 @@ export const RULES: ScoringRule[] = [
     id: "ctx-multi-project",
     domain: "context-mgmt", tier: "beginner", points: 5, featureTags: [],
     evidenceType: "behavior", maxPerSession: 1, reason: "Works on 2+ projects",
-    detect: (ctx) => ctx.sessionCount >= 1 ? 1 : 0, // checked at aggregate level
+    detect: (ctx) => ctx.projectCount >= 2 ? 1 : 0,
   },
   {
     id: "ctx-sustained-project",
     domain: "context-mgmt", tier: "intermediate", points: 15, featureTags: [],
-    evidenceType: "behavior", maxPerSession: 1, reason: "Sustained project work (3+ sessions)",
-    detect: (ctx) => ctx.sessionCount >= 3 ? 1 : 0,
+    evidenceType: "behavior", maxPerSession: 1, reason: "Sustained project work (3+ sessions on same project)",
+    detect: (ctx) => [...ctx.projectSessionCounts.values()].some((c) => c >= 3) ? 1 : 0,
   },
   {
     id: "ctx-claudemd-consulted",

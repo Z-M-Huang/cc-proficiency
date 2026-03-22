@@ -235,7 +235,9 @@ export type ConfidenceLevel = "low" | "medium" | "high";
 export interface DomainScore {
   id: DomainId;
   label: string;
-  score: number; // 0-100
+  score: number; // 0-100 raw score
+  maxPossible: number; // theoretical max for this domain given phase + rules
+  percentage: number; // round(score / maxPossible * 100), clamped 0-100
   weight: number; // 0-1
   confidence: ConfidenceLevel;
   dataPoints: number;

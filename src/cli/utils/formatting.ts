@@ -24,9 +24,10 @@ export function printResult(result: ProficiencyResult, tokenWindows?: TokenWindo
 
   for (const d of result.domains) {
     const label = s.badge.domainLabels[d.id as DomainId] ?? d.label;
-    const bar = progressBar(d.score, 20);
+    const pct = d.percentage ?? (d.maxPossible > 0 ? Math.round((d.score / d.maxPossible) * 100) : d.score);
+    const bar = progressBar(pct, 20);
     const conf = d.confidence === "high" ? "\u25CF" : d.confidence === "medium" ? "\u25D0" : "\u25CB";
-    console.log(`  ${padEndDisplay(label, 14)} ${bar}  ${String(d.score).padStart(3)}  ${conf}`);
+    console.log(`  ${padEndDisplay(label, 14)} ${bar}  ${String(pct).padStart(3)}%  ${conf}`);
   }
 
   console.log("  " + "\u2500".repeat(40));

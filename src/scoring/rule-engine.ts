@@ -22,9 +22,11 @@ export interface DomainBucket {
 export function fireRules(
   events: NormalizedEvent[],
   config: ConfigSignals,
-  sessionCount: number
+  sessionCount: number,
+  projectCount: number = 0,
+  projectSessionCounts: Map<string, number> = new Map()
 ): RuleFire[] {
-  const ctx: RuleContext = { events, config, sessionCount };
+  const ctx: RuleContext = { events, config, sessionCount, projectCount, projectSessionCounts };
   const fires: RuleFire[] = [];
 
   for (const rule of RULES) {
@@ -82,50 +84,93 @@ export function aggregateToBuckets(fires: RuleFire[]): Map<DomainId, DomainBucke
   return buckets;
 }
 
+// ── Phase Scaling ──
+
+function getPhaseScales(phase: "calibrating" | "early" | "full"): { configScale: number; behaviorScale: number } {
+  const configScale = phase === "calibrating" ? 2.0 : phase === "early" ? 1.5 : 1.0;
+  const behaviorScale = phase === "calibrating" ? 0.8 : phase === "early" ? 1.0 : 1.15;
+  return { configScale, behaviorScale };
+}
+
+const DOMAIN_IDS: DomainId[] = ["cc-mastery", "tool-mcp", "agentic", "prompt-craft", "context-mgmt"];
+
+const DOMAIN_LABELS: Record<DomainId, string> = {
+  "cc-mastery": "CC Mastery",
+  "tool-mcp": "Tool & MCP",
+  "agentic": "Agentic",
+  "prompt-craft": "Prompt Craft",
+  "context-mgmt": "Context Mgmt",
+};
+
+const DOMAIN_WEIGHTS: Record<DomainId, number> = {
+  "cc-mastery": 0.2,
+  "tool-mcp": 0.2,
+  "agentic": 0.2,
+  "prompt-craft": 0.2,
+  "context-mgmt": 0.2,
+};
+
 /**
- * Convert buckets to domain scores.
+ * Compute the theoretical maximum score per domain for a given phase.
+ * Sums all positive config and behavior rule points per domain, applies
+ * bucket caps and phase scaling. Excludes anti-pattern penalties.
+ */
+export function computeMaxScores(phase: "calibrating" | "early" | "full"): Map<DomainId, number> {
+  const { configScale, behaviorScale } = getPhaseScales(phase);
+  const maxScores = new Map<DomainId, number>();
+
+  for (const id of DOMAIN_IDS) {
+    let configRaw = 0;
+    let behaviorRaw = 0;
+
+    for (const rule of RULES) {
+      if (rule.domain !== id || rule.tier === "anti-pattern") continue;
+      const maxPoints = rule.points * rule.maxPerSession;
+      if (rule.evidenceType === "config") {
+        configRaw += maxPoints;
+      } else {
+        behaviorRaw += maxPoints;
+      }
+    }
+
+    const cappedConfig = Math.min(configRaw, CONFIG_CAP);
+    const cappedBehavior = Math.min(behaviorRaw, BEHAVIOR_CAP);
+    const max = Math.round(Math.min(100, Math.max(0, cappedConfig * configScale + cappedBehavior * behaviorScale)));
+    maxScores.set(id, max);
+  }
+
+  return maxScores;
+}
+
+/**
+ * Convert buckets to domain scores with percentage normalization.
  */
 export function bucketsToScores(
   buckets: Map<DomainId, DomainBucket>,
   phase: "calibrating" | "early" | "full"
 ): DomainScore[] {
-  // Phase-aware config weighting (GPT-5.4: calibrating 40/60, early 25/75, full 15/85)
-  const configScale = phase === "calibrating" ? 2.0 : phase === "early" ? 1.5 : 1.0;
-  const behaviorScale = phase === "calibrating" ? 0.8 : phase === "early" ? 1.0 : 1.15;
-
-  const labels: Record<DomainId, string> = {
-    "cc-mastery": "CC Mastery",
-    "tool-mcp": "Tool & MCP",
-    "agentic": "Agentic",
-    "prompt-craft": "Prompt Craft",
-    "context-mgmt": "Context Mgmt",
-  };
-
-  const weights: Record<DomainId, number> = {
-    "cc-mastery": 0.2,
-    "tool-mcp": 0.2,
-    "agentic": 0.2,
-    "prompt-craft": 0.2,
-    "context-mgmt": 0.2,
-  };
-
-  const domains: DomainId[] = ["cc-mastery", "tool-mcp", "agentic", "prompt-craft", "context-mgmt"];
+  const { configScale, behaviorScale } = getPhaseScales(phase);
+  const maxScores = computeMaxScores(phase);
   const scores: DomainScore[] = [];
 
-  for (const id of domains) {
+  for (const id of DOMAIN_IDS) {
     const bucket = buckets.get(id)!;
     const rawScore =
       bucket.configPoints * configScale +
       bucket.behaviorPoints * behaviorScale +
       bucket.penaltyPoints;
     const score = Math.round(Math.min(100, Math.max(0, rawScore)));
+    const maxPossible = maxScores.get(id) ?? 100;
+    const percentage = maxPossible > 0 ? Math.round(Math.min(100, Math.max(0, (score / maxPossible) * 100))) : 0;
     const dataPoints = bucket.firedRules.length;
 
     scores.push({
       id,
-      label: labels[id],
+      label: DOMAIN_LABELS[id],
       score,
-      weight: weights[id],
+      maxPossible,
+      percentage,
+      weight: DOMAIN_WEIGHTS[id],
       confidence: getConfidence(dataPoints),
       dataPoints,
     });
