@@ -87,14 +87,15 @@ export function switchedText(
 function renderDomainRow(d: DomainScore, y: number, entries: LocaleEntry[]): string {
   const color = DOMAIN_COLORS[d.id] ?? C.textDim;
   const barWidth = 220;
-  const filledWidth = Math.round((d.score / 100) * barWidth);
+  const pct = d.percentage ?? (d.maxPossible > 0 ? Math.round((d.score / d.maxPossible) * 100) : d.score);
+  const filledWidth = Math.round((pct / 100) * barWidth);
   const labelAttrs = `x="0" y="14" fill="${C.textDim}" font-size="13" font-family="${SANS}" font-weight="500"`;
 
   return `<g transform="translate(25, ${y})">
       ${switchedText(labelAttrs, (b) => b.domainLabels[d.id as keyof typeof b.domainLabels] ?? d.id, entries)}
       <g transform="translate(120, 3)"><rect width="${barWidth}" height="12" rx="6" fill="${C.barBg}" opacity="0.5"/><rect width="${filledWidth}" height="12" rx="6" fill="${color}" filter="url(#glow)"/></g>
-      <text x="${120 + barWidth + 10}" y="14" fill="${C.text}" font-size="14" font-family="${MONO}" font-weight="700">${d.score}</text>
-      <text x="${120 + barWidth + 42}" y="14" fill="${color}" font-size="12" font-family="${MONO}">${confidenceSymbol(d.confidence)}</text>
+      <text x="${120 + barWidth + 10}" y="14" fill="${C.text}" font-size="14" font-family="${MONO}" font-weight="700">${pct}%</text>
+      <text x="${120 + barWidth + 50}" y="14" fill="${color}" font-size="12" font-family="${MONO}">${confidenceSymbol(d.confidence)}</text>
     </g>`;
 }
 

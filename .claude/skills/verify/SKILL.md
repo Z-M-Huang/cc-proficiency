@@ -64,7 +64,7 @@ Verify all critical runtime paths resolve correctly after build. Run via Bash:
     - File must exist and be valid JSON
     - Must have `processedSessionIds` (array of strings)
     - Must have `lastResult` with: `username` (string), `timestamp` (ISO 8601), `domains` (array of 5), `features` (object), `sessionCount` (number >= 0), `phase` (one of: `calibrating`, `early`, `full`), `setupChecklist` (object)
-    - Each domain in `lastResult.domains` must have: `id`, `label`, `score` (0-100), `weight`, `confidence` (one of: `low`, `medium`, `high`), `dataPoints`
+    - Each domain in `lastResult.domains` must have: `id`, `label`, `score` (0-100), `maxPossible` (number > 0, <= 100), `percentage` (0-100, equals `round(score / maxPossible * 100)`), `weight`, `confidence` (one of: `low`, `medium`, `high`), `dataPoints`
     - `lastUpdated` must be a valid ISO 8601 timestamp
     - If `tokenLog` exists, it must be an array where each entry has: `sessionId` (string), `timestamp` (valid ISO 8601), `tokens` (number >= 0)
     - If `processedSessionIds` is non-empty and sessions have been analyzed, `tokenLog` should be non-empty (tokens are extracted from transcripts during analyze/process)
@@ -105,6 +105,22 @@ Verify all critical runtime paths resolve correctly after build. Run via Bash:
 21. **Validate hook log** (`~/.cc-proficiency/hook.log`):
     - If the file exists, each non-empty line must match the pattern `[ISO_TIMESTAMP] MESSAGE`
     - If it does not exist, that is OK (hook hasn't fired yet) — note this as "not yet created"
+
+### Step 4b — Percentage scoring validation
+
+22. **Domain percentages are normalized**: Load store.json's `lastResult.domains`. For each domain:
+    - `maxPossible` must be > 0 and <= 100
+    - `percentage` must be >= 0 and <= 100
+    - `percentage` must equal `Math.round(score / maxPossible * 100)` (or 0 if maxPossible is 0)
+    - At least one domain should have `maxPossible` < 100 (proves normalization is active, not all domains cap at 100)
+
+23. **SVG badge shows percentages**: Load the SVG badge file. Verify:
+    - Domain score text contains `%` suffix (e.g., `76%` not just `76`)
+    - Bar widths are proportional to `percentage`, not raw `score`
+
+23b. **Animated SVG badge shows percentages**: Load the animated SVG badge file. Verify:
+    - Domain score text contains `%` suffix
+    - Animated bar `to` values are proportional to percentage
 
 ### Step 5 — Feature scoring validation
 
@@ -224,6 +240,9 @@ Report a summary table at the end:
 | Multi-project merge     | ...    |
 | Known cwds persistence  | ...    |
 | Token log in store      | ...    |
+| Domain percentages      | ...    |
+| SVG shows percentages   | ...    |
+| Animated SVG percentages| ...    |
 | Token line in SVG       | ...    |
 | Locale precedence       | ...    |
 | Locale fallback         | ...    |

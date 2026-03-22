@@ -11,7 +11,7 @@ import { fireRules, aggregateToBuckets, bucketsToScores, extractFeatureScores } 
 import { computeFeatureDepthScores } from "./feature-scores.js";
 import type { RuleFire } from "./rules.js";
 
-export const SCORING_VERSION = "3.0.0";
+export const SCORING_VERSION = "3.1.0";
 
 const CALIBRATION_THRESHOLD = 3;
 const FULL_CONFIDENCE_THRESHOLD = 10;
@@ -170,8 +170,14 @@ export function computeProficiency(
   const projectCount = new Set(sessions.map((s) => s.project)).size;
   const phase = getPhase(sessionCount);
 
+  // Compute per-project session counts for rule context
+  const projectSessionCounts = new Map<string, number>();
+  for (const s of sessions) {
+    projectSessionCounts.set(s.project, (projectSessionCounts.get(s.project) ?? 0) + 1);
+  }
+
   // Fire all rules
-  const fires = fireRules(allEvents, config, sessionCount);
+  const fires = fireRules(allEvents, config, sessionCount, projectCount, projectSessionCounts);
 
   // Aggregate into domain buckets with caps
   const buckets = aggregateToBuckets(fires);

@@ -10,8 +10,10 @@ export function cmdExplain(): void {
   }
 
   const result = store.lastResult;
-  const sorted = [...result.domains].sort((a, b) => b.score - a.score);
-  const weakest = [...result.domains].sort((a, b) => a.score - b.score);
+  const pctOf = (d: { score: number; maxPossible?: number; percentage?: number }): number =>
+    d.percentage ?? (d.maxPossible && d.maxPossible > 0 ? Math.round((d.score / d.maxPossible) * 100) : d.score);
+  const sorted = [...result.domains].sort((a, b) => pctOf(b) - pctOf(a));
+  const weakest = [...result.domains].sort((a, b) => pctOf(a) - pctOf(b));
   const s = t().cli.explain;
   const domainLabels = t().badge.domainLabels;
   const tips = s.domainTips;
@@ -21,14 +23,17 @@ export function cmdExplain(): void {
   console.log(s.strengths);
   for (const d of sorted) {
     const label = domainLabels[d.id as DomainId] ?? d.label;
-    console.log(`    ${label.padEnd(14)} ${d.score}/100`);
+    const pct = pctOf(d);
+    const maxInfo = d.maxPossible ? ` (${d.score}/${d.maxPossible} max)` : "";
+    console.log(`    ${label.padEnd(14)} ${pct}%${maxInfo}`);
   }
 
   console.log(`\n${s.areasToImprove}`);
   for (let i = 0; i < Math.min(2, weakest.length); i++) {
     const d = weakest[i]!;
     const label = domainLabels[d.id as DomainId] ?? d.label;
-    console.log(`    ${label} (${d.score}/100)`);
+    const pct = pctOf(d);
+    console.log(`    ${label} (${pct}%)`);
     console.log(`       \u2192 ${tips[d.id as DomainId] ?? t().insights.fallbackAction(domainLabels[d.id as DomainId] ?? d.label)}`);
   }
 

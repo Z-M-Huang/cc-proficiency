@@ -50,7 +50,8 @@ function switchedAnimatedText(
 function renderAnimatedDomainRow(d: DomainScore, y: number, i: number, entries: LocaleEntry[]): string {
   const color = DOMAIN_COLORS[d.id] ?? C.textDim;
   const barWidth = 220;
-  const filledWidth = Math.round((d.score / 100) * barWidth);
+  const pct = d.percentage ?? (d.maxPossible > 0 ? Math.round((d.score / d.maxPossible) * 100) : d.score);
+  const filledWidth = Math.round((pct / 100) * barWidth);
   const bDelay = barDelay(i);
   const nDelay = numberDelay(i);
   const labelAttrs = `x="0" y="14" fill="${C.textDim}" font-size="13" font-family="${SANS}" font-weight="500"`;
@@ -63,8 +64,8 @@ function renderAnimatedDomainRow(d: DomainScore, y: number, i: number, entries: 
           <animate attributeName="width" from="0" to="${filledWidth}" dur="${BAR_DUR}" begin="${bDelay}s" fill="freeze" ${BAR_EASING}/>
         </rect>
       </g>
-      <text x="${120 + barWidth + 10}" y="14" fill="${C.text}" font-size="14" font-family="${MONO}" font-weight="700" opacity="0">${d.score}<animate attributeName="opacity" from="0" to="1" dur="${FADE_DUR}" begin="${nDelay}s" fill="freeze"/></text>
-      <text x="${120 + barWidth + 42}" y="14" fill="${color}" font-size="12" font-family="${MONO}" opacity="0">${confidenceSymbol(d.confidence)}<animate attributeName="opacity" from="0" to="1" dur="${FADE_DUR}" begin="${nDelay}s" fill="freeze"/></text>
+      <text x="${120 + barWidth + 10}" y="14" fill="${C.text}" font-size="14" font-family="${MONO}" font-weight="700" opacity="0">${pct}%<animate attributeName="opacity" from="0" to="1" dur="${FADE_DUR}" begin="${nDelay}s" fill="freeze"/></text>
+      <text x="${120 + barWidth + 50}" y="14" fill="${color}" font-size="12" font-family="${MONO}" opacity="0">${confidenceSymbol(d.confidence)}<animate attributeName="opacity" from="0" to="1" dur="${FADE_DUR}" begin="${nDelay}s" fill="freeze"/></text>
     </g>`;
 }
 
