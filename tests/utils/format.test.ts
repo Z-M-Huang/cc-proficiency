@@ -19,5 +19,24 @@ describe("formatTokens", () => {
     expect(formatTokens(1_000_000)).toBe("1.0M");
     expect(formatTokens(1_500_000)).toBe("1.5M");
     expect(formatTokens(15_300_000)).toBe("15.3M");
+    expect(formatTokens(999_999_999)).toBe("1000.0M");
+  });
+
+  it("formats billions with B suffix", () => {
+    expect(formatTokens(1_000_000_000)).toBe("1.0B");
+    expect(formatTokens(1_500_000_000)).toBe("1.5B");
+    expect(formatTokens(15_300_000_000)).toBe("15.3B");
+  });
+
+  it("formats trillions with T suffix", () => {
+    expect(formatTokens(1_000_000_000_000)).toBe("1.0T");
+    expect(formatTokens(1_500_000_000_000)).toBe("1.5T");
+    expect(formatTokens(15_300_000_000_000)).toBe("15.3T");
+  });
+
+  it("formats quadrillions with P suffix", () => {
+    expect(formatTokens(1e15)).toBe("1.0P");
+    expect(formatTokens(1.5e15)).toBe("1.5P");
+    expect(formatTokens(15.3e15)).toBe("15.3P");
   });
 });
