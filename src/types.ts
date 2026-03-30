@@ -283,6 +283,60 @@ export interface SetupChecklist {
   hasSkills: boolean;
 }
 
+// ── AI Grading ──
+
+export type AIDomainId =
+  | "goal-achievement"
+  | "collaboration-quality"
+  | "workflow-mastery"
+  | "growth-learning"
+  | "verification-quality";
+
+export interface AIGradedCriterion {
+  question: string;
+  score: number;
+  evidence: string;
+}
+
+export interface AIGradedDomain {
+  id: AIDomainId;
+  criteria: AIGradedCriterion[];
+  total: number;
+  level: "novice" | "proficient" | "expert";
+  summary: string;
+}
+
+export interface AIGradingResult {
+  domains: AIGradedDomain[];
+  overall: string;
+  model: string;
+  gradedAt: string;
+  rubricVersion: string;
+  cacheKey?: string;
+}
+
+export type AIPhase = "insufficient" | "early" | "full";
+
+export interface ParsedRubricCriterion {
+  q: string;
+  title: string;
+  anchors: string;
+  evidence: string;
+}
+
+export interface ParsedRubricDomain {
+  id: AIDomainId;
+  label: string;
+  description: string;
+  criteria: ParsedRubricCriterion[];
+}
+
+export interface ParsedRubric {
+  domains: ParsedRubricDomain[];
+  antiGaming: string;
+  systemPromptHeader: string;
+}
+
 // ── Config ──
 
 export interface CCProficiencyConfig {
@@ -293,6 +347,7 @@ export interface CCProficiencyConfig {
   locale?: string;         // validated at read time via isValidLocale()
   leaderboard?: boolean;   // opt-in to public leaderboard
   publicGistId?: string;   // separate gist for public profile
+  aiGrading?: boolean;
 }
 
 // ── Store ──
@@ -312,6 +367,12 @@ export interface LocalStore {
   lastUpdated?: string;
   knownProjectCwds?: string[];
   tokenLog?: TokenLogEntry[];
+  lastAIResult?: AIGradingResult;
+  aiEvidence?: {
+    achievedRate: number;
+    frictionSatisfiedCount: number;
+    promptLengthTrend: number;
+  };
 }
 
 export interface TokenLogEntry {
@@ -389,6 +450,11 @@ export interface AchievementContext {
   features: FeatureInventory;
   activeDates: string[];
   leaderboard?: boolean;
+  aiEvidence?: {
+    achievedRate: number;
+    frictionSatisfiedCount: number;
+    promptLengthTrend: number;
+  };
 }
 
 // ── Leaderboard ──

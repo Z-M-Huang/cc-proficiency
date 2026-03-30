@@ -26,6 +26,7 @@
   <a href="#install">Install</a> &nbsp;·&nbsp;
   <a href="#usage">Usage</a> &nbsp;·&nbsp;
   <a href="#embed-in-your-readme">Embed</a> &nbsp;·&nbsp;
+  <a href="#ai-grading">AI Grading</a> &nbsp;·&nbsp;
   <a href="#how-scoring-works">Scoring</a> &nbsp;·&nbsp;
   <a href="#privacy">Privacy</a> &nbsp;·&nbsp;
   <a href="#localization">Localization</a> &nbsp;·&nbsp;
@@ -36,7 +37,7 @@
 
 ## What it does
 
-Analyzes your Claude Code session transcripts **locally** with a rule-based engine, scoring usage patterns across 5 domains:
+Analyzes your Claude Code session transcripts **locally** with a rule-based engine, scoring usage patterns across 5 domains. Optionally adds [AI-powered grading](#ai-grading) across 5 outcome-focused domains using Claude's `/insights` data.
 
 | Domain | Weight | What it measures |
 |--------|--------|-----------------|
@@ -54,6 +55,12 @@ Also shows **8 feature mini-bars** (Hooks, Plugins, Skills, MCP, Agents, Plan, M
   </a>
   <br />
   <a href="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency-animated.svg">Click to see animated version</a>
+  <br />
+  <a href="https://github.com/Z-M-Huang/cc-proficiency">
+    <img src="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency-animated-ai-graded.svg" alt="CC Proficiency Badge — AI Graded" />
+  </a>
+  <br />
+  <a href="https://gist.githubusercontent.com/Z-M-Huang/2717fa94690c459d5093650c87f49868/raw/cc-proficiency-animated-ai-graded.svg">Click to see animated version</a>
 </p>
 
 > **Disclaimer:** This is an unofficial usage estimate, not an actual Anthropic certification score. Not affiliated with or endorsed by Anthropic.
@@ -218,11 +225,79 @@ The **[Gamification Guide](https://github.com/Z-M-Huang/cc-proficiency/wiki/Gami
 
 - First day through expert-level progression path
 - Tips for each of the 5 domains
-- How to unlock all 15 achievements
+- How to unlock all 18 achievements (including 3 AI achievements)
 - What drives each feature mini-bar from 0 to 100
 - Streak system and leaderboard
 
 > **[Gamification Guide](https://github.com/Z-M-Huang/cc-proficiency/wiki/Gamification-Guide)** | **[游戏化攻略（中文）](https://github.com/Z-M-Huang/cc-proficiency/wiki/Gamification-Guide-zh)**
+
+## AI Grading
+
+In addition to the rule-based engine, cc-proficiency offers **AI-powered grading** that evaluates your usage patterns across 5 outcome-focused domains using Claude's `/insights` data (facets + session metadata).
+
+### AI Domains
+
+| Domain | What it measures |
+|--------|-----------------|
+| **Goal Achievement** | Goal clarity, achievement rate, complexity progression, session purposefulness |
+| **Collaboration Quality** | Friction recovery, direction clarity, feedback quality, outcome satisfaction |
+| **Workflow Mastery** | Session strategy diversity, output-to-effort ratio, multi-session coordination |
+| **Growth & Learning** | Friction trajectory, outcome trajectory, capability expansion, resilience |
+| **Verification & Quality** | Outcome reliability, error handling, iterative refinement, course-correction |
+
+Each domain is scored 0–100% with levels: **Novice** (<34%), **Proficient** (34–66%), **Expert** (67%+).
+
+### How it works
+
+1. Reads `/insights` facets and session-meta from `~/.claude/usage-data/`
+2. Precomputes stats locally (outcome rates, friction trends, tool distributions)
+3. Sends stats + rubric to `claude -p` (via stdin — no data leaves your machine except to Claude API)
+4. AI returns only per-criterion scores (1–5); totals, levels, and achievements are computed **locally**
+5. Renders an animated SVG badge with "AI Graded" indicator
+
+The grading rubric is stored as editable markdown files in `docs/ai-grading/` — you can review and customize the criteria.
+
+### Usage
+
+```bash
+# Enable AI grading
+cc-proficiency config aiGrading true
+
+# Run AI grading (requires Claude CLI ≥ 2.1.0)
+cc-proficiency ai-grade                  # uses sonnet by default
+cc-proficiency ai-grade --model opus     # use a specific model
+cc-proficiency ai-grade --full           # force re-grade (ignore cache)
+```
+
+Results are cached based on evidence hash — re-running without new data returns the cached result instantly.
+
+### Auto-trigger
+
+When `aiGrading` is enabled, the `process` command automatically triggers AI grading weekly (after releasing the queue lock). No manual steps needed.
+
+### Phase system
+
+| Phase | Facets | Behavior |
+|-------|--------|----------|
+| **Insufficient** | <10 | Refuses to grade — not enough data |
+| **Early Assessment** | 10–30 | Grades with a warning note on the badge |
+| **Full** | 30+ | Standard AI grading |
+
+### AI Achievements
+
+Three achievements unlock based on your `/insights` data (deterministic, not AI judgment):
+
+| Achievement | Requirement |
+|------------|-------------|
+| **Goal Crusher** | ≥90% achievement rate across 20+ sessions |
+| **Recovery Artist** | Recover from friction with satisfied outcome 5+ times |
+| **Prompt Evolution** | Measurable improvement in prompt quality over time |
+
+### Privacy
+
+AI grading sends **precomputed statistics** to Claude, not raw transcripts. Project paths are sanitized to slugs. The `report.html` narrative is excluded to avoid AI grading AI-generated text.
+
+---
 
 ## How scoring works
 
@@ -331,6 +406,7 @@ To add a new language, copy `src/i18n/locales/en.ts` to `src/i18n/locales/<code>
 | `cc-proficiency achievements` | View achievement progress |
 | `cc-proficiency status` | Show hook activity, queue, and config |
 | `cc-proficiency config [key] [value]` | View/set configuration |
+| `cc-proficiency ai-grade [--model m] [--full]` | AI-powered proficiency grading |
 | `cc-proficiency share [--remove]` | Join or leave the community leaderboard |
 | `cc-proficiency leaderboard` | View community rankings |
 | `cc-proficiency update` | Update to the latest version |
@@ -377,7 +453,7 @@ Contributions welcome! Please open an issue first to discuss what you'd like to 
 git clone https://github.com/Z-M-Huang/cc-proficiency.git
 cd cc-proficiency
 npm install
-npm test              # 200 tests
+npm test              # 433 tests
 npm run build         # compile to dist/
 npm run typecheck     # tsc --noEmit
 npm run lint          # eslint

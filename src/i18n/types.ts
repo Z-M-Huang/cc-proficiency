@@ -1,6 +1,8 @@
 // ── i18n Type Definitions ──
 // This file is type-only and exempt from the 300-line limit.
 
+import type { AIDomainId } from "../types.js";
+
 export type Locale = "en" | "zh-CN" | "es" | "fr" | "ja" | "ko";
 
 export type DomainId = "cc-mastery" | "tool-mcp" | "agentic" | "prompt-craft" | "context-mgmt";
@@ -212,6 +214,7 @@ export interface CliStrings {
   uninstall: UninstallStrings;
   process: ProcessStrings;
   badge: BadgeCmdStrings;
+  aiGrade: AIGradeStrings;
 }
 
 // ── Services ──
@@ -222,6 +225,7 @@ export interface PublishingStrings {
   pushFailed: (err: string) => string;
   staticUrl: (url: string) => string;
   animatedUrl: (url: string) => string;
+  aiGradedUrl: (url: string) => string;
   pushSummary: (sessions: number, hours: string, achievements: number, streak: number) => string;
 }
 
@@ -278,11 +282,35 @@ export interface RegistryStrings {
   leaveBody: (username: string) => string;
 }
 
+// ── AI Badge ──
+
+export interface AIBadgeStrings {
+  aiDomainLabels: Record<AIDomainId, string>;
+  aiGradedIndicator: string;
+  insufficientData: string;
+  earlyAssessment: string;
+}
+
+// ── AI Grade CLI ──
+
+export interface AIGradeStrings {
+  running: string;
+  insufficientFacets: (count: number, required: number) => string;
+  cacheHit: string;
+  gradingComplete: string;
+  domainResult: (label: string, score: number, level: string) => string;
+  badgeSaved: (path: string) => string;
+  claudeNotFound: string;
+  claudeAuthFailed: string;
+  gradingFailed: (err: string) => string;
+}
+
 // ── Root ──
 
 export interface AllStrings {
   common: CommonStrings;
   badge: BadgeStrings;
+  aiBadge: AIBadgeStrings;
   cli: CliStrings;
   services: ServiceStrings;
   formatting: FormattingStrings;

@@ -31,6 +31,7 @@ export function cmdConfig(args: string[]): void {
   else if (key === "locale") config.locale = value;
   else if (key === "leaderboard") config.leaderboard = value === "true";
   else if (key === "publicGistId") config.publicGistId = value;
+  else if (key === "aiGrading") config.aiGrading = value === "true";
   else {
     console.log(t().common.unknownKey(key!));
     return;

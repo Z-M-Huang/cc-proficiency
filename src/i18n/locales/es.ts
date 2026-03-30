@@ -40,6 +40,19 @@ export const es: AllStrings = {
     tokensPrefix: "tokens",
   },
 
+  aiBadge: {
+    aiDomainLabels: {
+      "goal-achievement": "Logro de objetivos",
+      "collaboration-quality": "Colaboraci\u00f3n",
+      "workflow-mastery": "Flujo de trabajo",
+      "growth-learning": "Crecimiento",
+      "verification-quality": "Verificaci\u00f3n",
+    },
+    aiGradedIndicator: "Evaluado por IA",
+    insufficientData: "Datos insuficientes",
+    earlyAssessment: "Evaluaci\u00f3n preliminar",
+  },
+
   cli: {
     help: {
       description: "cc-proficiency \u2014 Generador de insignia de competencia en Claude Code",
@@ -207,6 +220,17 @@ export const es: AllStrings = {
       writtenTo: (path) => `Insignia escrita en ${path}`,
       savedTo: (path) => `Insignia guardada en ${path}`,
     },
+    aiGrade: {
+      running: "Ejecutando evaluaci\u00f3n por IA...",
+      insufficientFacets: (count, required) => `Datos insuficientes: ${count} facets (se necesitan ${required}+)`,
+      cacheHit: "Usando resultado de evaluaci\u00f3n por IA en cach\u00e9.",
+      gradingComplete: "Evaluaci\u00f3n por IA completada.",
+      domainResult: (label, score, level) => `  ${label}: ${score}% (${level})`,
+      badgeSaved: (path) => `Insignia IA guardada en ${path}`,
+      claudeNotFound: "Claude CLI no encontrado. Instala claude para usar la evaluaci\u00f3n por IA.",
+      claudeAuthFailed: "Autenticaci\u00f3n de Claude CLI fallida. Ejecuta 'claude' para autenticarte.",
+      gradingFailed: (err) => `Evaluaci\u00f3n por IA fallida: ${err}`,
+    },
   },
 
   services: {
@@ -215,7 +239,8 @@ export const es: AllStrings = {
       pushedToGist: "\u2713 Insignia + datos subidos al Gist",
       pushFailed: (err) => `\u2717 Error al subir: ${err}`,
       staticUrl: (url) => `  Estática:  ${url}`,
-      animatedUrl: (url) => `  Animada:   ${url}`,
+      animatedUrl: (url) => `  Animada:    ${url}`,
+      aiGradedUrl: (url) => `  AI Calific: ${url}`,
       pushSummary: (sessions, hours, achievements, streak) =>
         `  ${sessions} sesiones \u00b7 ${hours}h \u00b7 ${achievements} logros \u00b7 \ud83d\udd25 racha de ${streak}d`,
     },
@@ -266,6 +291,9 @@ export const es: AllStrings = {
     "mcp-explorer": { name: "Explorador MCP", description: "Usar 2+ servidores MCP" },
     "night-owl": { name: "Noctámbulo", description: "Tener una sesión después de medianoche (UTC)" },
     "community-member": { name: "Comunidad", description: "Unirse a la tabla de clasificación" },
+    "ai-goal-crusher": { name: "Aplasta objetivos", description: "Alcanzar una tasa de logro de objetivos del 90%+" },
+    "ai-recovery-artist": { name: "Artista de la recuperación", description: "Recuperarse de la fricción con éxito 5+ veces" },
+    "ai-prompt-evolution": { name: "Evolución de prompts", description: "Mejorar la calidad de los prompts con el tiempo" },
   },
 
   insights: {

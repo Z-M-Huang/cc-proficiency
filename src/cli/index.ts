@@ -36,6 +36,7 @@ Commands:
   explain               ${c.explain}
   status                ${c.status}
   config [key] [value]  ${c.config}
+  ai-grade [--model m]  AI-powered proficiency grading
   share [--remove]      ${c.share}
   leaderboard           ${c.leaderboard}
   update                ${c.update}
@@ -83,6 +84,11 @@ async function main(): Promise<void> {
       break;
     case "config":
       return cmdConfig(args.slice(1));
+    case "ai-grade": {
+      const { cmdAIGrade } = await import("./commands/ai-grade.js");
+      await cmdAIGrade(args.slice(1));
+      break;
+    }
     case "share":
       return cmdShare(args);
     case "leaderboard":

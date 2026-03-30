@@ -40,6 +40,19 @@ export const ja: AllStrings = {
     tokensPrefix: "トークン",
   },
 
+  aiBadge: {
+    aiDomainLabels: {
+      "goal-achievement": "目標達成",
+      "collaboration-quality": "協調品質",
+      "workflow-mastery": "ワークフロー",
+      "growth-learning": "成長・学習",
+      "verification-quality": "検証品質",
+    },
+    aiGradedIndicator: "AI評価",
+    insufficientData: "データ不足",
+    earlyAssessment: "暫定評価",
+  },
+
   cli: {
     help: {
       description: "cc-proficiency \u2014 Claude Code 熟練度バッジ生成ツール",
@@ -207,6 +220,17 @@ export const ja: AllStrings = {
       writtenTo: (path) => `バッジを ${path} に書き込みました`,
       savedTo: (path) => `バッジを ${path} に保存しました`,
     },
+    aiGrade: {
+      running: "AI評価を実行中...",
+      insufficientFacets: (count, required) => `データ不足: ${count}件のfacets（${required}件以上必要）`,
+      cacheHit: "キャッシュ済みのAI評価結果を使用します。",
+      gradingComplete: "AI評価が完了しました。",
+      domainResult: (label, score, level) => `  ${label}: ${score}%（${level}）`,
+      badgeSaved: (path) => `AIバッジを ${path} に保存しました`,
+      claudeNotFound: "Claude CLI が見つかりません。AI評価を使用するにはclaudeをインストールしてください。",
+      claudeAuthFailed: "Claude CLI の認証に失敗しました。'claude' を実行して認証してください。",
+      gradingFailed: (err) => `AI評価に失敗しました: ${err}`,
+    },
   },
 
   services: {
@@ -216,6 +240,7 @@ export const ja: AllStrings = {
       pushFailed: (err) => `\u2717 プッシュに失敗しました: ${err}`,
       staticUrl: (url) => `  静的:     ${url}`,
       animatedUrl: (url) => `  アニメ:   ${url}`,
+      aiGradedUrl: (url) => `  AI評価:   ${url}`,
       pushSummary: (sessions, hours, achievements, streak) =>
         `  ${sessions} セッション \u00b7 ${hours}時間 \u00b7 ${achievements} 実績 \u00b7 \ud83d\udd25 ${streak}日連続`,
     },
@@ -266,6 +291,9 @@ export const ja: AllStrings = {
     "mcp-explorer": { name: "MCP 探検家", description: "2つ以上の MCP サーバーを使用する" },
     "night-owl": { name: "夜更かし", description: "深夜 (UTC) 以降にセッションを行う" },
     "community-member": { name: "コミュニティ", description: "習熟度リーダーボードに参加する" },
+    "ai-goal-crusher": { name: "目標粉砕者", description: "目標達成率90%以上を達成する" },
+    "ai-recovery-artist": { name: "リカバリーの達人", description: "摩擦から5回以上うまく回復する" },
+    "ai-prompt-evolution": { name: "プロンプト進化", description: "プロンプトの質が時間と共に向上する" },
   },
 
   insights: {

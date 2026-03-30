@@ -9,6 +9,7 @@ const STORE_FILE = join(STORE_DIR, "store.json");
 const CONFIG_FILE = join(STORE_DIR, "config.json");
 const BADGE_FILE = join(STORE_DIR, "cc-proficiency.svg");
 const ANIMATED_BADGE_FILE = join(STORE_DIR, "cc-proficiency-animated.svg");
+const AI_BADGE_FILE = join(STORE_DIR, "cc-proficiency-animated-ai-graded.svg");
 const ERROR_LOG = join(STORE_DIR, "error.log");
 const LEADERBOARD_CACHE_FILE = join(STORE_DIR, "leaderboard-cache.json");
 const MAX_ERROR_LOG_SIZE = 1_000_000; // 1MB
@@ -99,6 +100,16 @@ export function saveAnimatedBadge(svg: string): string {
   ensureStoreDir();
   writeFileSync(ANIMATED_BADGE_FILE, svg, "utf-8");
   return ANIMATED_BADGE_FILE;
+}
+
+export function saveAIBadge(svg: string): string {
+  ensureStoreDir();
+  writeFileSync(AI_BADGE_FILE, svg, "utf-8");
+  return AI_BADGE_FILE;
+}
+
+export function getAIBadgePath(): string {
+  return AI_BADGE_FILE;
 }
 
 export function logError(message: string): void {

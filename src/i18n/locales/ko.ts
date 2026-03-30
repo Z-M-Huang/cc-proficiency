@@ -40,6 +40,19 @@ export const ko: AllStrings = {
     tokensPrefix: "토큰",
   },
 
+  aiBadge: {
+    aiDomainLabels: {
+      "goal-achievement": "목표 달성",
+      "collaboration-quality": "협업 품질",
+      "workflow-mastery": "워크플로",
+      "growth-learning": "성장 학습",
+      "verification-quality": "검증 품질",
+    },
+    aiGradedIndicator: "AI 평가",
+    insufficientData: "데이터 부족",
+    earlyAssessment: "초기 평가",
+  },
+
   cli: {
     help: {
       description: "cc-proficiency \u2014 Claude Code 숙련도 배지 생성기",
@@ -207,6 +220,17 @@ export const ko: AllStrings = {
       writtenTo: (path) => `배지가 ${path}에 작성되었습니다`,
       savedTo: (path) => `배지가 ${path}에 저장되었습니다`,
     },
+    aiGrade: {
+      running: "AI 평가 실행 중...",
+      insufficientFacets: (count, required) => `데이터 부족: ${count}개 facets (${required}개 이상 필요)`,
+      cacheHit: "캐시된 AI 평가 결과를 사용합니다.",
+      gradingComplete: "AI 평가가 완료되었습니다.",
+      domainResult: (label, score, level) => `  ${label}: ${score}% (${level})`,
+      badgeSaved: (path) => `AI 배지가 ${path}에 저장되었습니다`,
+      claudeNotFound: "Claude CLI를 찾을 수 없습니다. AI 평가를 사용하려면 claude를 설치하세요.",
+      claudeAuthFailed: "Claude CLI 인증에 실패했습니다. 'claude'를 실행하여 인증하세요.",
+      gradingFailed: (err) => `AI 평가 실패: ${err}`,
+    },
   },
 
   services: {
@@ -216,6 +240,7 @@ export const ko: AllStrings = {
       pushFailed: (err) => `\u2717 푸시 실패: ${err}`,
       staticUrl: (url) => `  정적:   ${url}`,
       animatedUrl: (url) => `  애니메이션: ${url}`,
+      aiGradedUrl: (url) => `  AI 등급:   ${url}`,
       pushSummary: (sessions, hours, achievements, streak) =>
         `  ${sessions}개 세션 \u00b7 ${hours}시간 \u00b7 ${achievements}개 업적 \u00b7 \ud83d\udd25 ${streak}일 연속`,
     },
@@ -266,6 +291,9 @@ export const ko: AllStrings = {
     "mcp-explorer": { name: "MCP 탐험가", description: "2개 이상의 MCP 서버 사용" },
     "night-owl": { name: "올빼미족", description: "자정(UTC) 이후 세션 진행" },
     "community-member": { name: "커뮤니티", description: "숙련도 리더보드 참여" },
+    "ai-goal-crusher": { name: "목표 분쇄자", description: "목표 달성률 90% 이상 달성" },
+    "ai-recovery-artist": { name: "회복의 달인", description: "마찰에서 성공적으로 5회 이상 회복" },
+    "ai-prompt-evolution": { name: "프롬프트 진화", description: "시간이 지남에 따라 프롬프트 품질이 향상" },
   },
 
   insights: {

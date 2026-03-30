@@ -40,6 +40,19 @@ export const en: AllStrings = {
     tokensPrefix: "tokens",
   },
 
+  aiBadge: {
+    aiDomainLabels: {
+      "goal-achievement": "Goal Achievement",
+      "collaboration-quality": "Collaboration",
+      "workflow-mastery": "Workflow",
+      "growth-learning": "Growth",
+      "verification-quality": "Verification",
+    },
+    aiGradedIndicator: "AI Graded",
+    insufficientData: "Insufficient Data",
+    earlyAssessment: "Early Assessment",
+  },
+
   cli: {
     help: {
       description: "cc-proficiency \u2014 Claude Code Proficiency Badge Generator",
@@ -207,6 +220,17 @@ export const en: AllStrings = {
       writtenTo: (path) => `Badge written to ${path}`,
       savedTo: (path) => `Badge saved to ${path}`,
     },
+    aiGrade: {
+      running: "Running AI grading... This may take about 3-10 minutes...",
+      insufficientFacets: (count, required) => `Insufficient data: ${count} facets (need ${required}+)`,
+      cacheHit: "Using cached AI grading result.",
+      gradingComplete: "AI grading complete.",
+      domainResult: (label, score, level) => `  ${label}: ${score}% (${level})`,
+      badgeSaved: (path) => `AI badge saved to ${path}`,
+      claudeNotFound: "Claude CLI not found. Install claude to use AI grading.",
+      claudeAuthFailed: "Claude CLI authentication failed. Run 'claude' to authenticate.",
+      gradingFailed: (err) => `AI grading failed: ${err}`,
+    },
   },
 
   services: {
@@ -215,7 +239,8 @@ export const en: AllStrings = {
       pushedToGist: "\u2713 Badge + data pushed to Gist",
       pushFailed: (err) => `\u2717 Push failed: ${err}`,
       staticUrl: (url) => `  Static:   ${url}`,
-      animatedUrl: (url) => `  Animated: ${url}`,
+      animatedUrl: (url) => `  Animated:  ${url}`,
+      aiGradedUrl: (url) => `  AI Graded: ${url}`,
       pushSummary: (sessions, hours, achievements, streak) =>
         `  ${sessions} sessions \u00b7 ${hours}h \u00b7 ${achievements} achievements \u00b7 \ud83d\udd25 ${streak}d streak`,
     },
@@ -266,6 +291,9 @@ export const en: AllStrings = {
     "mcp-explorer": { name: "MCP Explorer", description: "Use 2+ MCP servers" },
     "night-owl": { name: "Night Owl", description: "Have a session after midnight (UTC)" },
     "community-member": { name: "Community", description: "Join the proficiency leaderboard" },
+    "ai-goal-crusher": { name: "Goal Crusher", description: "Achieve 90%+ goal achievement rate" },
+    "ai-recovery-artist": { name: "Recovery Artist", description: "Recover from friction successfully 5+ times" },
+    "ai-prompt-evolution": { name: "Prompt Evolution", description: "Measurably improve prompt quality over time" },
   },
 
   insights: {

@@ -40,6 +40,19 @@ export const fr: AllStrings = {
     tokensPrefix: "tokens",
   },
 
+  aiBadge: {
+    aiDomainLabels: {
+      "goal-achievement": "Atteinte d'objectifs",
+      "collaboration-quality": "Collaboration",
+      "workflow-mastery": "Flux de travail",
+      "growth-learning": "Progression",
+      "verification-quality": "V\u00e9rification",
+    },
+    aiGradedIndicator: "\u00c9valu\u00e9 par IA",
+    insufficientData: "Donn\u00e9es insuffisantes",
+    earlyAssessment: "\u00c9valuation pr\u00e9liminaire",
+  },
+
   cli: {
     help: {
       description: "cc-proficiency \u2014 G\u00e9n\u00e9rateur de badge de ma\u00eetrise Claude Code",
@@ -207,6 +220,17 @@ export const fr: AllStrings = {
       writtenTo: (path) => `Badge \u00e9crit dans ${path}`,
       savedTo: (path) => `Badge enregistr\u00e9 dans ${path}`,
     },
+    aiGrade: {
+      running: "\u00c9valuation par IA en cours\u2026",
+      insufficientFacets: (count, required) => `Donn\u00e9es insuffisantes : ${count} facets (${required}+ requis)`,
+      cacheHit: "Utilisation du r\u00e9sultat d\u2019\u00e9valuation IA en cache.",
+      gradingComplete: "\u00c9valuation par IA termin\u00e9e.",
+      domainResult: (label, score, level) => `  ${label} : ${score}% (${level})`,
+      badgeSaved: (path) => `Badge IA enregistr\u00e9 dans ${path}`,
+      claudeNotFound: "Claude CLI introuvable. Installez claude pour utiliser l\u2019\u00e9valuation par IA.",
+      claudeAuthFailed: "Authentification Claude CLI \u00e9chou\u00e9e. Ex\u00e9cutez \u00ab claude \u00bb pour vous authentifier.",
+      gradingFailed: (err) => `\u00c9chec de l\u2019\u00e9valuation par IA : ${err}`,
+    },
   },
 
   services: {
@@ -216,6 +240,7 @@ export const fr: AllStrings = {
       pushFailed: (err) => `\u2717 \u00c9chec de l\u2019envoi : ${err}`,
       staticUrl: (url) => `  Statique : ${url}`,
       animatedUrl: (url) => `  Anim\u00e9 :   ${url}`,
+      aiGradedUrl: (url) => `  AI Not\u00e9 : ${url}`,
       pushSummary: (sessions, hours, achievements, streak) =>
         `  ${sessions} sessions \u00b7 ${hours}h \u00b7 ${achievements} succ\u00e8s \u00b7 \ud83d\udd25 ${streak}j de s\u00e9rie`,
     },
@@ -266,6 +291,9 @@ export const fr: AllStrings = {
     "mcp-explorer": { name: "Explorateur MCP", description: "Utiliser 2+ serveurs MCP" },
     "night-owl": { name: "Oiseau de nuit", description: "Avoir une session apr\u00e8s minuit (UTC)" },
     "community-member": { name: "Communaut\u00e9", description: "Rejoindre le classement de ma\u00eetrise" },
+    "ai-goal-crusher": { name: "Broyeur d\u2019objectifs", description: "Atteindre un taux de r\u00e9ussite des objectifs de 90%+" },
+    "ai-recovery-artist": { name: "Artiste du rebond", description: "Se remettre de frictions avec succ\u00e8s 5+ fois" },
+    "ai-prompt-evolution": { name: "\u00c9volution des prompts", description: "Am\u00e9liorer la qualit\u00e9 des prompts au fil du temps" },
   },
 
   insights: {

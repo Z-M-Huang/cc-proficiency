@@ -1,6 +1,7 @@
 import { loadStore } from "../../store/local-store.js";
 import { t } from "../../i18n/index.js";
 import type { DomainId } from "../../i18n/types.js";
+import type { AIGradingResult } from "../../types.js";
 
 export function cmdExplain(): void {
   const store = loadStore();
@@ -50,4 +51,24 @@ export function cmdExplain(): void {
   console.log(`    ${s.flagsLabel}  ${f.usedPlanMode ? `\u2713 ${fl.plan}` : `\u2717 ${fl.plan}`}  ${f.hasMemory ? `\u2713 ${fl.memory}` : `\u2717 ${fl.memory}`}  ${f.hasRules ? `\u2713 ${fl.rules}` : `\u2717 ${fl.rules}`}  ${f.hasAgents ? `\u2713 ${fl.agents}` : `\u2717 ${fl.agents}`}  ${f.hasSkills ? `\u2713 ${fl.skills}` : `\u2717 ${fl.skills}`}`);
 
   console.log(`\n${s.sessionsSummary(result.sessionCount, result.projectCount)}\n`);
+
+  if (store.lastAIResult) {
+    printAIAssessment(store.lastAIResult);
+  }
+}
+
+function printAIAssessment(ai: AIGradingResult): void {
+  console.log("  AI Assessment:");
+  console.log("");
+  for (const d of ai.domains) {
+    const levelTag = d.level === "expert" ? "\u2605" : d.level === "proficient" ? "\u25cb" : "\u25b7";
+    console.log(`    ${levelTag} ${d.id.padEnd(24)} ${d.total}% (${d.level})`);
+    if (d.summary) {
+      console.log(`      ${d.summary}`);
+    }
+  }
+  if (ai.overall) {
+    console.log(`\n    ${ai.overall}`);
+  }
+  console.log("");
 }

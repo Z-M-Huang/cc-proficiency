@@ -40,6 +40,19 @@ export const zhCN: AllStrings = {
     tokensPrefix: "Token",
   },
 
+  aiBadge: {
+    aiDomainLabels: {
+      "goal-achievement": "目标达成",
+      "collaboration-quality": "协作质量",
+      "workflow-mastery": "工作流",
+      "growth-learning": "成长学习",
+      "verification-quality": "验证质量",
+    },
+    aiGradedIndicator: "AI 评级",
+    insufficientData: "数据不足",
+    earlyAssessment: "初步评估",
+  },
+
   cli: {
     help: {
       description: "cc-proficiency \u2014 Claude Code 能力概览徽章生成器",
@@ -207,6 +220,17 @@ export const zhCN: AllStrings = {
       writtenTo: (path) => `徽章已写入 ${path}`,
       savedTo: (path) => `徽章已保存到 ${path}`,
     },
+    aiGrade: {
+      running: "正在运行 AI 评级...",
+      insufficientFacets: (count, required) => `数据不足：${count} 个 facets（需要 ${required}+）`,
+      cacheHit: "使用缓存的 AI 评级结果。",
+      gradingComplete: "AI 评级完成。",
+      domainResult: (label, score, level) => `  ${label}：${score}%（${level}）`,
+      badgeSaved: (path) => `AI 徽章已保存到 ${path}`,
+      claudeNotFound: "未找到 Claude CLI。请安装 claude 以使用 AI 评级。",
+      claudeAuthFailed: "Claude CLI 认证失败。请运行 'claude' 进行认证。",
+      gradingFailed: (err) => `AI 评级失败：${err}`,
+    },
   },
 
   services: {
@@ -216,6 +240,7 @@ export const zhCN: AllStrings = {
       pushFailed: (err) => `\u2717 推送失败：${err}`,
       staticUrl: (url) => `  静态：  ${url}`,
       animatedUrl: (url) => `  动态：  ${url}`,
+      aiGradedUrl: (url) => `  AI评分：${url}`,
       pushSummary: (sessions, hours, achievements, streak) =>
         `  ${sessions} 个会话 \u00b7 ${hours}小时 \u00b7 ${achievements} 个成就 \u00b7 \ud83d\udd25 连续 ${streak} 天`,
     },
@@ -266,6 +291,9 @@ export const zhCN: AllStrings = {
     "mcp-explorer": { name: "MCP 探险家", description: "使用 2 个以上 MCP 服务器" },
     "night-owl": { name: "夜猫子", description: "在 UTC 午夜之后进行会话" },
     "community-member": { name: "社区成员", description: "加入熟练度排行榜" },
+    "ai-goal-crusher": { name: "目标粉碎者", description: "目标达成率达到 90% 以上" },
+    "ai-recovery-artist": { name: "恢复大师", description: "成功从摩擦中恢复 5 次以上" },
+    "ai-prompt-evolution": { name: "提示词进化", description: "提示词质量随时间明显提升" },
   },
 
   insights: {

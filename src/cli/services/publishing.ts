@@ -1,6 +1,7 @@
+import { existsSync, readFileSync } from "node:fs";
 import { renderBadge } from "../../renderer/svg.js";
 import { renderAnimatedBadge } from "../../renderer/animated-svg.js";
-import { loadStore, loadConfig, saveBadge, saveAnimatedBadge, getBadgePath, logError, computeTokenWindows } from "../../store/local-store.js";
+import { loadStore, loadConfig, saveBadge, saveAnimatedBadge, getBadgePath, getAIBadgePath, logError, computeTokenWindows } from "../../store/local-store.js";
 import { isGhAuthenticated, getGistRawUrl, readGistFile, pushGistFiles } from "../../gist/uploader.js";
 import { emptyRemoteStore, parseRemoteStore, mergeIntoRemote, getTotalStats, getUTCDate, getWeekMonday, mergeWeeklyTrends, computeTokenWindowsFromRemote } from "../../store/remote-store.js";
 import { checkAchievements, getAchievementDef } from "../../store/achievements.js";
@@ -60,6 +61,7 @@ export function mergeAndPush(
     features: result.features,
     activeDates: merged.streak.activeDates,
     leaderboard: cfg.leaderboard ?? false,
+    aiEvidence: store.aiEvidence,
   };
   const newAchievements = checkAchievements(ctx, merged.achievements.map((a) => a.id));
   for (const id of newAchievements) {
@@ -93,6 +95,14 @@ export function mergeAndPush(
   if (configSnapshotJson) {
     files["config-snapshots.json"] = configSnapshotJson;
   }
+  const aiBadgePath = getAIBadgePath();
+  if (existsSync(aiBadgePath)) {
+    try {
+      files["cc-proficiency-animated-ai-graded.svg"] = readFileSync(aiBadgePath, "utf-8");
+    } catch {
+      // skip if unreadable
+    }
+  }
   const pushResult = pushGistFiles(gistId, files);
 
   if (!pushResult.success) {
@@ -105,6 +115,10 @@ export function mergeAndPush(
     console.log(t().services.publishing.pushedToGist);
     console.log(t().services.publishing.staticUrl(rawUrl));
     console.log(t().services.publishing.animatedUrl(animatedUrl));
+    if (existsSync(getAIBadgePath())) {
+      const aiGradedUrl = getGistRawUrl(username, gistId, "cc-proficiency-animated-ai-graded.svg");
+      console.log(t().services.publishing.aiGradedUrl(aiGradedUrl));
+    }
     console.log(t().services.publishing.pushSummary(totals.sessions, totals.hours.toFixed(1), merged.achievements.length, merged.streak.current));
   }
 

@@ -6,6 +6,7 @@ import type { QueueEntry } from "../types.js";
 const STORE_DIR = join(homedir(), ".cc-proficiency");
 const QUEUE_FILE = join(STORE_DIR, "queue.jsonl");
 const QUEUE_LOCK = join(STORE_DIR, "queue.lock");
+const AI_GRADE_LOCK = join(STORE_DIR, "ai-grade.lock");
 const LOCK_STALE_MS = 120_000; // 120 seconds (accounts for network calls in mergeAndPush)
 
 export function ensureStoreDir(): void {
@@ -92,6 +93,45 @@ export function acquireLock(): boolean {
 export function releaseLock(): void {
   try {
     unlinkSync(QUEUE_LOCK);
+  } catch {
+    // already released
+  }
+}
+
+/**
+ * Acquire AI grade lock. Returns true if acquired, false if held by another process.
+ */
+export function acquireAIGradeLock(): boolean {
+  ensureStoreDir();
+
+  if (existsSync(AI_GRADE_LOCK)) {
+    try {
+      const lockContent = readFileSync(AI_GRADE_LOCK, "utf-8");
+      const lockTime = parseInt(lockContent, 10);
+      if (Date.now() - lockTime < LOCK_STALE_MS) {
+        return false; // lock is fresh, another process is running
+      }
+      // Stale lock — break it
+      unlinkSync(AI_GRADE_LOCK);
+    } catch {
+      try { unlinkSync(AI_GRADE_LOCK); } catch { /* ignore */ }
+    }
+  }
+
+  try {
+    writeFileSync(AI_GRADE_LOCK, String(Date.now()), { flag: "wx" }); // O_EXCL
+    return true;
+  } catch {
+    return false; // another process beat us
+  }
+}
+
+/**
+ * Release AI grade lock.
+ */
+export function releaseAIGradeLock(): void {
+  try {
+    unlinkSync(AI_GRADE_LOCK);
   } catch {
     // already released
   }

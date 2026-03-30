@@ -106,6 +106,32 @@ export const ACHIEVEMENTS: AchievementDef[] = [
     icon: "\uD83C\uDF10", // 🌐
     progress: (ctx) => ({ current: ctx.leaderboard ? 1 : 0, target: 1 }),
   },
+
+  // AI grading milestones
+  {
+    id: "ai-goal-crusher",
+    icon: "\uD83C\uDFAF", // 🎯
+    progress: (ctx) => ({
+      current: (ctx.aiEvidence?.achievedRate ?? 0) >= 90 ? 1 : 0,
+      target: 1,
+    }),
+  },
+  {
+    id: "ai-recovery-artist",
+    icon: "\uD83D\uDD04", // 🔄
+    progress: (ctx) => ({
+      current: ctx.aiEvidence?.frictionSatisfiedCount ?? 0,
+      target: 5,
+    }),
+  },
+  {
+    id: "ai-prompt-evolution",
+    icon: "\uD83D\uDCC8", // 📈
+    progress: (ctx) => ({
+      current: (ctx.aiEvidence?.promptLengthTrend ?? 0) > 0 ? 1 : 0,
+      target: 1,
+    }),
+  },
 ];
 
 /**

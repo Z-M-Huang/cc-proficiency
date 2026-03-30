@@ -1,4 +1,6 @@
 import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { spawn } from "node:child_process";
 import { parseTranscript } from "../../parsers/transcript-parser.js";
 import { buildSetupChecklist } from "../../parsers/config-parser.js";
 import { computeProficiency } from "../../scoring/engine.js";
@@ -9,8 +11,16 @@ import { isGhAuthenticated, readGistFile } from "../../gist/uploader.js";
 import { getConfigWithSync, gatherAllProcessedSessions } from "../services/sessions.js";
 import { mergeAndPush } from "../services/publishing.js";
 import { buildSnapshotPayload, parseSnapshotsFile } from "../../store/config-sync.js";
-import type { ParsedSession } from "../../types.js";
+import type { ParsedSession, LocalStore } from "../../types.js";
 import { t } from "../../i18n/index.js";
+
+const AUTO_GRADE_STALE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+function shouldAutoGrade(store: LocalStore): boolean {
+  if (!store.lastAIResult) return true;
+  const elapsed = Date.now() - new Date(store.lastAIResult.gradedAt).getTime();
+  return elapsed > AUTO_GRADE_STALE_MS;
+}
 
 export async function cmdProcess(): Promise<void> {
   if (!acquireLock()) {
@@ -18,6 +28,7 @@ export async function cmdProcess(): Promise<void> {
     return;
   }
 
+  let shouldTriggerAI = false;
   try {
     const queue = readQueue();
     if (queue.length === 0) {
@@ -109,11 +120,32 @@ export async function cmdProcess(): Promise<void> {
       }
 
       console.log(t().cli.process.processed(newSessions.length, badgePath));
+
+      // Check if AI grading should auto-trigger (evaluated before lock release)
+      if (userConfig.aiGrading && shouldAutoGrade(store)) {
+        shouldTriggerAI = true;
+      }
     }
 
     writeQueue(new Set(processed));
     saveStore(store);
   } finally {
     releaseLock();
+  }
+
+  // Spawn detached AI grading AFTER lock release to avoid deadlock
+  if (shouldTriggerAI) {
+    try {
+      const processorPath = join(__dirname, "..", "index.js");
+      if (existsSync(processorPath)) {
+        const child = spawn("node", [processorPath, "ai-grade"], {
+          detached: true,
+          stdio: "ignore",
+        });
+        child.unref();
+      }
+    } catch {
+      // AI grade trigger is best-effort — never crash process
+    }
   }
 }
