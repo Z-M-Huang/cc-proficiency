@@ -59,6 +59,8 @@ export function mergeIntoRemote(
   for (const local of localSessions) {
     const existing = existingById.get(local.id);
     if (existing) {
+      // Always refresh the stored date from the best local timestamp we have.
+      if (existing.date !== local.date) existing.date = local.date;
       // Always update token data from local (handles reparsed/corrected values)
       if (local.tokens != null) existing.tokens = local.tokens;
       if (local.endTimestamp) existing.endTimestamp = local.endTimestamp;

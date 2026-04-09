@@ -18,6 +18,37 @@ export interface MergeAndPushResult {
   totals?: { sessions: number; hours: number; projects: number };
 }
 
+function isValidTimestamp(timestamp?: string): timestamp is string {
+  return typeof timestamp === "string" && !Number.isNaN(Date.parse(timestamp));
+}
+
+export function buildRecentSessionsForRemote(
+  store: LocalStore,
+  result: ProficiencyResult
+): RemoteStore["recentSessions"] {
+  const avgHours = result.features.totalHours / Math.max(store.processedSessionIds.length, 1);
+  const snapshotMap = new Map(store.snapshots.map((s) => [s.sessionId, s]));
+  const tokenMap = new Map((store.tokenLog ?? []).map((t) => [t.sessionId, t]));
+
+  return store.processedSessionIds
+    .map((id) => {
+      const snap = snapshotMap.get(id);
+      const tokenEntry = tokenMap.get(id);
+      const endTimestamp = isValidTimestamp(tokenEntry?.timestamp) ? tokenEntry.timestamp : undefined;
+      const snapshotTimestamp = isValidTimestamp(snap?.timestamp) ? snap.timestamp : undefined;
+      const timestamp = endTimestamp ?? snapshotTimestamp;
+      if (!timestamp) return null;
+      return {
+        id,
+        date: getUTCDate(timestamp),
+        hours: avgHours,
+        tokens: tokenEntry?.tokens,
+        endTimestamp,
+      };
+    })
+    .filter((s): s is NonNullable<typeof s> => s !== null);
+}
+
 /**
  * Read remote store, merge local data, check achievements, re-render badge,
  * and push SVG + JSON atomically. Used by both cmdPush and cmdProcess.
@@ -34,20 +65,7 @@ export function mergeAndPush(
   let remote = remoteJson ? parseRemoteStore(remoteJson) : null;
   if (!remote) remote = emptyRemoteStore(username);
 
-  const avgHours = result.features.totalHours / Math.max(store.processedSessionIds.length, 1);
-  const tokenMap = new Map((store.tokenLog ?? []).map((t) => [t.sessionId, t]));
-  const localSessions = store.processedSessionIds.map((id) => {
-    const snap = store.snapshots.find((s) => s.sessionId === id);
-    const tokenEntry = tokenMap.get(id);
-    return {
-      id,
-      date: snap ? getUTCDate(snap.timestamp) : new Date().toISOString().slice(0, 10),
-      hours: avgHours,
-      tokens: tokenEntry?.tokens,
-      endTimestamp: tokenEntry?.timestamp,
-    };
-  });
-
+  const localSessions = buildRecentSessionsForRemote(store, result);
   const merged = mergeIntoRemote(remote, localSessions, result);
 
   const totals = getTotalStats(merged);
